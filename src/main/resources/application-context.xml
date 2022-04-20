@@ -45,8 +45,6 @@
 
 	<task:scheduler id="taskScheduler" pool-size="${scheduler.pool.size}" />
 	<task:executor id="taskExecutor" pool-size="${taskexecutor.pool.size}" />
-	<bean id="entityDataService" class="org.lareferencia.core.entity.services.EntityDataService" scope="singleton"/>
-
 
 	<task:annotation-driven executor="taskExecutor" scheduler="taskScheduler" />
 		
