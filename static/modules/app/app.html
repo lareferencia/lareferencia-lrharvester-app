@@ -1,0 +1,215 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<div class="row">
+
+	<div class="col-md-12">
+		<h4>Listado de repositorios disponibles</h4>
+		<p>Puede ejecutar acciones sobre un grupo de repositorios seleccionados utilizando los checkbox de la tabla. </p>
+		<p>Los datos se actualizan automáticamente cada 5 segundos. </p>
+		
+
+		<div class="row">	
+
+			<div class="col-md-2">
+				
+				<a ui-sref="network.new" class="btn btn-sm btn-primary pull-left"><span class="glyphicon glyphicon-plus"></span> Nuevo repositorio</a>
+			
+				<div class="btn-group pull-left" uib-dropdown>
+					<button type="button" class="btn btn-sm btn-success" uib-dropdown-toggle>
+							 <i class="fa fa-cog fa-lg"></i>
+					</button>
+					<ul uib-dropdown-menu role="menu" aria-labelledby="split-button">
+							<li role="menuitem"><a href="" ng-confirm-click="¿Está seguro de ejecutar todas las acciones configuradas sobre las redes seleccionadas?" confirmed-click="executeNetworkActions(currentSelectedNetworkList(), networksTableRefreshCallback)">Ejecutar acciones configuradas</a></li>
+							
+							<li class="divider"></li>
+							<li role="menuitem"><p><b>&nbsp;Acciones individuales</b></p></li>
+							
+							<li style="margin-top: 5px;" ng-repeat="action in networkActions">
+								
+								<a  class="action_button" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} sobre las redes seleccionadas?" 
+								confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">{{action.description}}</a>
+								<div style="float:right; margin-right: 10px;">
+									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} FULL sobre las redes seleccionadas?" 
+									confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">Full</a>
+									<span ng-if="action.incremental">/</span>
+									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} INCREMENTAL sobre las redes seleccionadas?" 
+									confirmed-click="executeNetworkAction(action.name, currentSelectedNetworkList(), networksTableRefreshCallback)"> Incr </a>
+								</div>
+							</li>
+							
+							<li class="divider"></li>
+							<li role="menuitem"><a href="" ng-confirm-click="¿Está seguro de detener todas las tareas en ejecución sobre las redes seleccionadas?" confirmed-click="killNetworkTasks(currentSelectedNetworkList(), networksTableRefreshCallback)">Detener todas las tareas</a></li>
+							<li role="menuitem"><a href=""  ng-confirm-click="¿Está seguro de re agendar la tareas programadas?" confirmed-click="rescheduleNetworkTasks(currentSelectedNetworkList(), networksTableRefreshCallback)">Re-Agendar tareas programadas</a></li>
+							
+			
+					</ul>
+					
+				</div>
+			
+			</div>
+			<div class="col-md-8">
+				<div class="alert alert-success" ng-if="actionExecuted">
+				  <strong>Acción ejecutada:</strong> {{actionIdentifier}}.
+				</div>
+			</div>
+			<div class="col-md-2">	
+				<timer style="display:none;" interval="1000"></timer>
+				<button class="btn btn-sm btn-primary pull-right" ng-click="startTimer('poll-server')" ng-if="!timerRunning">Actualizar automáticamente</button>
+		        <button class="btn btn-sm btn-primary pull-right" ng-click="stopTimer('poll-server')" ng-if="timerRunning"><span class="glyphicon glyphicon-ban-circle"></span> Apagar actualización</button>
+				<a ng-click="networksTableRefreshCallback()" class="btn btn-sm btn-primary pull-right"><span class="glyphicon glyphicon-refresh"></span> Actualizar</a>
+			</div>
+		</div>
+
+	
+	</div>
+
+</div>
+<!-- End Row cabecera -->
+<div class="row">
+	<p></p>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<table ng-table="networksTable" class="table table-bordered table-striped table-condensed">
+			<tr ng-repeat="network in $data track by network.networkID">
+				<td width="25" style="text-align: left" header="'modules/app/checkbox-tpl.html'"><input type="checkbox" ng-model="networks.selected[network.networkID]" /></td>
+				
+				<td width="25"> 
+				<div class="btn-group" uib-dropdown>
+						<button type="button" class="btn btn-xs btn-success" uib-dropdown-toggle>
+							 <i class="fa fa-cog fa-lg" ng-class="{'fa-spin': network.running.length != 0 ||  network.queued.length != 0}"></i>
+						</button>
+						<ul class="dropdown-menu-left" uib-dropdown-menu role="menu" aria-labelledby="split-button">
+							<li role="menuitem"><a href="" ng-confirm-click="¿Está seguro de ejecutar todas las acciones configuradas?" confirmed-click="executeNetworkActions(network.networkID, networksTableRefreshCallback)">Ejecutar acciones configuradas</a></li>
+							
+							<li class="divider"></li>
+							<li role="menuitem"><p><b>&nbsp;Acciones individuales</b></p></li>
+							
+							<li style="margin-top: 5px;" ng-repeat="action in networkActions">
+								
+								<a  class="action_button" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} ?" confirmed-click="executeNetworkAction(action.name, false, network.networkID, networksTableRefreshCallback)">{{action.description}}</a>
+								<div style="float:right; margin-right: 10px;">
+									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} FULL ?" confirmed-click="executeNetworkAction(action.name, false, network.networkID, networksTableRefreshCallback)">Full</a>
+									<span ng-if="action.incremental">/</span>
+									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} INCREMENTAL?" confirmed-click="executeNetworkAction(action.name, true, network.networkID, networksTableRefreshCallback)"> Incr </a>
+								</div>
+							</li>
+							
+							<li class="divider"></li>
+							<li role="menuitem"><a href=""  ng-confirm-click="¿Está seguro de detener todas las tareas en ejecución?" confirmed-click="killNetworkTasks(network.networkID, networksTableRefreshCallback)">Detener todas las tareas</a></li>
+							<li role="menuitem"><a href=""  ng-confirm-click="¿Está seguro de re agendar la tareas programadas?" confirmed-click="rescheduleNetworkTasks(network.networkID, networksTableRefreshCallback)">Re-Agendar tareas programadas</a></li>
+							
+			
+						</ul>
+					</div>
+				</td>
+				<td style="width: 20px;" data-title="'ID'"  sortable="'id'">{{network.networkID}}</td>
+				<td style="width: 10px;" data-title="'S'" filter="{status: 'select'}" filter-data="statusFilterData">{{network.lstSnapshotStatus | ShortenStatus}}</td>
+				<td style="width: 10px;" data-title="'I'" filter="{indexStatus: 'select'}" filter-data="indexStatusFilterData">{{network.lstIndexStatus | IndexStatus}}</td>
+				<td style="width: 40px;" data-title="'Acrónimo'" filter="{acronym: 'text'}" sortable="'acronym'">{{network.acronym}}</td>
+				<td style="width: 250px;" data-title="'Repositorio'" filter="{name: 'text'}" sortable="'name'">{{network.name}}</td>
+				<td style="width: 150px;" data-title="'Institución'" filter="{institution: 'text'}" sortable="'institutionName'">{{network.institution}}</td>
+
+				<td data-title="'Cosecha'">
+				
+			        <div class="row">
+			        
+			        	
+			        	<div class="col-md-1 col-lg-1" style="margin-top:5px;">
+			        	
+	        				<div ng-if="network.running.length > 0" style="margin-left:5px; margin-top:5px;">
+	        					<i class="fa fa-spinner faa-spin animated" aria-hidden="true"></i> 
+	        				</div>
+	        				
+	        				
+	        				<div ng-if="network.running.length == 0 && network.queued.length > 0" style="margin-left:5px; margin-top:5px;">
+	        					<i class="fa fa-pause animated" aria-hidden="true"></i> 
+	        				</div>
+	        	
+	        	
+		             		<div ng-if="network.running.length == 0  && network.queued.length == 0 && network.lgkSnapshotID == null" class="btn btn-xs btn-danger small" 
+		             		uib-popover="ATENCIÓN!!!: No exiten cosechas válidas. Este repositorio no será publicado." popover-trigger="'outsideClick'" popover-append-to-body="true">
+								<i class="fa fa-warning faa-flash animated" aria-hidden="true"></i> 
+							</div>	
+															
+							<div ng-if="network.running.length == 0 && network.queued.length == 0 && network.lstSnapshotStatus == 'VALID'" class="btn btn-xs btn-success small" 
+							uib-popover="La última cosecha fue transformada/validada exitosamente." popover-trigger="'outsideClick'" popover-append-to-body="true">
+								<i class="fa fa-check-square-o" aria-hidden="true"></i> 
+							</div>	
+							
+							<div ng-if="network.running.length == 0 && network.queued.length == 0 && network.lgkSnapshotID != null && ( network.lstSnapshotStatus == 'HARVESTING_FINISHED_VALID' || network.lstSnapshotStatus == 'HARVESTING_STOPPED')" 
+							class="btn btn-xs btn-warning small" 
+							uib-popover="Existe cosecha válida anterior ({{network.lgkSnapshotDate}}) pero la última cosecha resultó errónea o fue interrumpida." popover-trigger="'outsideClick'" popover-append-to-body="true">
+								<i class="fa fa-exclamation-triangle" aria-hidden="true"></i> 
+							</div>	
+						
+						</div>
+			        
+			             <div class="col-md-10 col-lg-5">
+								<div> {{network.lstSnapshotStatus | Status }}</div>
+								<div class="small"><i class="fa fa-clock-o"> </i> <span class="c-white">{{network.lstSnapshotDate}}</span></div>
+						</div>
+						
+						
+			       
+					
+						<div class="col-md-12 col-lg-5">
+							
+								<div class="btn btn-xs btn-info" ng-click="openHistory(network.networkID)">
+									<i class="fa fa-history" aria-hidden="true"></i> 
+								</div>	
+								<div class="btn btn-xs btn-info" ng-class="{'disabled': network.running.length == 0}" uib-popover="{{network.running[0]}}" popover-title="Proceso en ejecución" popover-trigger="'outsideClick'" popover-placement="'top'" popover-append-to-body="true">
+									<i class="fa fa-cogs" aria-hidden="true"></i> 
+								</div>		
+								<div class="btn btn-xs btn-info" ng-class="{'disabled': network.queued.length == 0}" uib-popover="{{network.queued}}" popover-title="Procesos encolados" popover-trigger="'outsideClick'" popover-placement="'top'" popover-append-to-body="true">
+									<i class="fa fa-stack-overflow" aria-hidden="true"></i> 
+								</div>	
+								<div class="btn btn-xs btn-info" ng-class="{'disabled': network.scheduled.length == 0}" uib-popover="{{network.scheduled[0]}}" popover-title="Cosecha programada" popover-trigger="'outsideClick'" popover-placement="'top'" popover-append-to-body="true">
+									<i class="fa fa-calendar" aria-hidden="true"></i> 
+								</div>	
+								
+								<div class="btn btn-xs btn-info" ng-class="{'disabled': network.lgkSnapshotID == null}" ui-sref="diagnose({ snapshotID: network.lgkSnapshotID })">
+									<i class="fa fa-ambulance" aria-hidden="true"></i> 
+								</div>
+						    	<div class="small">#: {{network.lstSize}} | V: {{network.lstValidSize}} | T: {{network.lstTransformedSize}}</div>
+						</div>
+					</div>
+	
+				</td>
+
+				<td>
+					<button class="btn btn-primary btn-xs" ui-sref="network.edit({ id: network.networkID })">
+						<i class="fa fa-edit fa-lg"></i>
+					</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<script type="text/ng-template" id="process-list.html">
+<div><ul>
+		<li ng-repeat="process in network.queued">{{process}}</li>
+</ul>		
+</div>
+</script>
+
+

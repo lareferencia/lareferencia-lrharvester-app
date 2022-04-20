@@ -1,0 +1,52 @@
+/* 
+ *  This is the default license template.
+ *  
+ *  File: resource.js
+ *  Author: lmatas
+ *  Copyright (c) 2022 lmatas
+ *  
+ *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
+ */
+HAL.Views.Resource = Backbone.View.extend({
+  initialize: function(opts) {
+    var self = this;
+
+    this.vent = opts.vent;
+
+    this.vent.bind('response', function(e) {
+      self.render(new HAL.Models.Resource(e.resource));
+    });
+
+    this.vent.bind('fail-response', function(e) {
+        try {
+            resource = JSON.parse(e.jqxhr.responseText);
+        } catch(err) {
+            resource = null;
+        }
+        self.vent.trigger('response', { resource: resource, jqxhr: e.jqxhr });
+    });
+  },
+
+  className: 'resource',
+
+  render: function(resource) {
+    var linksView = new HAL.Views.Links({ vent: this.vent }),
+        propertiesView = new HAL.Views.Properties({ vent: this.vent }),
+        embeddedResourcesView 
+
+    propertiesView.render(resource.toJSON());
+    linksView.render(resource.links);
+
+    this.$el.empty();
+    this.$el.append(propertiesView.el);
+    this.$el.append(linksView.el);
+
+    if (resource.embeddedResources) {
+      embeddedResourcesView = new HAL.Views.EmbeddedResources({ vent: this.vent });
+      embeddedResourcesView.render(resource.embeddedResources);
+      this.$el.append(embeddedResourcesView.el);
+    }
+
+    return this;
+  }
+});

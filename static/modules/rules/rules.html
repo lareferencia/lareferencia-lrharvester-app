@@ -1,0 +1,69 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<div ng-controller="rules">
+
+	<div class="row">
+		<div class="col-md-12">
+			<h4>Editando: {{rules_model.name}}</h4>
+			<p>Aquí puede agregar y editar las reglas.</p>
+			<form name="rulesForm" sf-schema="rules_schema" sf-form="rules_form" sf-model="rules_model" ng-submit="on_rules_submit(rulesForm)"></form>
+			
+		</div>
+	</div>
+	
+	<div class="row" ng-if="!is_rules_new" >
+		<div class="col-xs-12">
+	 		<div class="btn-group pull-right" uib-dropdown>
+				
+					<button type="button" class="btn btn-sm btn-primary" uib-dropdown-toggle>
+				    	Agregar una nueva regla
+				    	<span class="glyphicon glyphicon-plus">
+				       
+				    </button>
+				    <ul uib-dropdown-menu role="menu" aria-labelledby="split-button">
+				        <li ng-repeat="ruleDefinition in ruleDefinitionByClassName" role="menuitem"><a ng-click="editRule(rules_model, ruleDefinition, true)" href="">{{ruleDefinition.name}}</a></li>   
+				    </ul>
+			</div>
+		</div>
+	</div>
+	
+	<div ng-if="!is_rules_new" class="row" >
+		<div class="col-xs-12">
+			<table ng-table="rulesTable" class="table table-bordered table-striped table-condensed">
+				<tr ng-repeat="vrule in $data | orderBy:['+runorder', 'getObjectID()']">
+					<td style="width: 20px;" ng-if="type == 'transformer'" td data-title="'Orden'" sortable="'runorder'">{{vrule.runorder}}</td>
+					<td style="width: 200px;" data-title="'Nombre'" sortable="'name'">{{vrule.name}}</td>
+					<td data-title="'Descripción'">{{vrule.description}}</td>
+					<td style="width: 100px;">
+						<button class="btn btn-primary btn-sm"
+							ng-click="editRule(rules_model, vrule,  false)">
+							<span class="fa fa-edit fa-lg"></span>
+						</button>
+						<button class="btn btn-danger  btn-sm" ng-click="deleteTransformerRule(vrule)">
+							<span class="fa fa-trash fa-lg"></span>	
+						</button> 
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+

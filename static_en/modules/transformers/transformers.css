@@ -1,0 +1,35 @@
+/* 
+ *  This is the default license template.
+ *  
+ *  File: transformers.css
+ *  Author: lmatas
+ *  Copyright (c) 2022 lmatas
+ *  
+ *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
+ */
+
+/**
+ * Items
+ * @class items
+ */
+
+.items {
+
+}
+
+.items .title h1 {
+    display: inline-block;
+}
+
+.items .title .btn,
+.items .title .form-control {
+    margin-top: 25px;
+}
+
+.items .filters .active {
+    color: #000;
+}
+
+.items .filters .btn {
+    margin-bottom: 5px;
+}

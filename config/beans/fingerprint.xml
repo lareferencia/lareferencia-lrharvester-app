@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:solr="http://www.springframework.org/schema/data/solr"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+		
+		<bean class="org.lareferencia.core.util.PrefixedRecordFingerprintHelper" scope="singleton">
+			<property name="prefix" value=""/>
+		</bean>
+		
+		
+		<!--  bean class="org.lareferencia.core.util.PrefixedRecordFingerprintHelper" scope="singleton">
+			<property name="prefix" value="oai:agregador.ibict.br"/>
+			<property name="translateMap">
+				<map>
+				<entry key="UFBA-2" value="RI_UFBA"/>
+				<entry key="ITA" value="BDTD_ITA"/>
+				<entry key="UFMG" value="BDTD_UFMG"/>
+				<entry key="UNSP" value="RI_UNESP"/>
+				<entry key="UCB" value="BDTD_UCB"/>
+				<entry key="UFMA" value="BDTD_UFMA"/>
+				<entry key="UFMS" value="RI_UFMS"/>
+				<entry key="UFLA" value="RI_UFLA"/>
+				<entry key="P_PR" value="BDTD_PUC_PR"/>
+				<entry key="INMT" value="RI_INMETRO"/>
+				<entry key="UEPG-25" value="RI_UEPG"/>
+				<entry key="ESPM" value="BDTD_ESPM"/>
+				<entry key="INAT" value="BDTD_INATEL"/>
+				<entry key="INSP" value="BDTD_INSPER"/>
+				<entry key="LNCC" value="BDTD_LNCC"/>
+				<entry key="MB" value="BDTD_MB"/>
+				<entry key="UFGD" value="BDTD_UFGD"/>
+				<entry key="UERJ" value="BDTD_UERJ"/>
+				<entry key="UFRR" value="BDTD_UFRR"/>
+				<entry key="UNAE" value="BDTD_UNAERP"/>
+				<entry key="UCAP" value="BDTD_UNICAP"/>
+				<entry key="UCEN" value="BDTD_UNICENTRO"/>
+				<entry key="UNIF" value="BDTD_UNIFACS"/>
+				<entry key="UPE" value="BDTD_UPE"/>
+				<entry key="PUCR" value="RI_PUC_RS"/>
+				<entry key="CTI" value="RI_CTI"/>
+				<entry key="IFRN" value="RI_IFRN"/>
+				<entry key="METODISTA" value="RI_Metodista"/>
+				<entry key="UFGD-2" value="RI_UFGD"/>
+				<entry key="ENSP" value="RI_ENSP"/>
+				<entry key="UFEI" value="RI_UNIFEI"/>
+				<entry key="UTFP" value="RI_UTFPR"/>
+				<entry key="CFB" value="RI_CFB"/>
+				<entry key="UFMT" value="RI_UFMT"/>
+				<entry key="FUNVIC" value="RI_FUNVIC"/>
+				<entry key="UCSa" value="BDTD_UCSal"/>
+				<entry key="UFSP" value="RI_UNIFESP"/>
+				<entry key="UNB" value="RI_UNB-2"/>
+				<entry key="UFC" value="BDTD_UFC"/>
+				<entry key="CPRM" value="RI_CPRM"/>
+				<entry key="PRIO" value="BDTD_PUC_RIO"/>
+				<entry key="UFSM" value="BDTD_UFSM"/>
+				<entry key="P_RS" value="BDTD_PUC_RS"/>
+				<entry key="EMBR" value="RI_EMBRAPA"/>
+				<entry key="USP" value="BDTD_USP"/>
+				<entry key="URGS" value="BDTD_UFRGS"/>
+				<entry key="UFG-2" value="RI_UFG"/>
+				<entry key="USP-1" value="RI_USP"/>
+				<entry key="UFPR" value="RI_UFPR"/>
+				<entry key="IPEN" value="RI_IPEN"/>
+				<entry key="UNB" value="RI_UNB"/>
+				<entry key="PSP" value="BDTD_PUC_SP"/>
+				<entry key="UFPE" value="RI_UFPE"/>
+				<entry key="CRUZ" value="RI_FIOCRUZ"/>
+				<entry key="UFRN" value="RI_UFRN"/>
+				<entry key="UFV" value="RI_UFV"/>
+				<entry key="UFU" value="RI_UFU"/>
+				<entry key="UEPB-2" value="RI_UEPB"/>
+				<entry key="SCAR" value="RI_UFSCAR"/>
+				<entry key="IPEA" value="RI_IPEA"/>
+				<entry key="UFG" value="BDTD_UFG"/>
+				<entry key="UTFPR-1" value="RI_UTFPR"/>
+				<entry key="FURG" value="RI_FURG"/>
+				<entry key="UFPB" value="BDTD_UFPB"/>
+				<entry key="UFPA" value="RI_UFPA"/>
+				<entry key="UEL" value="BDTD_UEL"/>
+				<entry key="UFJF" value="RI_UFJF"/>
+				<entry key="USIN" value="RI_UNISINOS"/>
+				<entry key="UNIJ" value="RI_UNIJUI"/>
+				<entry key="UFAM" value="BDTD_UFAM"/>
+				<entry key="UFS" value="BDTD_UFS"/>
+				<entry key="UFF-2" value="RI_UFF"/>
+				<entry key="UPM" value="BDTD_Mackenzie"/>
+				<entry key="PGOI" value="BDTD_PUC_GOIAS"/>
+				<entry key="BNDE" value="RI_BNDES"/>
+				<entry key="OEST" value="BDTD_UNIOESTE"/>
+				<entry key="FJP-2" value="RI_FJP"/>
+				<entry key="Krot" value="RI_Kroton"/>
+				<entry key="URPE" value="BDTD_UFRPE"/>
+				<entry key="UDSC" value="BDTD_UDESC"/>
+				<entry key="INPE" value="BDTD_INPE"/>
+				<entry key="UFRJ" value="RI_UFRJ"/>
+				<entry key="UCS" value="RI_UCS"/>
+				<entry key="INPA" value="BDTD_INPA"/>
+				<entry key="METO" value="BDTD_METODISTA"/>
+				<entry key="NOVE" value="BDTD_UNINOVE"/>
+				<entry key="UEPG" value="BDTD_UEPG"/>
+				<entry key="FOR" value="BDTD_UNIFOR"/>
+				<entry key="FURB" value="BDTD_FURB"/>
+				<entry key="ENAP" value="RI_ENAP"/>
+				<entry key="UVAT" value="RI_UNIVATES"/>
+				<entry key="IEN" value="RI_IEN"/>
+				<entry key="UEPB" value="BDTD_UEPB"/>
+				<entry key="UOES" value="BDTD_UNOESTE"/>
+				<entry key="PCAM" value="BDTD_PUC_CAMP"/>
+				<entry key="UFAL" value="RI_UFAL"/>
+				<entry key="UTP" value="BDTD_UTP"/>
+				<entry key="USCS" value="RI_USCS"/>
+				<entry key="MPEG" value="RI_MPEG"/>
+				<entry key="ITAU" value="BDTD_UNITAU"/>
+				<entry key="UVJM" value="RI_UFVJM"/>
+				<entry key="UNIL" value="RI_UNILA"/>
+				<entry key="UPF" value="RI_UPF"/>
+				<entry key="UFER" value="BDTD_UFERSA"/>
+				<entry key="UNIR" value="RI_UNIR"/>
+				<entry key="EST" value="BDTD_EST"/>
+				<entry key="UCPe" value="BDTD_UCPel"/>
+				<entry key="INT" value="RI_INT"/>
+				<entry key="UEFS" value="BDTD_UEFS"/>
+				<entry key="FECP" value="BDTD_FECAP"/>
+				<entry key="UFS" value="RI_UFS"/>
+				<entry key="UFRB-1" value="RI_UFRB"/>
+				<entry key="UFTM" value="BDTD_UFTM"/>
+				<entry key="UFT" value="RI_UFT"/>
+				<entry key="USC" value="BDTD_USC"/>
+				<entry key="FMRP" value="BDTD_FAMERP"/>
+				<entry key="FSA" value="RI_FSA"/>
+				<entry key="ANHE" value="BDTD_ANHEMBI"/>
+				<entry key="FJP" value="BDTD_FJP"/>
+				<entry key="CDTN" value="BDTD_CDTN"/>
+				<entry key="UNFE" value="BDTD_UNIFENAS"/>
+				<entry key="UFMA-2" value="RI_UFMA"/>
+				<entry key="UGRI" value="BDTD_UNIGRANRIO"/>
+				<entry key="UFF" value="BDTD_UFF"/>
+				<entry key="UNEC" value="BDTD_UNEC"/>
+				<entry key="EBM" value="RI_EBM"/>
+				<entry key="IFPB" value="RI_IFPB"/>
+				<entry key="UEA" value="BDTD_UEA"/>
+				<entry key="IBICT" value="RI_IBICT-1"/>
+				<entry key="UFCG" value="BDTD_UFCG"/>
+				<entry key="UFES" value="RI_UFES"/>
+				<entry key="INPA" value="RI_INPA"/>
+				<entry key="UFPL" value="RI_UFPEL"/>
+				<entry key="UFBC" value="RI_UFABC"/>
+				<entry key="IBICT" value="RI_IBICT"/>
+				<entry key="UFOP" value="RI_UFOP"/>
+				<entry key="UFPB" value="RI_UFPB"/>
+				<entry key="UNIP" value="RI_UNIPAMPA"/>
+				<entry key="UFRGS-2" value="RI_UFRGS"/>
+				<entry key="UNSL" value="RI_UNISUL"/>
+				<entry key="CAMP" value="RI_UNICAMP"/>
+				<entry key="UFSC" value="RI_UFSC"/>
+				<entry key="CEUB" value="RI_UNICEUB"/>
+				<entry key="UCB-2" value="RI_UCB"/>
+				<entry key="SANT" value="BDTD_UNISANTOS"/>
+				<entry key="FGV" value="RI_FGV"/>
+				</map>
+			</property>
+		</bean-->
+
+</beans>

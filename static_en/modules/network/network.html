@@ -1,0 +1,111 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<div ng-controller="network">
+	
+	
+	<div class="row" style="margin-left:5px;">
+	
+		<div class="col-md-12">
+		
+			<div class="row" style="margin-bottom:20px;">
+				<h4 style="margin-top:40px;">Edit repository: <b>{{network_model.name}}</b></h4>
+			
+				<button class="btn btn-info btn-sm pull-right" ui-sref="start()">
+					<span> Back </span>
+				</button>
+			</div>
+			
+			<div ng-if="is_new" class="row" style="margin-bottom:20px;">
+				<h5 class="pull-left"><b>Profile:</b> {{attr_profile.name}}</h5>	
+				<div class="btn-group pull-right" uib-dropdown>
+					
+						<button type="button" class="btn btn-sm btn-basic" uib-dropdown-toggle>
+					    	Change profile   
+					    </button>
+					    <ul uib-dropdown-menu role="menu" aria-labelledby="split-button">
+					        <li ng-repeat="profile in network_attr_profiles" role="menuitem"><a ng-click="changeProfile(profile)" href="">{{profile.name}}</a></li>   
+					    </ul>
+				</div>
+			</div>
+			
+			<div class="row">
+			
+				<ul class="nav nav-tabs">
+				   <li ng-class="{ active: isSet(1) }">
+				     <a href ng-click="setTab(1)">Main</a>
+				   </li>
+				   <li ng-class="{ active: isSet(2) }">
+				     <a href ng-click="setTab(2)">Validators/Transformers</a>
+				   </li>
+				   <li ng-class="{ active: isSet(3) }">
+				     <a href ng-click="setTab(3)">Profile</a>
+				   </li>
+				   <li ng-class="{ active: isSet(4) }">
+				     <a href ng-click="setTab(4)">Actions</a>
+				   </li>
+				</ul>
+				
+				 <div ng-show="isSet(1)">
+				    <form name="networkEditForm" sf-schema="network_schema" sf-form="network_form" sf-model="network_model" ng-submit="onSubmit(networkEditForm, networkAttrForm, networkValidationEditForm, networkPropertiesEditForm)"></form>
+				  </div>
+				  
+				 <div ng-show="isSet(2)">
+			    	<form name="networkValidationEditForm" sf-schema="network_validation_schema" sf-form="network_validation_form" sf-model="network_validation_model" ng-submit="onSubmit(networkEditForm, networkAttrForm, networkValidationEditForm, networkPropertiesEditForm)"></form>
+				 </div>
+				
+				  
+				 <div ng-show="isSet(3)">
+				   <form name="networkAttrForm" sf-schema="attr_schema" sf-form="attr_form" sf-model="network_model.attributes" ng-submit="onSubmit(networkEditForm, networkAttrForm, networkValidationEditForm, networkPropertiesEditForm)"></form>
+				 </div>
+				 
+				 <div ng-show="isSet(4)">
+					 <div class="row">
+							<div class="col-xs-6"><form name="networkPropertiesEditForm" sf-schema="np_schema" sf-form="np_form" sf-model="np_model" ng-submit="onSubmit(networkEditForm, networkAttrForm, networkValidationEditForm, networkPropertiesEditForm)"></form></div>
+							<div ng-if="!is_new" style="background-color:lavender;"class="col-xs-3">
+
+									<h5 style="margin-top:60px;" >Execute tasks</h5>
+									<ul class="action_list">
+											<li class="action_list_item" style="margin-top: 5px;" ng-repeat="action in networkActions">
+												
+												<a  class="action_button" href="" ng-confirm-click="Execute {{action.description}} ?" confirmed-click="executeNetworkAction(action.name, false, network_id, networkActionCallback)">{{action.description}}</a>
+												<div style="float:right; margin-right: 10px;">
+													<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="Execute {{action.description}} FULL ?" confirmed-click="executeNetworkAction(action.name, false, network_id, networkActionCallback)">Full</a>
+													<span ng-if="action.incremental">/</span>
+													<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="Execute {{action.description}} INCREMENTAL?" confirmed-click="executeNetworkAction(action.name, true, network_id, networkActionCallback)"> Incr </a>
+												</div>
+											</li>	
+									</ul>
+							</div>
+						</div>
+				 </div>
+													
+				<div ng-if="saved" class="alert alert-success" role="alert">Changes succesfully saved</div>
+				<div ng-if="!is_form_valid" class="alert alert-danger" role="alert">Invalid or missing data, not saved</div>
+				<div ng-if="save_error" class="alert alert-danger" role="alert">Error saving data - {{save_error_message}}</div>
+	 			<button class="btn btn-info" ui-sref="start()">
+					<span> Back </span>
+				</button>
+			</div>
+			
+
+		</div>
+	</div>
+</div>

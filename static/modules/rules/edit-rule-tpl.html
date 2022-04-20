@@ -1,0 +1,38 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<div class="modal-header">
+	<h3 class="modal-title">Edición de regla: {{rule.name}}</h3>
+</div>
+<div class="modal-body">
+	<div class="row">
+		<div class="col-xs-12">
+		<h3 ng-if="is_rule_new" style="color:green;">NUEVA!</h3>
+		    <h4 ng-if="rule_definition!=null"> Tipo de regla: {{rule_definition.name}}</h4>
+			<form name="ruleDataForm" sf-schema="rule_data_schema" sf-form="rule_data_form" sf-model="rule_data_model" ng-submit="on_rule_submit(ruleDataForm,ruleEditForm)"></form>
+			<form name="ruleEditForm" sf-schema="rule_schema" sf-form="rule_form" sf-model="rule_model" ng-submit="on_rule_submit(ruleDataForm,ruleEditForm)"></form>
+			<div ng-if="is_rule_saved" class="alert alert-success" role="alert">Los datos han sido grabados con éxito</div>
+			<div ng-if="rule_save_error" class="alert alert-danger" role="alert">No se han podido guardar los datos - {{rule_save_error_message}}</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button class="btn btn-warning" type="button" ng-click="cancel()">Cerrar</button>
+</div>

@@ -1,0 +1,365 @@
+angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  function() {
+	
+
+	var _PROFILES = [  
+	
+	{
+	  name: "RCAAP Profile",
+      className: "org.lareferencia.backend.network.RCAAPNetworkAttributes",
+      form: [
+			{ type: "submit", title: "Guardar cambios" },
+			 {
+		      "type": "tabs",
+		      "tabs": [
+			      {
+                "title": "Dados",
+			          "items": [
+			        	  "email",
+			        	  "url",
+                          {"key":"country",
+                           "type":"select",
+                            "titleMap":{
+                                "portugal":"Portugal(deprecated)",								
+								"brasil":"Brasil(deprecated)",
+								//ISO 3166 Codes (Countries)	
+                                "PT":"Portugal",
+                                "BR":"Brasil",
+								"AR":"Argentina",
+								"CL":"Chile",
+								"CO":"Colômbia",
+								"CR":"Costa Rica",
+								"EC":"Ecuador",
+								"SV":"El Salvador",
+								"MX":"México",
+								"PE":"Perú",
+                                }
+                            },
+			        	  {"key":"type", "type":"select","titleMap":{
+                          						"Repositório Institucional":"Repositório Institucional",
+                          						"Revista Científica":"Revista Científica",
+                          						"Repositório de Dados":"Repositório de Dados",
+                          						"Portal Agregador":"Portal Agregador"
+                          						}},
+			        	  {"key":"software", "type":"select", "titleMap":{
+                          							"DSpace":"DSpace",
+                          							"Vufind":"Vufind",
+                          							"OJS":"OJS",
+                          							"CKAN":"CKAN",
+                          							"EPrints":"Eprints",
+                          							"Invenio":"Invenio",
+                          							"Dataverse":"Dataverse",
+                          							"Desenvolvimento à medida":"Desenvolvimento à medida",
+                          							"Outro":"Outro"
+                          							}},
+			        	  "tags",
+			        	  "description_pt",
+                          "description_en",
+                          "directoryURL",
+                          "handle/DOI",
+			          ]
+			        },
+
+			        {
+                "title": "Instituição",
+			          "items": [
+                          "institutionURL",
+                          "isni",
+                          "ringold",
+                          "ror",
+                          "wikidata",
+                          "grid",
+                          "nipc"
+			          ]
+			        },
+
+			        {
+                "title": "Repositório",
+			          "items": [
+					      "handlePrefix",
+			        	  "roarMap",
+			        	  "openDoar",
+			          ]
+			        },
+              {
+                "title": "Revista",
+                "items": [
+				  "doiPrefix",
+                  "sherpa",
+                  "eissn",
+                  "pissn",
+                  "issnL",
+                ]
+              },
+			        {
+                "title": "Interoperabilidade",
+			          "items": [
+			        	  "cienciaVitae",
+			        	  "cienciaId",
+			        	  "openAIRE",
+			        	  "openAIRE4",
+			        	  "driver",
+			        	  "fct",
+			        	  "thesis",
+			        	  "fulltext",
+			        	  "accessibleContent",
+			          ]
+			        },
+			        {
+                "title": "Notas internas",
+			          "items": [
+                            "responsibleName",
+                            "phone",
+			        	  {
+			                  "key":"internalNotes",
+			                  "type": "textarea"
+			              }
+
+			          ]
+				     }
+			      ]
+			    },
+
+			    { type: "submit", title: "Guardar cambios" }
+      ],
+      schema: {
+        type: "object",
+        properties: {
+
+          acronym: {
+            type: "string",
+            minLength: 2,
+            title: "Acrónimo do Recurso*",
+            description: "Acrónimo do recurso que será agregado. Deve ser único no sistema",
+            required: true,
+            unique: true
+          },
+          email: {
+            type: "string",
+            title: "Email do Recurso*",
+            description: "Email principal do contacto do recurso",
+            required: true
+          },
+          url: {type: "string", title: "Url do Recurso*", description: "Endereço web do recurso", required: true},
+          institutionName: {
+            type: "string",
+            minLength: 2,
+            title: "Nome da Instituição*",
+            description: "Nome da instituição à qual o recurso está associado",
+            required: true
+          },
+          isni: {
+            type: "string",
+            minLength: 2,
+            title: "Identificador ISNI da instituição",
+            description: "Código ISNI que identifica a instituição associada ao recurso (exemplo: 0000000121913202)",
+            required: false,
+            "default": ""
+          },
+          ringold: {
+            type: "string",
+            minLength: 2,
+            title: "Identificador Ringgold da instituição",
+            description: "Código Ringgold que identifica a instituição associada ao recurso",
+            required: false,
+            "default": ""
+          },
+          ror: {
+            type: "string",
+            minLength: 2,
+            title: "Identificador ROR da instituição",
+            description: "Identificador ROR da instituição (sem o serviço de resolução, exemplo: 04b08hq31)",
+            required: false,
+            "default": ""
+          },
+          institutionURL: {
+            type: "string",
+            minLength: 2,
+            title: "URL da instituição",
+            description: "Endereço URL da instituição",
+            required: true,
+            "default": ""
+          },		  
+          wikidata: {
+            type: "string",
+            minLength: 2,
+            title: "Identificador Wikidata da instituição",
+            description: "Identificador wikidata da instituição (sem o serviço de resolução, exemplo: Q6041322)",
+            required: false,
+            "default": ""
+          },
+          grid: {
+            type: "string",
+            minLength: 2,
+            title: "Identificador grid da instituição",
+            description: "Identificador grid da instituição (sem o serviço de resolução, exemplo: grid.418346.c)",
+            required: false,
+            "default": ""
+          },
+          grid: {
+            type: "string",
+            minLength: 2,
+            title: "Identificador NIPC da instituição",
+            description: "Identificador NIPC/NIF da instituição",
+            required: false,
+            "default": ""
+          },
+          responsibleName: {
+            type: "string",
+            minLength: 2,
+            title: "Responsável*",
+            description: "Nome do responsável do recurso",
+            required: true
+          },
+          phone: {type: "string", title: "Telefone*", description: "Telefone do responsável*", required: true},
+          country: {
+            type: "string",
+            title: "País*",
+            description: "Escolha um País associado ao recurso",
+            required: true
+          },
+          type: {
+            type: "string",
+            title: "Tipo*",
+            description: "Indique o tipo de recurso na lista fornecida",
+            required: true
+          },
+          software: {
+            type: "string",
+            title: "Software*",
+            description: "Indique o sistema no qual se baseia o recurso",
+            required: true
+          },
+
+          description_pt: {
+            type: "string",
+            title: "Descrição em português*",
+            description: "Forneça uma descrição do recurso em português",
+            required: true
+          },
+          description_en: {
+            type: "string",
+            title: "Descrição em Inglês*",
+            description: "Forneça uma descrição do recurso em inglês",
+            required: true
+          },
+          directoryURL: {
+            type: "string",
+            title: "URL do Directório Luso-Brasileiro",
+            description: "URL do recurso no Diretório Luso-Brasileiro de Acesso Aberto (http://diretorio.rcaap.pt/)",
+            required: false,
+            "default": ""
+          },
+		  handlePrefix: {
+            type: "string",
+            title: "Prefixo do Handle (https://hdl.handle.net/?) ou DOI",
+            description: "Prefixo do Handle ou de DOI, na forma: 10.1234 ",
+            "default": ""
+          },
+		  doiPrefix: {
+            type: "string",
+            title: "Prefixo do DOI (https://doi.org/?)",
+            description: "Prefixo do DOI, na forma: 10.1234 ",
+            "default": ""
+          },		  
+          roarMap: {
+            type: "string",
+            title: "Política/Mandato",
+            description: "Endereço do registo da político no ROARMAP (http://roarmap.eprints.og)",
+            "default": ""
+          },
+          openDoar: {
+            type: "string",
+            title: "OpenDOAR",
+            description: "Endereço do registo do repositório no OpenDOARi (http//www.opendoar.org)",
+            required: false,
+            "default": ""
+          },
+          sherpa: {
+            type: "string",
+            title: "Endereço do registo da revista no Sherpa/Romeo (http://www.sherpa.ac.uk/romeo)",
+            description: "Selecione as tags que se aplicam ao recurso",
+            required: false,
+            default: ""
+          },
+          pissn: {
+            type: "string",
+            title: "p-ISSN ",
+            description: "Indique o identificador associados à revista cientifica",
+            required: false,
+            "default": ""
+          },
+          eissn: {
+            type: "string",
+            title: "e-ISSN ",
+            description: "Indique o identificador associados à revista cientifica",
+            required: false,
+            "default": ""
+          },
+          issnL: {
+            type: "string",
+            title: "ISSN-L",
+            description: "Indique o identificador associados à revista cientifica",
+            required: false,
+            "default": ""
+          },
+          /*handle: {
+            type: "string",
+            title: "Handle / Doi ",
+            description: "Indique o prefixo handle ou doi do recurso. Exemplo: 10400.26 / 12467",
+            required: false,
+            "default": ""
+          },*/
+
+          tags: {
+            "type": "array",
+            title: "Tags",
+            description: "Selecione as tags que se aplicam ao recurso",
+            "items": {
+                "type": "string",
+                "title": "Option",
+                "enum": [
+					"repository","journal","brasil","SARI","SARC","research_dataset","hospital","institute","lab","university","portal","comum","la_referencia"
+                    ]
+                }
+          },
+
+          driver: {"type": "boolean", "title": "Driver", required: false, "default": false},
+          openAIRE: {"type": "boolean", "title": "OpenAIRE 2.0", required: false, "default": false},
+          fulltext: {"type": "boolean", "title": "Texto Integral (full-text)", required: false, "default": false},
+          fct: {"type": "boolean", "title": "FCT", required: false, "default": false},
+          thesis: {"type": "boolean", "title": "Teses e Dissertações", required: false, "default": false},
+          cienciaVitae: {"type": "boolean", "title": "Ciência Vitae", required: false, "default": false},
+          cienciaId: {"type": "boolean", "title": "Ciência ID", required: false, "default": false},
+          openAIRE4: {"type": "boolean", "title": "OpenAIRE 4.0", required: false, "default": false},
+          accessibleContent: {"type": "boolean", "title": "Conteúdos Acessíveis", required: false, "default": false},
+
+          internalNotes: {
+            type: "string",
+            title: "Notas Internas",
+            description: "Informação interna sobre o recurso",
+            required: false,
+            "default": ""
+          }
+
+
+        }
+      } /* fin schema */
+    }
+    /** fin de profile */
+	
+	
+]; //***** fin de _PROFILES ******/// 
+	
+
+
+	/** mapeo de las definiciones de reglas a un objeto **/
+  var profiles_defs_by_class = {};
+	
+	
+	$.map( _PROFILES, function(profile, i ) { profiles_defs_by_class[profile.className] = profile; });
+	
+	/** export del objeto con las definiciones de reglas **/
+	this.profileDefinitionByClassName = profiles_defs_by_class;
+	this.profileDefinitionList = _PROFILES;
+
+});

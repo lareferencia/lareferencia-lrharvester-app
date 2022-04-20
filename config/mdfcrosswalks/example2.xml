@@ -1,0 +1,144 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<metadata
+    xmlns="http://www.lyncode.com/xoai">
+    <element name="datacite">
+        <element name="titles">
+            <element name="title">
+                <field name="value">«Lo que Maggiolo proponía no era una quimera» Entrevista a Rafael Guarga</field>
+            </element>
+        </element>
+        <element name="creators">
+            <element name="creator">
+                <element name="creatorName">
+                    <field name="value">Markarian, Vania</field>
+                </element>
+            </element>
+            <element name="creator">
+                <element name="creatorName">
+                    <field name="value">Secco, Lucía</field>
+                </element>
+            </element>
+            <element name="creator">
+                <element name="creatorName">
+                    <field name="value">Balás, Mariel</field>
+                </element>
+            </element>
+        </element>
+        <element name="subjects">
+            <element name="subject">
+                <field name="value">POLÍTICA UNIVERSITARIA</field>
+            </element>
+            <element name="subject">
+                <field name="value">EDUCACIÓN SUPERIOR</field>
+            </element>
+        </element>
+        <element name="rights">
+            <field name="value">Las obras depositadas en el Repositorio se rigen por la Ordenanza de los Derechos de la Propiedad Intelectual de la Universidad De La República. (Res. Nº 91 de C.D.C. de 8/III/1994 – D.O. 7/IV/1994) y por la Ordenanza del Repositorio Abierto de la Universidad de la República (Res. Nº 16 de C.D.C. de 07/10/2014)</field>
+            <field name="rightsURI"/>
+        </element>
+        <element name="rights">
+            <field name="value">info:eu-repo/semantics/openAccess</field>
+            <field name="rightsURI"/>
+        </element>
+        <element name="rights">
+            <field name="value">Licencia Creative Commons – Reconocimiento (CC BY)</field>
+            <field name="rightsURI"/>
+        </element>
+        <element name="identifier">
+            <field name="value">http://hdl.handle.net/20.500.12008/10877</field>
+            <field name="identifierType">Handle</field>
+        </element>
+        <element name="alternateIdentifiers">
+            <element name="alternateIdentifier">
+                <field name="value">oai:colibri.udelar.edu.uy:20.500.12008/10877</field>
+                <field name="alternateIdentifierType">OAI</field>
+            </element>
+        </element>
+        <element name="relatedIdentifiers">
+            <element name="relatedIdentifier">
+                <field name="value">Markarian, V., Secco, L., Balás, M. "«Lo que Maggiolo proponía no era una quimera» Entrevista a Rafael Guarga". InterCambios. Dilemas y transiciones de la Educación Superior [en linea]. 2017 v. 4, n.1 pp. 10-19</field>
+                <field name="relatedIdentifierType">N/A</field>
+            </element>
+            <element name="relatedIdentifier">
+                <field name="value">2301-0126</field>
+                <field name="relatedIdentifierType">N/A</field>
+            </element>
+            <element name="relatedIdentifier">
+                <field name="value">http://hdl.handle.net/20.500.12008/10877</field>
+                <field name="relatedIdentifierType">Handle</field>
+            </element>
+        </element>
+        <element name="dates">
+            <element name="date">
+                <element name="Issued">
+                    <field name="value">2018-01-03T18:33:30Z</field>
+                </element>
+                <element name="Available">
+                    <field name="value">2018-01-03T18:33:30Z</field>
+                </element>
+                <element name="Accepted">
+                    <field name="value">2017</field>
+                </element>20171229
+            </element>
+        </element>
+    </element>
+    <element name="dc">
+        <element name="description">
+            <field name="value">La discusión del ambicioso plan de reforma institucional presentado por el Rector Óscar Maggiolo a mediados de 1967 fue, sin lugar a dudas, uno de los debates centrales de la Universidad de la República (Udelar) en el último medio siglo. La institución se apresta a conmemorarlo en agosto de este año con una serie de charlas que buscan traer al presente algunos de sus temas más importantes.</field>
+        </element>
+        <element name="language">
+            <field name="value">spa</field>
+        </element>
+        <element name="format">
+            <field name="value">application.pdf</field>
+        </element>
+        <element name="publisher">
+            <field name="value">CSE : ANEP-CFE</field>
+        </element>
+        <element name="source">
+            <field name="value">reponame:COLIBRI</field>
+        </element>
+        <element name="source">
+            <field name="value">instname:Universidad de la República</field>
+        </element>
+        <element name="source">
+            <field name="value">instacron:UDELAR</field>
+        </element>
+    </element>
+    <element name="oaire">
+        <element name="resourceType">
+            <field name="value">journal article</field>
+            <field name="uri">http://purl.org/coar/resource_type/c_6501</field>
+            <field name="resourceTypeGeneral">literature</field>
+        </element>
+        <element name="resourceType">
+            <field name="value">other</field>
+            <field name="uri">http://purl.org/coar/resource_type/c_6501</field>
+            <field name="resourceTypeGeneral">literature</field>
+        </element>
+
+        <element name="version">
+            <field name="value">VoR</field>
+            <field name="uri">http://purl.org/coar/version/c_970fb48d4fbd8a85</field>
+        </element>
+        <element name="fundingReferences"/></element>
+</metadata>

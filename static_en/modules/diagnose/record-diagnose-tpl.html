@@ -1,0 +1,142 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<style>
+p { margin: 0px;}
+
+</style>
+
+
+
+
+
+<div class="modal-header">
+	<h3 class="modal-title">Detalles de validación: {{record.identifier}}</h3>
+</div>
+<div class="modal-body">
+	
+	
+	
+	
+	<div class="row">
+		<div class="col-xs-12">
+			<h3><span class="label label-{{ record.isValid | successOrDanger }}">registro {{record.isValid ? 'válido' : 'inválido' }} </span></h3>
+		
+	
+		<!-- TABSET -->
+ 		<uib-tabset active="activeJustified" justified="true">
+ 		
+    	<uib-tab index="0" heading="Validación">
+    	
+    	
+    		<h4>Resultado de evaluación de reglas para este registro</h4>
+    	
+    	
+			<div ng-repeat="ruleID in record.validRulesID">
+				<div class="alert alert-success">
+					<div class="row">
+						<div class="col-lg-8">
+							<b>Nombre: </b>{{rulesMap[ruleID].name}}
+						</div>
+						<div class="col-lg-4">
+							<b>Mandatoria: </b>{{rulesMap[ruleID].mandatory}}
+						</div><div class="col-lg-4">
+							
+					</div>
+					
+					
+					<div class="row">
+						
+						
+						</div>
+						<div class="col-lg-12">
+							<b>Cuantificador: </b>{{rulesMap[ruleID].quantifier}}
+						</div>
+					</div>					
+					<div class="row">
+						<div class="col-lg-12">
+							<ng-repeat ng-repeat="occr in record.validOccurrencesByRuleID[ruleID] track by $index">
+								<p><span style="margin-right:5px;" class="fa fa-check-square-o"></span>{{occr}}</p>
+							</ng-repeat>
+							<ng-repeat ng-repeat="occr in record.invalidOccurrencesByRuleID[ruleID] track by $index">
+								<p><span style="margin-right:5px;" class="fa fa-warning faa-flash animated"></span>{{occr}}</p>
+							</ng-repeat>						
+						</div>
+					</div>
+					
+				</div>
+			</div>
+			<div ng-repeat="ruleID in record.invalidRulesID">
+				<div class="alert" ng-class="{ 'alert-danger' : rulesMap[ruleID].mandatory, 'alert-warning' : !rulesMap[ruleID].mandatory}">
+					
+					<div class="row">
+						<div class="col-lg-8">
+							<b>Nombre: </b>{{rulesMap[ruleID].name}}
+						</div>
+						<div class="col-lg-4">
+							<b>Mandatoria: </b>{{rulesMap[ruleID].mandatory}}
+						</div><div class="col-lg-4">
+							
+					</div>
+					
+					
+					<div class="row">
+						
+						
+						</div>
+						<div class="col-lg-12">
+							<b>Cuantificador: </b>{{rulesMap[ruleID].quantifier}}
+						</div>
+					</div>					
+					
+					<div class="row">
+						<div class="col-lg-12">
+							<ng-repeat ng-repeat="occr in record.validOccurrencesByRuleID[ruleID] track by $index">
+								<p><span style="margin-right:5px;" class="fa fa-check-square-o"></span>{{occr}}</p>
+							</ng-repeat>
+							<ng-repeat ng-repeat="occr in record.invalidOccurrencesByRuleID[ruleID] track by $index">
+								<p><span style="margin-right:5px;" class="fa fa-warning faa-flash animated"></span>{{occr}}</p>
+							</ng-repeat>						
+						</div>
+					</div>
+					
+					
+				</div>
+			</div>
+				
+		</uib-tab>
+
+
+    	<uib-tab index="1" heading="XML del registro transformado">
+    	
+    		<div hljs hljs-source="recordMetadata"></div>
+    	</uib-tab>
+	
+		</uib-tabset>
+			
+		
+		
+		
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button class="btn btn-warning" type="button" ng-click="cancel()">Cerrar</button>
+</div>

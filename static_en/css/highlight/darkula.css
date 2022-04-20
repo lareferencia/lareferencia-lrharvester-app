@@ -1,0 +1,16 @@
+/* 
+ *  This is the default license template.
+ *  
+ *  File: darkula.css
+ *  Author: lmatas
+ *  Copyright (c) 2022 lmatas
+ *  
+ *  To edit this license information: Press Ctrl+Shift+P and press 'Create new License Template...'.
+ */
+
+/*
+  Deprecated due to a typo in the name and left here for compatibility purpose only.
+  Please use darcula.css instead.
+*/
+
+@import url('darcula.css');

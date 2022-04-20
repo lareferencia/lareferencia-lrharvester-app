@@ -1,0 +1,111 @@
+## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
+spring.datasource.username=lrharvester
+spring.datasource.password=lrharvester
+
+#rest port
+server.port=8090
+# UNCOMMENT if you use a Apache proxy pass and need Spring to handle request types
+# server.forward-headers-strategy = framework
+# server.servlet.context-path = /
+spring.data.rest.basePath=/rest
+
+spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
+spring.jackson.serialization.fail-on-empty-beans=false
+
+# The SQL dialect makes Hibernate generate better SQL for the chosen database
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+#spring.jpa.show-sql=true
+#spring.jpa.properties.hibernate.format_sql=true
+#
+
+# metadata store
+metadata.store.class = MetadataStoreSQLImpl
+
+# hashing method used by metadata store: MD5Hashing, XXHash64Hashing 
+hashing.algorithm.class = MD5Hashing
+
+# spring security
+
+# # comment this to turn on security
+# spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+spring.security.user.name=admin
+spring.security.user.password=admin
+spring.security.user.roles=USER
+
+# Hibernate ddl auto (create, create-drop, validate, update)
+spring.jpa.hibernate.ddl-auto = none
+
+config.dir.path = config
+# you can specify the location for the index config file
+entity.indexing.configfile = config/entity-indexing-config.xml
+# you can specify which entities should be indexed (remember to separate them using commas) 
+entity.indexing.entities=Person,Publication 
+actions.beans.filename=actions.xml
+
+downloaded.files.path=/tmp
+
+default.solr.server = http://localhost:8983/solr
+
+# metadata store format (xoai)
+metadata.store.format = xoai
+
+# frontend indexer config
+frontend.solr.url=http://localhost:8983/solr/biblio
+thesis.solr.url=http://localhost:8983/solr/biblio
+
+# XOAI indexer config
+xoai.solr.url=http://localhost:8983/solr/oai
+
+# Validation Stats config
+vstats.solr.server=http://localhost:8983/solr/
+vstats.solr.core=vstats
+
+#harvester config
+harvester.max.retries = 10
+harvester.retry.seconds = 3
+harvester.retry.factor = 2
+
+# set sizes according to #repositories
+scheduler.pool.size = 10
+taskexecutor.pool.size = 10
+
+#tiempo de limpieza de procesos terminados en milisegundos
+taskmanager.clean.interval = 60000
+taskmanager.concurrent.tasks = 4
+taskmanager.max_queuded.tasks = 32
+
+#reponame e instname
+reponame.fieldname=dc:source
+reponame.prefix=reponame:
+
+instname.fieldname=dc:source
+instname.prefix=instname:
+
+############################ RCAAP ##################################
+
+# Historic Stats config
+historic.solr.server=http://localhost:8983/solr/
+historic.solr.core=historic
+
+network.solr.server=http://localhost:8983/solr/
+network.solr.core=network
+
+# projects indexer config
+project.solr.server=http://localhost:8983/solr
+project.solr.core=projects
+
+#project
+project.file.path = /etc/lrharvester/project/projects.xlsx
+
+#historic
+historic.access.field=dc.rights.access.*
+historic.access.open=http://purl.org/coar/access_right/c_abf2
+historic.access.restricted=http://purl.org/coar/access_right/c_16ec
+historic.access.embargoed=http://purl.org/coar/access_right/c_f1cf
+historic.access.metadataonly=http://purl.org/coar/access_right/c_14cb
+
+#entity
+entity.solr.url = http://localhost:8983/solr/entity

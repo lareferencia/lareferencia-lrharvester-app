@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+
+    <bean id="mdFormatTranformationService" class="org.lareferencia.core.metadata.MDFormatTransformerService"
+        scope="prototype">
+        <property name="transformers">
+            <list>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="imf"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_dc2xoai.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_dc"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_dc2xoai.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="mets"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/mets2xoai.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="mtd-br"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/mtd-br2xoai.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="mtd2-br"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/mtd2-br2xoai.xsl"/>
+                </bean>
+
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="provider"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2provider.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="vufind"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2vufind.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="vufind4"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2vufind4.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_dc"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_dc2xoai.xsl"/>
+                </bean>
+                <!-- Custom Bean for transforming from oai_dc to xoai_openaire -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_dc"/>
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_dc2xoai_openaire.xsl"/>
+                </bean>
+                <!-- Custom Bean for transforming from openaire 4 to xoai_openaire -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_openaire"/>
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_openaire2xoai_openaire.xsl"/>
+                </bean>
+                <!-- Custom Bean for transforming from openaire 4 jats to xoai_openaire  -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_openaire_jats"/>
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_openaire_jats2xoai_openaire.xsl"/>
+                </bean>
+                <!-- Custom Bean for transforming from dspace xoai to xoai_openaire  -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2xoai_openaire.xsl"/>
+                </bean>
+                <!-- RCAAP: Custom Bean for RCAAP legacy core transformation -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="rcaap"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2rcaap.xsl"/>
+                </bean>
+                <!-- RCAAP: Custom Bean for RCAAP core transformation -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="rcaap"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2rcaap_index.xsl"/>
+                </bean>
+                <!-- LAREFERENCIA: XOAI OpenAIRE Entity extraction -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="entities-lareferencia"/>
+                    <constructor-arg type="String"
+                                     value="${config.dir.path}/mdfcrosswalks/xoai_openaire2lareferencia_entities.xsl"/>
+                </bean>
+                <!-- RCAAP: XOAI OpenAIRE Entity extraction -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="entities-rcaap"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2rcaap_entities.xsl"/>
+                </bean>
+                <!-- RCAAP: Entity extraction from Network Attributes -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="network-atributtes"/>
+                    <constructor-arg type="String" value="entities-rcaap"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/larefnetwork2entities-rcaap.xsl"/>
+                </bean>
+                <!-- RCAAP: Custom Bean for xoai-openaire to Provider/oai-pmh -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="provider"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai-openaire2provider.xsl"/>
+                </bean>		
+                <!--  RCAAP: Custom Bean for entities to solr entity index -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="entitiy_rcaap"/>
+                    <constructor-arg type="String" value="entity_index"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/rcaap_entity2index.xsl"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+</beans>

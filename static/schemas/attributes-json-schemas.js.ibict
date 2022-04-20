@@ -1,0 +1,273 @@
+angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  function() {
+	
+
+	var _PROFILES = [  
+	
+	{
+	  name: "Repositórios e Bibliotecas",
+      className: "org.lareferencia.backend.network.IbictRepositoryNetworkAttributes",
+      form: [
+			{ type: "submit", title: "Guardar cambios" },
+			 {
+		      "type": "tabs",
+		      "tabs": [
+			    { "title": "Dados principais",
+			      "items": [
+			    	  	
+			    	  	  {
+			        	   "key":"institution_type",
+                           "type":"select",
+                           "titleMap":{ "PUB":"Instituição pública", "ONG":"Instituição não governamental (ONG)","PRI":"Instituição Privada"}
+	                      },
+			    	  
+	                      "state",
+	                      "city",
+	                      "sector",
+	                      "address",
+	                      "postal_code",
+	                      "telephone",
+			      "latitude",
+			      "longitude",
+	                      "source_url",
+	                      "oai_url",
+			      "repository_id",
+	                      "contact_email",
+	                      "content_type",
+			      "source_type",
+	                      "language",
+	                      "software"
+			          ]
+			        },
+			        /*{
+			        	"title": "Notificações",
+			        	"items": [ "mailing_list"]
+				    },*/
+			        {
+			        	"title": "Notas internas",
+			        	"items": [
+			        	  {
+			                  "key":"internalNotes",
+			                  "type": "textarea"
+			        	  }]
+				     }
+			      ]
+			    },
+
+			    { type: "submit", title: "Guardar cambios" }
+      ],
+      schema: {
+        type: "object",
+        properties: {
+
+         
+          institution_type:{ type: "string", default: "",   title: "Natureza da Instituição",  enum: [ "PUB", "ONG", "PRI" ]},          
+          
+          state:{ type: "string", default: "",   title: "Estado (UF)" },
+          city:{ type: "string", default: "",   title: "Cidade" },
+          sector:{ type: "string", default: "",   title: "Bairro/Setor" },
+          address:{ type: "string", default: "",   title: "Rua" },
+          postal_code:{ type: "string", default: "",   title: "Código Postal (CEP)" },
+          telephone:{ type: "string", default: "",   title: "Telefone:" },
+	  latitude:{ type: "string", default: "", title: "Latitude:" },
+	  longitude:{ type: "string", default: "", title: "Longitude:" },
+          soruce_url:{ type: "string", default: "",   title: "URL do repositório" },
+          oai_url:{ type: "string", default: "",   title: "URL OAI do repositório" },
+          
+/* opendoar_inicio */
+          repository_id: { type: "string", default: "", title: "Identificador openDOAR do Repositório" },
+/* opendoar_fim */
+
+	  contact_email:{ type: "string", default: "",   title: "E-mail principal de contato*" },
+          
+          /*mailing_list: {
+        	  "title":"Emails de contato",
+              "type": "array",
+              "items": {
+            	"title": "E-mail",  
+                "type": "string"
+              }
+          },*/
+
+/*tipo_conteudo_inicio (checkbox) Repositorios */          
+          /*content_type:{ type: "string", default: "",   title: "Tipo de conteúdo" },*/
+         content_type:{
+		type: "string", default: "",
+                title: "Tipo de Conteúdo",
+                enum: ["Teses", "Dissertações", "Artigos", "Livros", "Capítulo de Livro", "Trabalho de Conclusão de Curso", "Relatórios", "Outros"]
+                },
+/*tipo_conteudo_fim (checkbox) Repositorios */
+
+/*Tipo de fonte - inicio */
+          source_type:{
+                type: "string", default: "",
+                title: "Tipo de Fonte",
+                required: true,
+                enum: ["Biblioteca Digital de Monografia", "Biblioteca Digital de Teses e Dissertações", "Portal Agregador", "Portal de conferências", "Portal de Livros", "Repositório Comum", "Repositório Institucional", "Repositório Temático"]
+          },
+/*tipo de fonte - fim */
+
+	  language:{ type: "string", default: "",   title: "Idioma do repositório" },
+         
+          software: {
+            type: "string",
+            title: "Software",
+            description: "Indique o sistema no qual se baseia o recurso",
+            required: true,
+            enum: ["DSpace", "Nou-Rau", "Pergamum", "Sophia","TEDE", "Outros"]
+          },
+          
+          internalNotes: {
+            type: "string",
+            title: "Notas Internas",
+            description: "Informação interna sobre o recurso",
+            required: false,
+            "default": ""
+          }
+          
+          
+        }
+      } /* fin schema */
+    },
+    /** fin de profile */
+    {
+  	  name: "Sistemas de Publicação",
+        className: "org.lareferencia.backend.network.IbictSerialNetworkAttributes",
+        form: [
+  			{ type: "submit", title: "Guardar cambios" },
+  			 {
+  		      "type": "tabs",
+  		      "tabs": [
+  			    { "title": "Dados principais",
+  			      "items": [
+  			    	  	
+  			    	  	  {
+  			        	   "key":"institution_type",
+                             "type":"select",
+                             "titleMap":{ "PUB":"Instituição pública", "ONG":"Instituição não governamental (ONG)","PRI":"Instituição Privada"}
+  	                      },
+  			    	  
+  	                      "state",
+  	                      "city",
+  	                      "sector",
+  	                      "address",
+  	                      "postal_code",
+  	                      "telephone",
+  	                      "source_url",
+  	                      "source_type",
+  	                      "oai_url",
+  	                      "contact_email",
+  	                      "content_type",
+  	                      "language",
+  	                      "software"
+  			          ]
+  			        },
+  			        {
+  			        	"title": "Identificadores",
+  			        	"items": [  "doi","issn", "issn_l" ]
+  				    },
+  			        /*{
+  			        	"title": "Notificações",
+  			        	"items": [ "mailing_list"]
+  				    },*/
+  			        {
+  			        	"title": "Notas internas",
+  			        	"items": [
+  			        	  {
+  			                  "key":"internalNotes",
+  			                  "type": "textarea"
+  			        	  }]
+  				     }
+  			      ]
+  			    },
+
+  			    { type: "submit", title: "Guardar cambios" }
+        ],
+        schema: {
+          type: "object",
+          properties: {
+
+           
+            institution_type:{ type: "string", default: "",   title: "Natureza da Instituição",  enum: [ "PUB", "ONG", "PRI" ]},          
+            
+            state:{ type: "string", default: "",   title: "Estado (UF)" },
+            city:{ type: "string", default: "",   title: "Cidade" },
+            sector:{ type: "string", default: "",   title: "Bairro/Setor" },
+            address:{ type: "string", default: "",   title: "Rua" },
+            postal_code:{ type: "string", default: "",   title: "Código Postal (CEP)" },
+            telephone:{ type: "string", default: "",   title: "Telefone:" },
+            source_url:{ type: "string", default: "",   title: "URL do repositório" },
+            oai_url:{ type: "string", default: "",   title: "URL OAI do repositório" },
+            contact_email:{ type: "string", default: "",   title: "E-mail principal de contato*" },
+            
+            doi:{ type: "string", default: "", title: "Digital Object Identifier (DOI)" },
+            issn:{ type: "string", default: "", title: "ISSN" },
+            issn_l:{ type: "string", default: "", title: "ISSN-L" },
+
+            /*Tipo de fonte - inicio */
+                      source_type:{
+                            type: "string", default: "",
+                            title: "Tipo de Fonte",
+                            required: true,
+                            enum: ["Revista"]
+                      },
+            /*tipo de fonte - fim */
+
+            /*mailing_list: {
+          	  "title":"Emails de contato",
+                "type": "array",
+                "items": {
+                  "title": "E-mail",  
+                  "type": "string"
+                }
+            },*/
+            
+/*tipo_conteudo_inicio (checkbox) revistas */
+           /* content_type:{ type: "string", default: "",   title: "Tipo de conteúdo" },*/
+             content_type:{
+                        type: "string", default: "", 
+                        title: "Tipo de Conteúdo",
+                        required: true,
+                        enum: ["Artigos", "Livros", "Capítulo de Livro", "Outros"]
+                },
+/*tipo_conteudo_fim (checkbox) revistas */ 
+
+            language:{ type: "string", default: "",   title: "Idioma do repositório" },
+           
+            software: {
+              type: "string",
+              title: "Software",
+              description: "Indique o sistema no qual se baseia o recurso",
+              required: true,
+              enum: ["SEER/OJS", "SOAC/OCS", "SciELO", "Outros"]
+            },
+            
+            internalNotes: {
+              type: "string",
+              title: "Notas Internas",
+              description: "Informação interna sobre o recurso",
+              required: false,
+              "default": ""
+            }
+            
+            
+          }
+        } /* fin schema */
+      }
+      /** fin de profile */
+	
+	
+]; // ***** fin de _PROFILES ******///
+	
+
+
+	/** mapeo de las definiciones de reglas a un objeto * */
+  var profiles_defs_by_class = {};
+	
+	
+	$.map( _PROFILES, function(profile, i ) { profiles_defs_by_class[profile.className] = profile; });
+	
+	/** export del objeto con las definiciones de reglas * */
+	this.profileDefinitionByClassName = profiles_defs_by_class;
+	this.profileDefinitionList = _PROFILES;
+
+});

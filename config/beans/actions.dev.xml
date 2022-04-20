@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:solr="http://www.springframework.org/schema/data/solr"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+	<!-- Include all actions beans here -->
+	<import resource="file:${beans.path}/harvesting.actions.xml" />
+	<import resource="file:${beans.path}/cleaning.actions.xml" />
+	<import resource="file:${beans.path}/validation.actions.xml" />
+	
+	<import resource="file:${beans.path}/index.frontend.actions.xml" /> <!-- OTHER THAN RCAPP -->
+	<import resource="file:${beans.path}/rcaap.index.actions.xml"/>   <!-- RCAAP ONLY  -->
+	<import resource="file:${beans.path}/index.thesis.actions.xml" /> <!-- IBICT ONLY -->
+	
+	<import resource="file:${beans.path}/index.elastic.actions.xml" /> <!-- IBICT ONLY -->
+	
+	<import resource="file:${beans.path}/xoai.actions.xml" />
+	<import resource="file:${beans.path}/fulltext.actions.xml" />
+	<import resource="file:${beans.path}/historic.actions.xml" />
+	<import resource="file:${beans.path}/netindex.actions.xml" />
+	<import resource="file:${beans.path}/project.actions.xml" />
+
+
+	<!-- Append bean references inside networkActionManager actions list -->
+	<bean id="networkActionManager" class="org.lareferencia.backend.taskmanager.NetworkActionkManager"
+		scope="singleton">
+		<property name="actions">
+			<list>
+
+				<!-- Harvesting Actions -->
+				<ref bean="harvestingNetworkAction" />
+
+				<!-- Validation Actions -->
+				<ref bean="validationNetworkAction" />
+
+				<!-- Indexing Actions --> <!-- RCAAP MUST COMMENT NEXT TWO LINES -->
+				<ref bean="frontendIndexingNetworkAction" />
+				<ref bean="frontendDeleteAction" />
+				
+
+				<ref bean="elasticIndexingNetworkAction" />
+
+				<!-- RCAAP Actions -->  <!-- OTHER THAN RCAAP MUST COMMENT NEXT TWO LINES -->
+  				<ref bean="rcaapIndexingNetworkAction"/>
+  				<ref bean="rcaapDeleteAction"/>
+  				
+				<ref bean="thesisIndexingNetworkAction" />
+				<ref bean="thesisDeleteAction" />
+
+				<!-- XOAI Actions -->
+				<ref bean="xoaiIndexingNetworkAction" />
+				<ref bean="xoaiDeleteAction" />
+
+				<!-- Fulltext Actions -->
+				<ref bean="fulltextNetworkAction" />
+
+				<!-- Historic Actions -->
+				<ref bean="historicIndexingNetworkAction" />
+				<ref bean="historicFullReIndexingNetworkAction" />
+				
+				<!-- Network Indexing Actions -->
+				<ref bean="networkIndexingNetworkAction" />
+				<ref bean="networkUnindexingNetworkAction" />
+				
+				<!-- Project Actions -->
+				<ref bean="uploadProjectNetworkAction"/>
+				
+				<!-- Cleaning Actions -->
+				<ref bean="networkCleanNetworkAction" />
+				<ref bean="networkDeleteNetworkAction" />
+
+			</list>
+		</property>
+	</bean>
+
+</beans>

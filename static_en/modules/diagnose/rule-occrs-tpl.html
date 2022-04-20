@@ -1,0 +1,68 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<div class="modal-header">
+	<h3 class="modal-title">Ocurrencias de regla: {{rule.name}}</h3>
+</div>
+<div class="modal-body">
+	
+	
+	<div class="row">
+		<div class="col-xs-5">
+			 <h4>Ocurrencias válidas</h4>
+			 
+			<div class="btn-group">
+				<a class="btn btn-xs" title="Exportar validas" ng-click='csvValid.generate()' ng-href="{{csvValid.link()}}" download="valid.csv"> 
+					<i class="glyphicon glyphicon-new-window"></i> &#160;Exportar CSV
+				</a>
+			</div>
+			
+			 <table ng-table="validOccrTable" class="table table-bordered table-striped table-condensed" export-csv="csvValid" separator=";">
+				<tr ng-repeat="occr in $data">
+					<td  data-title="'Ocurrencia'" sortable="'value'">{{occr.value}}</td>
+					<td  data-title="'Cantidad'" sortable="'count'">{{occr.count}}</td>
+				</tr>
+			</table>
+		</div>
+		
+		<div class="col-xs-1"></div>
+		
+		<div class="col-xs-6">
+			 <h4>Ocurrencias inválidas</h4>
+			 
+			 <div class="btn-group">
+				<a class="btn btn-xs" title="Exportar invalidas" ng-click='csvInvalid.generate()' ng-href="{{csvInvalid.link()}}" download="invalid.csv"> 
+					<i class="glyphicon glyphicon-new-window"></i> &#160;Exportar CSV
+				</a>
+			</div>
+		
+			 <table ng-table="invalidOccrTable" class="table table-bordered table-striped table-condensed" export-csv="csvInvalid" separator=";">
+				<tr ng-repeat="occr in $data">
+					<td  data-title="'Ocurrencia'" sortable="'value'">{{occr.value}}</td>
+					<td  data-title="'Cantidad'" sortable="'count'">{{occr.count}}</td>
+				</tr>
+			</table>
+		</div>
+		
+	</div>
+</div>
+<div class="modal-footer">
+	<button class="btn btn-warning" type="button" ng-click="cancel()">Cerrar</button>
+</div>

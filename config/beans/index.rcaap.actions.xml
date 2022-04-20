@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.springframework.org/schema/beans"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<!-- ACTIONS -->
+    <bean id="rcaapEntityIndexingSimpleAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+        <property name="name" value="ENTITYRELATION_SIMPLE_INDEXING_ACTION"/>
+        <property name="description" value="Index entities (simple)"></property>
+        <property name="incremental" value="false"/>
+        <property name="runOnSchedule" value="true"/>
+        <property name="workers">
+            <list>
+                <value>rcaapEntityNetworkIndexerWorker</value>
+            </list>
+        </property>
+        <property name="properties">
+            <list>
+                <bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+                    <property name="name" value="SIMPLE_INDEX_ENTITIES"/>
+                    <property name="description" value="Index entities simple?"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="rcaapIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+        <property name="name" value="RCAAP_INDEXING_ACTION"/>
+        <property name="description" value="Indexar no RCAAP"></property>
+        <property name="incremental" value="true"/>
+        <property name="runOnSchedule" value="true"/>
+        <property name="workers">
+            <list>
+                <value>rcaapIndexerWorker</value>
+            </list>
+        </property>
+        <property name="properties">
+            <list>
+                <bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+                    <property name="name" value="INDEX_RCAAP"/>
+                    <property name="description" value="Indexar no RCAAP?"/>
+                </bean>
+                <bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+                    <property name="name" value="INDEX_FULLTEXT"/>
+                    <property name="description" value="Indexar texto completo?"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="rcaapDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+        <property name="name" value="RCAAP_DELETE_ACTION"/>
+        <property name="description" value="Apagar do indice RCAAP"></property>
+        <property name="workers">
+            <list>
+                <value>rcaapDeleteWorker</value>
+            </list>
+        </property>
+    </bean>
+
+	<!-- WORKERS -->
+
+	<bean id="rcaapEntityNetworkIndexerWorker" class="org.lareferencia.core.entity.workers.NetworkEntityIndexingWorker" scope="prototype">
+		<property name="pageSize" value="100"/>
+		<property name="indexerBeanName" value="rcaapEntitySimpleIndexerSolr" />
+		<property name="entityTypeNameList" value="${entity.indexing.entities}"/>
+	</bean>
+
+    <bean id="rcaapIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+        <constructor-arg>
+            <value>${frontend.solr.url}</value>
+        </constructor-arg>
+
+        <property name="serialLaneId" value="1"/>
+        <property name="targetSchemaName" value="rcaap"/>
+
+        <property name="solrNetworkIDField" value="network_acronym_str"/>
+        <property name="solrRecordIDField" value="id"/>
+
+        <property name="pageSize" value="1000"/>
+
+        <property name="executeDeletion" value="true"/>
+        <property name="executeIndexing" value="true"/>
+
+        <property name="indexDeletedRecords" value="false"/>
+    </bean>
+
+    <bean id="rcaapDeleteWorker" class="org.lareferencia.backend.workers.indexer.FullUnindexerWorker" scope="prototype">
+        <constructor-arg>
+            <value>${frontend.solr.url}</value>
+        </constructor-arg>
+
+        <property name="serialLaneId" value="1"/>
+
+        <property name="solrNetworkIDField" value="network_acronym_str"/>
+        <property name="solrRecordIDField" value="id"/>
+    </bean>
+
+    <bean id="rcaapEntitySimpleIndexerSolr"
+        class="org.lareferencia.contrib.rcaap.entity.indexing.solr.SimpleSolrEntityIndexer" scope="prototype">
+        <property name="debugMode" value="true"/>
+        <property name="solrURL" value="${entity.solr.url}"/>
+    </bean>
+
+</beans>

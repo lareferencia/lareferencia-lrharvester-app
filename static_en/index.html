@@ -1,0 +1,172 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<!doctype html>
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="utf-8" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    
+    <title>LA Referencia - Admin</title>
+    
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="modules/app/app.css" /> 
+    
+    <!-- Bootstrap Core CSS -->
+    <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
+        
+    <!-- MetisMenu CSS -->
+    <link type="text/css" rel="stylesheet" href="css/metisMenu.min.css" >
+             
+    <!-- HighLight CSS -->
+    <link type="text/css" rel="stylesheet" href="css/highlight/github.css"/>
+
+    <!-- Custom Fonts -->
+    <link type="text/css" rel="stylesheet" href="css/font-awesome.min.css"/>
+    <link type="text/css" rel="stylesheet" href="css/font-awesome-animation.min.css"/>
+        
+    <!-- Ng Table CSS -->
+    <link rel="stylesheet" href="css/ng-table.min.css"/>   
+    
+    <!-- App CSS -->
+    <!-- >link type="text/css" rel="stylesheet" href="css/styles.css"/-->
+    
+    
+       
+
+</head>
+<body class="app" ng-controller="app">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" ng-click="navbarCollapsed = !navbarCollapsed">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/index.html">Repositories</a>
+            </div>
+            <div class="collapse navbar-collapse" collapse="navbarCollapsed">
+                <ul class="nav navbar-nav" ng-show="loggedIn">
+                    <li ui-sref-active="active"><a ui-sref="validators">Metadata validators</a></li>
+                    <li ui-sref-active="active"><a ui-sref="transformers">Metadata transformers</a></li>
+                    
+                    <li><a href="./logout">Logout</a></li>
+                </ul>   
+            </div>
+        </div>
+    </div>
+    <div class="container" ui-view="main">
+    </div>
+    
+    
+    <!-- JQuery JS -->
+    <script type="text/javascript" src="libs/jquery-1.12.2.min.js"/></script>
+        
+    <!-- Bootstrap JS -->
+    <script type="text/javascript" src="libs/bootstrap.min.js"/></script>
+    
+    <!-- metisMenu JS -->
+    <script src="libs/metisMenu.min.js"></script>
+    
+    <script type="text/javascript" src="libs/moment.min.js"></script>
+    <script type="text/javascript" src="libs/humanize-duration.js"></script>
+    
+    <!-- Angular js -->
+	<script type="text/javascript" src="libs/angular.min.js"/></script>
+    <script type="text/javascript" src="libs/angular-sanitize.min.js"/></script>
+    <script type="text/javascript" src="libs/angular-resource.min.js"/></script>
+    <script type="text/javascript" src="libs/angular-route.min.js"/></script>
+    <script type="text/javascript" src="libs/angular-animate.min.js"/></script>
+    <script type="text/javascript" src="libs/angular-timer.min.js"/></script>
+    
+ 
+    <!-- script src="libs/angular-ui-bootstrap.min.js"></script-->
+    <script src="libs/angular-ui-router.min.js"></script>
+    
+      <!-- Angular UI Bootstrap --> 
+    <script type="text/javascript" src="libs/ui-bootstrap-tpls-2.5.0.min.js"/></script>
+   
+    
+    <!-- Libs de Angular NG Tables -->
+    <script type="text/javascript" src="libs/ng-table.min.js"/></script>
+    <script type="text/javascript" src="libs/ng-table-to-csv.min.js"/></script>
+    
+	<!-- Libs de Angular Spring Data Rest -->
+	<script type="text/javascript" src="libs/angular-spring-data-rest.js"/></script>
+	    
+    <!-- Libs Angular de forms -->
+    <script type="text/javascript" src="libs/tv4.min.js"/></script>
+	<script type="text/javascript" src="libs/ObjectPath.js"/></script>
+	<script type="text/javascript" src="libs/schema-form.min.js"/></script>
+    <script type="text/javascript" src="libs/bootstrap-decorator.min.js"/></script>
+    
+    
+    <!-- Libs Angular de sintax highlight -->
+    
+    <script type="text/javascript" src="libs/highlight.pack.js"/></script>
+    <script type="text/javascript" src="libs/angular-highlightjs.min.js"/></script>
+	<script type="text/javascript" src="libs/vkbeautify.js"></script>
+    
+    
+    <!-- LoDash -->
+    <script type="text/javascript" src="libs/lodash.core.js"/></script>
+     
+    <!-- Servicios -->
+    <script src="services/table-services.js"></script>
+    <script src="services/data-services.js"></script>
+    <script src="services/rest-url-helper.js"/></script>
+    
+    <script>
+        
+		angular.module('rest.url.rebase', []).service('ReBaseURLHelper',  [ 
+		    
+		  function() {
+		
+			  this.rebaseURL = function (url) {
+				  return "./" + url;	
+			  };
+	      }]);
+    
+    </script>
+    
+    
+    
+    <!-- Schemas  -->
+    <script type="text/javascript" src="schemas/network-json-schemas.js"/></script>
+    <script type="text/javascript" src="schemas/transformation-json-schemas.js"/></script>
+    <script type="text/javascript" src="schemas/validation-json-schemas.js"/></script>
+    <script type="text/javascript" src="schemas/attributes-json-schemas.js"/></script>
+    
+   
+    <!-- Modulos -->
+    <script src="modules/app/app.js"></script>
+    <script src="modules/diagnose/diagnose.js"></script>
+    <script src="modules/network/network.js"></script>
+    <script src="modules/validators/validators.js"></script>
+    <script src="modules/transformers/transformers.js"></script>
+    <script src="modules/rules/rules.js"></script>
+    
+    
+
+</body>
+</html>

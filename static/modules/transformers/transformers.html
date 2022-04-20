@@ -1,0 +1,64 @@
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<div class="row">
+	<div class="col-md-12">
+		<h3>Edición transformadores</h3>
+		<p>Aquí puede agregar y editar los distintos perfiles de transformación de metadatos.</p>
+
+
+	</div>
+</div>
+
+<div class="row" ng-controller="transformers">
+	<div class="col-md-12">
+		<div class="row">
+			<div class="col-xs-12">
+	          	<a ui-sref="rules.new({type:'transformer'})" class="btn btn-sm btn-primary pull-right"><span class="glyphicon glyphicon-plus"></span> Agregar Transformador</a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<table ng-table="transformersTable"
+					class="table table-bordered table-striped table-condensed">
+					<tr ng-repeat="transformer in $data">
+
+						<td style="width: 300px;" data-title="'Nombre'">{{transformer.name}}</td>
+						<td data-title="'Descripción'">{{transformer.description}}</td>
+						<td style="width: 100px;">
+					        <button class="btn btn-primary btn-xs"  ui-sref="rules.edit({type:'transformer', rulesID:transformer.getObjectID()})"> 	   
+								<span class="fa fa-edit"></span>	
+							</button>
+							<button class="btn btn-danger  btn-xs" ng-confirm-click="¿Está seguro que quiere eliminar el transformador?" confirmed-click="deleteTransformer(transformer)">
+								<span class="fa fa-trash"></span>	
+							</button> 
+							<button class="btn btn-default  btn-xs" ng-confirm-click="¿Está seguro que quiere duplicar el transformador?" confirmed-click="cloneTransformer(transformer.getObjectID());">
+								<span class="fa fa-copy"></span>	
+							</button> 
+						</td>
+
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+</div>
+
