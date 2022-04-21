@@ -33,5 +33,5 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<bean id="entityDataService" class="org.lareferencia.core.entity.services.EntityDataService" scope="singleton"/>
-	
+
 </beans>

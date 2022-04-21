@@ -34,7 +34,7 @@
 
 
 
-	<!-- bean id="entityDataService" class="org.lareferencia.core.entity.services.EntityDataService" scope="singleton"/ -->
+	<bean id="entityDataService" class="org.lareferencia.core.entity.services.EntityDataService" scope="singleton"/>
 	
 	
 </beans>
