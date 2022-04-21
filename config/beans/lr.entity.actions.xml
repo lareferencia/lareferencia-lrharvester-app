@@ -88,9 +88,8 @@
 		<property name="indexingConfigFilePath" value="${entity.indexing.configfile}" />
 		<property name="entityTypeNameList" value="${entity.indexing.entities}"/>
 	</bean>
-		
-	<bean id="erService" class="org.lareferencia.core.entity.services.EntityDataService"></bean>
-	<bean id="entityIndexerSolr" class="org.lareferencia.core.entity.indexing.solr.EntityIndexerSolrImpl" scope="prototype"></bean>	
-		
-	
+
+	<bean id="entityDataService" class="org.lareferencia.core.entity.services.EntityDataService" scope="singleton"/>
+	<bean id="entityIndexerSolr" class="org.lareferencia.core.entity.indexing.solr.EntityIndexerSolrImpl" scope="prototype"></bean>
+
 </beans>
