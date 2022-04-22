@@ -18,7 +18,6 @@
   ~   This file is part of LA Referencia software platform LRHarvester v4.x
   ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
   -->
-
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:p="http://www.springframework.org/schema/p"
@@ -32,8 +31,6 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-			
-	<import resource="third-party-context.xml"/>
-	
-	
+
+
 </beans>
