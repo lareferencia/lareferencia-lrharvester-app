@@ -60,6 +60,12 @@
                     <constructor-arg type="String"
                         value="${config.dir.path}/mdfcrosswalks/mtd2-br2xoai.xsl"/>
                 </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_datacite"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_datacite2xoai.xsl"/>
+                </bean>
 
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="xoai"/>

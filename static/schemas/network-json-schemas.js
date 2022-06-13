@@ -26,7 +26,7 @@ angular.module('network.json.schemas', []).service('JSONNetworkSchemas',  functi
 	      metadataPrefix: {
 				"title": "Metadata Prefix",
 				"type": "string",
-				"enum": ["mtd-br","imf","mets","oai_dc","xoai","mtd2-br","oai_openaire","oai_openaire_jats"],
+				"enum": ["mtd-br","imf","mets","oai_dc","xoai","mtd2-br","oai_openaire","oai_openaire_jats","oai_datacite"],
 				"default": "oai_dc"
 		  },
 		        
