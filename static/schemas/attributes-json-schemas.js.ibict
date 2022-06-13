@@ -93,7 +93,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
          content_type:{
 		type: "string", default: "",
                 title: "Tipo de Conteúdo",
-                enum: ["Teses", "Dissertações", "Artigos", "Livros", "Capítulo de Livro", "Trabalho de Conclusão de Curso", "Relatórios", "Outros"]
+                enum: ["Teses", "Dissertações", "Artigos", "Livros", "Capítulo de Livro", "Trabalho de Conclusão de Curso", "Relatórios", "Conjunto de dados", "Outros"]
                 },
 /*tipo_conteudo_fim (checkbox) Repositorios */
 
@@ -102,7 +102,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
                 type: "string", default: "",
                 title: "Tipo de Fonte",
                 required: true,
-                enum: ["Biblioteca Digital de Monografia", "Biblioteca Digital de Teses e Dissertações", "Portal Agregador", "Portal de conferências", "Portal de Livros", "Repositório Comum", "Repositório Institucional", "Repositório Temático"]
+                enum: ["Biblioteca Digital de Monografia", "Biblioteca Digital de Teses e Dissertações", "Portal Agregador", "Portal de conferências", "Portal de Livros", "Repositório Comum", "Repositório Institucional", "Repositório Temático","Repositório de Dados de Pesquisa"]
           },
 /*tipo de fonte - fim */
 
