@@ -30,9 +30,13 @@
 
 
 	<!-- Aquí van los listados para diferenciar type en tipo de documento y status -->
-	<!--xsl:variable name="type_list">info:eu-repo/semantics/article,info:eu-repo/semantics/bachelorThesis,info:eu-repo/semantics/masterThesis,info:eu-repo/semantics/doctoralThesis,info:eu-repo/semantics/book,info:eu-repo/semantics/bookPart,info:eu-repo/semantics/review,info:eu-repo/semantics/conferenceObject,info:eu-repo/semantics/lecture,info:eu-repo/semantics/workingPaper,info:eu-repo/semantics/preprint,info:eu-repo/semantics/report,info:eu-repo/semantics/annotation,info:eu-repo/semantics/contributionToPeriodical,info:eu-repo/semantics/patent,info:eu-repo/semantics/other</xsl:variable-->
-	<xsl:variable name="type_list">info:eu-repo/semantics/article,info:eu-repo/semantics/bachelorThesis,info:eu-repo/semantics/masterThesis,info:eu-repo/semantics/doctoralThesis,info:eu-repo/semantics/book,info:eu-repo/semantics/bookPart,info:eu-repo/semantics/review,info:eu-repo/semantics/conferenceObject,info:eu-repo/semantics/lecture,info:eu-repo/semantics/workingPaper,info:eu-repo/semantics/preprint,info:eu-repo/semantics/report,info:eu-repo/semantics/annotation,info:eu-repo/semantics/contributionToPeriodical,info:eu-repo/semantics/patent,info:eu-repo/semantics/other,info:eu-repo/semantics/dataSet</xsl:variable>
-	<xsl:variable name="status_list">info:eu-repo/semantics/draft,info:eu-repo/semantics/acceptedVersion,info:eu-repo/semantics/submittedVersion,info:eu-repo/semantics/publishedVersion,info:eu-repo/semantics/updatedVersion</xsl:variable>
+
+
+	<!-- xsl:variable name="type_list" select="tokenize('info:eu-repo/semantics/article,info:eu-repo/semantics/masterThesis,info:eu-repo/semantics/doctoralThesis,info:eu-repo/semantics/book,info:eu-repo/semantics/bookPart,info:eu-repo/semantics/report,info:eu-repo/semantics/dataSet',',')"/-->
+
+
+	<xsl:variable name="type_list" select="tokenize('info:eu-repo/semantics/article,info:eu-repo/semantics/bachelorThesis,info:eu-repo/semantics/masterThesis,info:eu-repo/semantics/doctoralThesis,info:eu-repo/semantics/book,info:eu-repo/semantics/bookPart,info:eu-repo/semantics/review,info:eu-repo/semantics/conferenceObject,info:eu-repo/semantics/lecture,info:eu-repo/semantics/workingPaper,info:eu-repo/semantics/preprint,info:eu-repo/semantics/report,info:eu-repo/semantics/annotation,info:eu-repo/semantics/contributionToPeriodical,info:eu-repo/semantics/patent,info:eu-repo/semantics/other,info:eu-repo/semantics/dataSet',',')"/>
+	<xsl:variable name="status_list" select="tokenize('info:eu-repo/semantics/draft,info:eu-repo/semantics/acceptedVersion,info:eu-repo/semantics/submittedVersion,info:eu-repo/semantics/publishedVersion,info:eu-repo/semantics/updatedVersion',',')"/>
 	<xsl:variable name="rights_list" select="tokenize('info:eu-repo/semantics/openAccess,info:eu-repo/semantics/embargoedAccess,info:eu-repo/semantics/restrictedAccess,info:eu-repo/semantics/closedAccess', ',')"/>
 
 
@@ -236,13 +240,13 @@
 			</xsl:for-each>
 
 			<!-- distinct dc.type format/status  -->
-			<xsl:for-each select="distinct-values(doc:metadata/doc:element[@name='dc']/doc:element[@name='type']//doc:field[@name='value' and contains($type_list, normalize-space()) ]|doc:metadata/doc:element[@name='dc']/doc:element[@name='type']/doc:element/doc:element/doc:field[@name='value' and contains($type_list, normalize-space())])">
+			<xsl:for-each select="distinct-values(doc:metadata/doc:element[@name='dc']/doc:element[@name='type']//doc:field[@name='value' and count(index-of($type_list, normalize-space()))&gt;0 ]|doc:metadata/doc:element[@name='dc']/doc:element[@name='type']/doc:element/doc:element/doc:field[@name='value' and count(index-of($type_list, normalize-space()))&gt;0])">
 					<xsl:if test="position() = 1">
 					<field name="format"><xsl:value-of select="substring(normalize-space(), string-length($driver_prefix)+1, string-length(normalize-space()))" /></field>
 					</xsl:if>
 			</xsl:for-each>
 
-			<xsl:for-each select="distinct-values(doc:metadata/doc:element[@name='dc']/doc:element[@name='type']//doc:field[@name='value' and contains($status_list, normalize-space()) ]|doc:metadata/doc:element[@name='dc']/doc:element[@name='type']/doc:element/doc:element/doc:field[@name='value' and contains($status_list, normalize-space())])">
+			<xsl:for-each select="distinct-values(doc:metadata/doc:element[@name='dc']/doc:element[@name='type']//doc:field[@name='value' and count(index-of($status_list, normalize-space()))&gt;0 ]|doc:metadata/doc:element[@name='dc']/doc:element[@name='type']/doc:element/doc:element/doc:field[@name='value' and count(index-of($status_list, normalize-space()))&gt;0])">
 					<xsl:if test="position() = 1">
 					<field name="status_str"><xsl:value-of select="substring(normalize-space(), string-length($driver_prefix)+1, string-length(normalize-space()))" /></field>
 					</xsl:if>
