@@ -118,6 +118,7 @@
         <property name="targetSchemaName" value="entities-rcaap" />
         <property name="sourceSchemaName" value="network-atributtes" />
         <property name="provenancePrefix" value="urn:laref:repositoryAcronym:" />
+        <property name="serialLaneId" value="100"/>
     </bean>
     
 	<bean id="networkDeleteWorker2" class="org.lareferencia.backend.taskmanager.NetworkCleanWorker"
