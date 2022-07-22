@@ -3,6 +3,11 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
 spring.datasource.username=lrharvester
 spring.datasource.password=lrharvester
 
+# minimum number of idle connections maintained by HikariCP in a connection pool
+spring.datasource.hikari.minimum-idle=10
+# maximum pool size
+spring.datasource.hikari.maximum-pool-size=50
+
 #rest port
 server.port=8090
 # UNCOMMENT if you use a Apache proxy pass and need Spring to handle request types
