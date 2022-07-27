@@ -74,7 +74,10 @@
 		<property name="description" value="Delete network (!)"></property>
 		<property name="workers">
 			<list>
-			    <value>networkUnindexWorker</value>
+			    <value>xoaiDeleteWorker2</value>
+				<value>rcaapDeleteWorker2</value>
+				<value>networkUnindexWorker</value>
+				<value>networkCleanWorker2</value>
 				<value>networkDeleteWorker2</value>
 			</list>
 		</property>
@@ -101,6 +104,21 @@
         
 
     <!-- WORKERS -->
+    
+	<bean id="xoaiDeleteWorker2" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+		scope="prototype">
+		<constructor-arg>
+			<value>${xoai.solr.url}</value>
+		</constructor-arg>
+		<property name="serialLaneId" value="2" />
+
+		<property name="solrNetworkIDField" value="item.collections" />
+		<property name="solrRecordIDField" value="item.id" />
+
+
+		<property name="executeDeletion" value="true" />
+		<property name="executeIndexing" value="false" />
+	</bean>    
     
 	<bean id="networkIndexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexWorker"
 		scope="prototype">
@@ -130,4 +148,17 @@
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="false"></property>
 	</bean>
+	
+	
+	<bean id="rcaapDeleteWorker2" class="org.lareferencia.backend.workers.indexer.FullUnindexerWorker" scope="prototype">
+		<constructor-arg>
+			<value>${frontend.solr.url}</value>
+		</constructor-arg>
+
+		<property name="serialLaneId" value="1"/>
+
+		<property name="solrNetworkIDField" value="network_acronym_str"/>
+		<property name="solrRecordIDField" value="id"/>
+	</bean>
+
 </beans>
