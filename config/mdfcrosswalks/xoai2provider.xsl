@@ -41,6 +41,12 @@
 	<xsl:param name="deleted" />
 	<xsl:param name="record_id" />
 	
+	<!-- Params from Networks -->
+	<!-- They have the prefix: "attr_"  -->
+	<xsl:param name="attr_country"/>
+	<xsl:param name="attr_tags"/>
+	<!-- / -->
+	
 	<xsl:strip-space elements="*"/>
 	
 	<xsl:template match="/">
@@ -72,6 +78,21 @@
             <field name="item.public">true</field>    
             
             <field name="item.collections"><xsl:value-of select="$networkAcronym"/></field>
+
+			<!-- create a set for each country -->
+			<xsl:if test="$attr_country and ($attr_country != '')">
+				<field name="item.collections">
+					<xsl:value-of select="$attr_country"/>
+				</field>
+			</xsl:if>
+			<!-- create a set for each tag -->
+			<xsl:if test="$attr_tags">
+				<xsl:for-each select="$attr_tags">
+					<field name="item.collections">
+						<xsl:value-of select="."/>
+					</field>
+				</xsl:for-each>
+			</xsl:if>
             
             <field name="item.communities">com_<xsl:value-of select="$institutionAcronym"/></field>
 			
