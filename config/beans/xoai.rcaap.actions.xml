@@ -38,14 +38,14 @@
 
 
 	<!-- Actions -->
-	<bean id="xoaiIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="rcaapXoaiIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
 		<property name="name" value="XOAI_INDEXING_ACTION" />
 		<property name="description" value="Index OAI-PMH"></property>
 		<property name="incremental" value="true" />
 		<property name="runOnSchedule" value="true" />
 		<property name="workers">
 			<list>
-				<value>xoaiIndexerWorker</value>
+				<value>xoaiIndexerWorker2</value>
 			</list>
 		</property>
 		<property name="properties">
@@ -59,18 +59,18 @@
 	</bean>
 
 
-	<bean id="xoaiDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="rcaapXoaiDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
 		<property name="name" value="XOAI_DELETE_ACTION" />
 		<property name="description" value="UnIndex OAI-PMH"></property>
 		<property name="workers">
 			<list>
-				<value>xoaiDeleteWorker</value>
+				<value>xoaiDeleteWorker2</value>
 			</list>
 		</property>
 	</bean>
 
 	<!-- Workers -->
-	<bean id="xoaiIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="xoaiIndexerWorker2" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>
@@ -89,12 +89,12 @@
 
 		<property name="indexDeletedRecords" value="true" />
 		<!-- index network attributes in OAI (dafault action is false) -->
-		<property name="indexNetworkAttributes" value="false" />
+		<property name="indexNetworkAttributes" value="true" />
 		
 	</bean>
 
 
-	<bean id="xoaiDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="xoaiDeleteWorker2" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>
