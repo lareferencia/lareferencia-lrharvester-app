@@ -45,7 +45,7 @@
 		<property name="runOnSchedule" value="true" />
 		<property name="workers">
 			<list>
-				<value>xoaiIndexerWorker2</value>
+				<value>rcaapXoaiIndexerWorker</value>
 			</list>
 		</property>
 		<property name="properties">
@@ -64,13 +64,13 @@
 		<property name="description" value="UnIndex OAI-PMH"></property>
 		<property name="workers">
 			<list>
-				<value>xoaiDeleteWorker2</value>
+				<value>rcaapXoaiDeleteWorker</value>
 			</list>
 		</property>
 	</bean>
 
 	<!-- Workers -->
-	<bean id="xoaiIndexerWorker2" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="rcaapXoaiIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>
@@ -94,7 +94,7 @@
 	</bean>
 
 
-	<bean id="xoaiDeleteWorker2" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="rcaapXoaiDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>
