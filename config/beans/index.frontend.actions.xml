@@ -91,6 +91,8 @@
 		<property name="executeIndexing" value="true" />
 		
 		<property name="indexDeletedRecords" value="false" />
+		<property name="indexNetworkAttributes" value="true" />
+
 	</bean>
 	
 
