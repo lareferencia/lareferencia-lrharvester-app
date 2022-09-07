@@ -86,7 +86,7 @@
 				</field>
 			</xsl:if>
 			<!-- create a set for each tag -->
-			<xsl:if test="$attr_tags/items">
+			<xsl:if test="$attr_tags and $attr_tags/items">
 				<xsl:for-each select="$attr_tags/items/item">
 					<field name="item.collections">
 						<xsl:value-of select="text()"/>
