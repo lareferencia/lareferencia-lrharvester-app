@@ -96,7 +96,7 @@
 	</bean>
 	
 
-	<bean id="frontendDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="frontendDeleteWorker" class="org.lareferencia.backend.workers.indexer.FullUnindexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${frontend.solr.url}</value>
@@ -107,9 +107,6 @@
 		<property name="solrNetworkIDField" value="network_acronym_str"/>
 		<property name="solrRecordIDField" value="id"/>
 		
-		
-		<property name="executeDeletion" value="true" />
-		<property name="executeIndexing" value="false" />
 	</bean>
 	
 	
