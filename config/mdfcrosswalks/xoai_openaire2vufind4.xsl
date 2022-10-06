@@ -745,8 +745,8 @@
         <field>
             <xsl:attribute name="name">
 				<xsl:if test="not(doc:field[@name='identifierType'])">
-					<xsl:text>identifier_str_mv</xsl:text>
-				</xsl:if>		
+					<xsl:text>identifier.fl_str_mv</xsl:text>
+				</xsl:if>
 				<xsl:apply-templates select="doc:field[@name='identifierType']" mode="datacite_identifierType"/>
 			</xsl:attribute>
             <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$maxStringLength)" />
