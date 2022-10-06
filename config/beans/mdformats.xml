@@ -86,6 +86,12 @@
                         value="${config.dir.path}/mdfcrosswalks/xoai2vufind4.xsl"/>
                 </bean>
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="vufind4"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind4.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="oai_dc"/>
                     <constructor-arg type="String" value="xoai"/>
                     <constructor-arg type="String"
@@ -160,7 +166,7 @@
                     <constructor-arg type="String" value="provider"/>
                     <constructor-arg type="String"
                         value="${config.dir.path}/mdfcrosswalks/xoai-openaire2provider.xsl"/>
-                </bean>		
+                </bean>        
                 <!--  RCAAP: Custom Bean for entities to solr entity index -->
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="entitiy_rcaap"/>
