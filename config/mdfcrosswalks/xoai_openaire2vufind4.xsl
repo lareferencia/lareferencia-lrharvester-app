@@ -128,13 +128,18 @@
     </xsl:template>
 
 	<!-- datacite.titles.title -->
-    <xsl:template match="doc:element[@name='titles']/doc:element[@name='title']" mode="datacite">	
+    <xsl:template match="doc:element[@name='titles']/doc:element[@name='title'][1]" mode="datacite">	
 		<field name="datacite.titles.title.fl_str_mv"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)" /></field>
 		<field name="dc.title.fl_str_mv"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)" /></field>
 		<field name="title"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)"/></field>
 		<field name="title_short"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)"/></field>
 		<field name="title_full"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)"/></field>
 		<field name="title_sort"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)"/></field>
+    </xsl:template>
+
+    <xsl:template match="doc:element[@name='titles']/doc:element[@name='title'][position()>1]" mode="datacite">	
+		<field name="datacite.titles.title.fl_str_mv"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)" /></field>
+		<field name="dc.title.fl_str_mv"><xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$maxStringLength)" /></field>
     </xsl:template>
 
 	<!-- datacite.creators.creator -->
@@ -745,8 +750,8 @@
         <field>
             <xsl:attribute name="name">
 				<xsl:if test="not(doc:field[@name='identifierType'])">
-					<xsl:text>identifier.fl_str_mv</xsl:text>
-				</xsl:if>
+					<xsl:text>identifier_str_mv</xsl:text>
+				</xsl:if>		
 				<xsl:apply-templates select="doc:field[@name='identifierType']" mode="datacite_identifierType"/>
 			</xsl:attribute>
             <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$maxStringLength)" />
