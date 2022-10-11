@@ -53,6 +53,10 @@
 					<property name="description" value="Cosechar?" />
 				</bean>
 				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+					<property name="name" value="HARVEST_IDENTIFY_PARAMETERS" />
+					<property name="description" value="Consultar Identify?" />
+				</bean>
+				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
 					<property name="name" value="FORCE_FULL_HARVESTING" />
 					<property name="description" value="Forzar cosecha full?" />
 				</bean>
