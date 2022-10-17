@@ -411,8 +411,8 @@ identifier.sici
     </xsl:template>
 
 
-    <xsl:template match="doc:element[@name='date']/doc:element[@name='Issued']" mode="datacite">
-        <xsl:for-each select="tokenize(normalize-space(doc:field[@name='value']/text()),'-')">
+    <xsl:template match="doc:element[@name='date']/doc:element[@name='Issued']/doc:field[@name='value']" mode="datacite">
+        <xsl:for-each select="tokenize(normalize-space(text()),'-')">
                     <!-- to only consider the year in this date -->
             <xsl:if test="matches(.,'[0-9]{4}')">
                 <field name="date.issued">
