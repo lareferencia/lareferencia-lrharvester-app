@@ -199,6 +199,15 @@
     
     <!-- dc:language -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_language.html -->
+    <xsl:template match="doc:element[@name='dc']/doc:element[@name='language']/doc:element[@name!='none' and @name!='iso']"
+        mode="dc">
+        <xsl:element name="element">
+            <xsl:attribute name="name">
+            <xsl:text>language</xsl:text>
+         </xsl:attribute>
+            <xsl:apply-templates select="doc:field[@name='value']" mode="field"/>
+        </xsl:element>
+    </xsl:template>
     <xsl:template match="doc:element[@name='dc']/doc:element[@name='language']/doc:element[@name='none']"
         mode="dc">
         <xsl:element name="element">
