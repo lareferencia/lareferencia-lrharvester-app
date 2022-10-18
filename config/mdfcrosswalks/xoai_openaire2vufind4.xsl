@@ -59,7 +59,11 @@
 	<xsl:param name="record_id" />
 	<xsl:param name="fulltext" />
 
+	<!-- Params from Networks -->
+	<!-- They have the prefix: "attr_"  -->
 	<xsl:param name="attr_repository_id" />
+	<xsl:param name="attr_country"/>  
+	<!-- / -->
 
 	<xsl:strip-space elements="*"/>
 
@@ -101,7 +105,11 @@
 			<field name="instname_str">
 				<xsl:value-of select="normalize-space($institutionName)" />
 			</field>
-
+			<xsl:if test="$attr_country and ($attr_country != '')">
+			    <field name="country_str">
+			        <xsl:value-of select="normalize-space($attr_country)" />
+			    </field>
+			</xsl:if>
 
 			<!-- ALLFIELDS -->
 			<field name="allfields">
