@@ -289,28 +289,23 @@
     </xsl:template>
 
     <xsl:template match="doc:element[@name='author']/doc:element" mode="datacite_creator">
-        <xsl:element name="element">
-            <xsl:attribute name="name">
-            <xsl:text>creator</xsl:text>
-         </xsl:attribute>
-            <xsl:apply-templates select="*" mode="datacite_creatorName"/>
-        </xsl:element>
+        <xsl:apply-templates select="*" mode="datacite_creatorName"/>
     </xsl:template>
     <xsl:template match="doc:element[@name='creator']/doc:element" mode="datacite_creator">
-        <xsl:element name="element">
-            <xsl:attribute name="name">
-            <xsl:text>creator</xsl:text>
-         </xsl:attribute>
-            <xsl:apply-templates select="*" mode="datacite_creatorName"/>
-        </xsl:element>
+        <xsl:apply-templates select="*" mode="datacite_creatorName"/>
     </xsl:template>
 
     <xsl:template match="doc:element/doc:field[@name='value']" mode="datacite_creatorName">
         <xsl:element name="element">
             <xsl:attribute name="name">
-            <xsl:text>creatorName</xsl:text>
-         </xsl:attribute>
-            <xsl:apply-templates select="text()" mode="field"/>
+                <xsl:text>creator</xsl:text>
+            </xsl:attribute>
+            <xsl:element name="element">
+                <xsl:attribute name="name">
+                <xsl:text>creatorName</xsl:text>
+             </xsl:attribute>
+                <xsl:apply-templates select="text()" mode="field"/>
+            </xsl:element>
         </xsl:element>
     </xsl:template>
 
