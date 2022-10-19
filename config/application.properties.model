@@ -89,6 +89,16 @@ reponame.prefix=reponame:
 instname.fieldname=dc:source
 instname.prefix=instname:
 
+# DEBUG
+
+# uncomment the following setting to activade logging debugging mode
+# for root class level
+#logging.level.root=DEBUG
+
+# uncomment the following setting to activade logging debugging mode
+# for oai harvester
+#logging.level.org.oclc.oai.harvester2=DEBUG
+
 ############################ RCAAP ##################################
 
 # Historic Stats config
