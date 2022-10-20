@@ -352,9 +352,21 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 		} /* fin schema */
 	},
 
-	
-	
-	
+	{ 		
+		name : "Transformar oai identifier del registro",
+		className: "org.lareferencia.backend.validation.transformer.IdentifierRegexRule",
+		form: ["regexSearch", "regexReplace",
+			{ type: "submit", title: "Guardar cambios" }
+		],
+		schema: {
+			type: "object",
+			    properties: {
+					regexSearch:  { type: "string", title: "Expresion regular de búsqueda", description: "La expresion regular de búsqueda, se pueden usar grupos para referenciar en la expresión de reemplazo. Ej: CNPQ::(.+)" },
+			    	regexReplace: { type: "string", title: "Expresion regular de reemplazo", description: "La expresion de reemplazo, puede contener referencias a los grupos. Ej: $1 " },
+				}
+		} /* fin schema */
+	},
+
 ]; //***** fin de _RULES ******/// 
 	
 
