@@ -1473,16 +1473,16 @@
             </xsl:call-template>
         </xsl:variable>
         <xsl:choose>
-            <xsl:when test="$lc_value = 'open access'">
+            <xsl:when test="$lc_value = 'open access' or ends-with($lc_value,'openaccess')">
                 <xsl:text>http://purl.org/coar/access_right/c_abf2</xsl:text>
             </xsl:when>
-            <xsl:when test="$lc_value = 'embargoed access'">
+            <xsl:when test="$lc_value = 'embargoed access' or ends-with($lc_value,'embargoedaccess')">
                 <xsl:text>http://purl.org/coar/access_right/c_f1cf</xsl:text>
             </xsl:when>
-            <xsl:when test="$lc_value = 'restricted access'">
+            <xsl:when test="$lc_value = 'restricted access' or ends-with($lc_value,'restrictedaccess')">
                 <xsl:text>http://purl.org/coar/access_right/c_16ec</xsl:text>
             </xsl:when>
-            <xsl:when test="$lc_value = 'metadata only access'">
+            <xsl:when test="$lc_value = 'metadata only access' or ends-with($lc_value,'closedaccess')">
                 <xsl:text>http://purl.org/coar/access_right/c_14cb</xsl:text>
             </xsl:when>
             <xsl:otherwise/>
@@ -1499,19 +1499,19 @@
         </xsl:variable>
         <xsl:choose>
             <xsl:when
-                test="$lc_value = 'open access' or $lc_value = 'openaccess' or $value = 'http://purl.org/coar/access_right/c_abf2'">
+                test="$lc_value = 'open access' or ends-with($lc_value,'openaccess') or $value = 'http://purl.org/coar/access_right/c_abf2'">
                 <xsl:text>open access</xsl:text>
             </xsl:when>
             <xsl:when
-                test="$lc_value = 'embargoed access' or $lc_value = 'embargoedaccess' or $value = 'http://purl.org/coar/access_right/c_f1cf'">
+                test="$lc_value = 'embargoed access' or ends-with($lc_value,'embargoedaccess') or $value = 'http://purl.org/coar/access_right/c_f1cf'">
                 <xsl:text>embargoed access</xsl:text>
             </xsl:when>
             <xsl:when
-                test="$lc_value = 'restricted access' or $lc_value = 'restrictedaccess' or $value = 'http://purl.org/coar/access_right/c_16ec'">
+                test="$lc_value = 'restricted access' or ends-with($lc_value,'restrictedaccess') or $value = 'http://purl.org/coar/access_right/c_16ec'">
                 <xsl:text>restricted access</xsl:text>
             </xsl:when>
             <xsl:when
-                test="$lc_value = 'metadata only access' or $lc_value = 'closedaccess' or $value = 'http://purl.org/coar/access_right/c_14cb'">
+                test="$lc_value = 'metadata only access' or ends-with($lc_value,'closedaccess') or $value = 'http://purl.org/coar/access_right/c_14cb'">
                 <xsl:text>metadata only access</xsl:text>
             </xsl:when>
             <xsl:otherwise>
