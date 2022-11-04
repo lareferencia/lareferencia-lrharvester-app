@@ -366,6 +366,20 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 				}
 		} /* fin schema */
 	},
+	
+	{ 		
+		name : "Transformación de campo removendo whitespaces",
+		className: "org.lareferencia.backend.validation.transformer.FieldContentRemoveWhiteSpacesTranslateRule",
+		form: [ "fieldName",
+		        { type: "submit", title: "Guardar cambios" }
+		],
+		schema: {
+			type: "object",
+			    properties: {
+			    	fieldName:{ type: "string", title: "Nombre del campo a modificar", description: "Ej: dc.type.*" },
+			    }
+		} /* fin schema */
+	},
 
 ]; //***** fin de _RULES ******/// 
 	

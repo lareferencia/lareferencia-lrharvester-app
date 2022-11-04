@@ -367,6 +367,19 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 		} /* fin schema */
 	},
 
+	{ 		
+		name : "Transforming a field removing all whitespaces occurrences",
+		className: "org.lareferencia.backend.validation.transformer.FieldContentRemoveWhiteSpacesTranslateRule",
+		form: [ "fieldName",
+		        { type: "submit", title: "Save changes" }
+		],
+		schema: {
+			type: "object",
+			    properties: {
+			    	fieldName:{ type: "string", title: "Field name to change", description: "Ex: dc.type.*" },
+			    }
+		} /* fin schema */
+	},	
 	
 	
 	
