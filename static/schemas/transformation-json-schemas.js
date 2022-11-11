@@ -380,6 +380,20 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 			    }
 		} /* fin schema */
 	},
+	
+	{ 		
+		name : "Traducción de nombres de campo (Condicional)",
+		className: "org.lareferencia.backend.validation.transformer.FieldNameConditionalTranslateRule",
+		form: [ 
+		        { type: "submit", title: "Guardar cambios" }, "sourceXPathExpression", "targetFieldName", { type: "submit", title: "Guardar cambios" }],
+		schema: {
+			type: "object",
+			    properties: {
+			    	sourceXPathExpression:{ type: "string", title: "XPATH expression para Campo origen", description: "El XPath v1.0 para campo de origen. Ej: //*[local-name()='element' and @name='rights']/*[local-name()='field' and @name='value' and contains(text(), 'https://creativecommons.org')] " },
+			    	targetFieldName:{ type: "string", title: "Campo destino", description: "El nombre del campo de reemplazo Ej: oaire.licenseCondition " },
+			    }
+		} /* fin schema */
+	},	
 
 ]; //***** fin de _RULES ******/// 
 	

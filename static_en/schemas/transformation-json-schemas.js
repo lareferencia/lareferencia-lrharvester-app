@@ -356,7 +356,7 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 		name : "Transformar oai identifier del registro",
 		className: "org.lareferencia.backend.validation.transformer.IdentifierRegexRule",
 		form: ["regexSearch", "regexReplace",
-			{ type: "submit", title: "Guardar cambios" }
+			{ type: "submit", title: "Save changes" }
 		],
 		schema: {
 			type: "object",
@@ -381,7 +381,19 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 		} /* fin schema */
 	},	
 	
-	
+	{ 		
+		name : "Renaming node field names (Conditional)",
+		className: "org.lareferencia.backend.validation.transformer.FieldNameConditionalTranslateRule",
+		form: [ 
+		        { type: "submit", title: "Save changes" }, "sourceXPathExpression", "targetFieldName", { type: "submit", title: "Save changes" }],
+		schema: {
+			type: "object",
+			    properties: {
+			    	sourceXPathExpression:{ type: "string", title: "Node source selector (XPATH expression)", description: "XPath expression for selecting nodes to apply the renaming. Example: //*[local-name()='element' and @name='rights']/*[local-name()='field' and @name='value' and contains(text(), 'https://creativecommons.org')] " },
+			    	targetFieldName:{ type: "string", title: "Target field", description: "Target field name Example: oaire.licenseCondition " },
+			    }
+		} /* fin schema */
+	},
 	
 ]; //***** fin de _RULES ******/// 
 	
