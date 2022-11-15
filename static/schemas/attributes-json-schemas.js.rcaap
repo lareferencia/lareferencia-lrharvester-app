@@ -19,8 +19,6 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
                           {"key":"country",
                            "type":"select",
                             "titleMap":{
-                                "portugal":"Portugal(deprecated)",								
-								"brasil":"Brasil(deprecated)",
 								//ISO 3166 Codes (Countries)	
                                 "PT":"Portugal",
                                 "BR":"Brasil",
@@ -39,11 +37,13 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
                           						"Revista Científica":"Revista Científica",
                           						"Repositório de Dados":"Repositório de Dados",
                           						"Portal Agregador":"Portal Agregador"
+												"Editora de Monografias ou Livros Científicos":"Editora de Monografias ou Livros Científicos"
                           						}},
 			        	  {"key":"software", "type":"select", "titleMap":{
                           							"DSpace":"DSpace",
                           							"Vufind":"Vufind",
-                          							"OJS":"OJS",
+                          							"OJS":"Open Journal System",
+													"OMP":"Open Monograph Press",
                           							"CKAN":"CKAN",
                           							"EPrints":"Eprints",
                           							"Invenio":"Invenio",
@@ -334,7 +334,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
                 "type": "string",
                 "title": "Option",
                 "enum": [
-					"repository","journal","brasil","SARI","SARC","research_dataset","hospital","institute","lab","university","portal","comum","la_referencia"
+					"repository","journal","brasil","SARI","SARC","research_dataset","hospital","institute","lab","university","portal","comum","la_referencia","publisher"
                     ]
                 }
           },
