@@ -54,7 +54,9 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
 			        	  "tags",
 			        	  "description_pt",
                           "description_en",
+                          "oaiURL",
                           "directoryURL",
+                          "indexarURL",
                           "handle/DOI",
 			          ]
 			        },
@@ -246,6 +248,20 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
             type: "string",
             title: "URL do Directório Luso-Brasileiro",
             description: "URL do recurso no Diretório Luso-Brasileiro de Acesso Aberto (http://diretorio.rcaap.pt/)",
+            required: false,
+            "default": ""
+          },
+          indexarURL: {
+            type: "string",
+            title: "URL do Directório Indexar",
+            description: "URL do recurso no Diretório Indexar (https://indexar.pt/)",
+            required: false,
+            "default": ""
+          },
+          oaiURL: {
+            type: "string",
+            title: "URL do OAI-PMH",
+            description: "URL OAI-PMH do recurso",
             required: false,
             "default": ""
           },
