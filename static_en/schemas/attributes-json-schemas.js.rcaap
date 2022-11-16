@@ -36,7 +36,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
                           						"Repositório Institucional":"Repositório Institucional",
                           						"Revista Científica":"Revista Científica",
                           						"Repositório de Dados":"Repositório de Dados",
-                          						"Portal Agregador":"Portal Agregador"
+                          						"Portal Agregador":"Portal Agregador",
 												"Editora de Monografias ou Livros Científicos":"Editora de Monografias ou Livros Científicos"
                           						}},
 			        	  {"key":"software", "type":"select", "titleMap":{
