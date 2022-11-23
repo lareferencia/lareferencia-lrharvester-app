@@ -206,6 +206,22 @@ angular.module('validation.json.schemas', []).service('JSONValidationSchemas',  
 		} /* fin schema */
 },
 
+{ 
+	name : "Validation of node occurrences (Conditional)",
+	className: "org.lareferencia.backend.validation.validator.NodeOccursConditionalValidatorRule",
+	form: [ { "type": "help", "helpvalue": "This rule is valid depending on the number of occurrences of a node"}, 
+		        { "key": "xpathExpression", "type": "textarea" }, { type: "submit", title: "Save rule" }],
+		schema: {
+			type: "object",
+			    properties: {
+			    	xpathExpression : {
+				          type: "string",
+				          title: "XPATH expression for the node selector", 
+				          description: "XPATH expression for node selecting. Ex: //*[local-name()='element' and @name='datacite']/*[local-name()='element' and @name='titles']/*[local-name()='element' and @name='title']/*[local-name()='field' and @name='value']" 
+				      }
+			    }
+			} /* fin schema */
+},
 ]; //***** fin de _RULES ******/// 
 	
 
