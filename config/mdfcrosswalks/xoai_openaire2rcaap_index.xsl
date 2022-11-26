@@ -154,7 +154,7 @@
     <xsl:template match="doc:element[@name='titles']/doc:element[@name='title']" mode="datacite">
 	<!--field name="title.{../../@name}"-->
         <field name="title.main">
-            <xsl:value-of select="normalize-space(doc:field[@name='value'])"/>
+            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -211,7 +211,7 @@
 		</xsl:if>
 			<xsl:apply-templates select="doc:field[@name='subjectScheme']" mode="datacite_subjectScheme"/>
 		</xsl:attribute>
-            <xsl:value-of select="normalize-space(doc:field[@name='value']/text())"/>
+            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -297,10 +297,10 @@
 		</xsl:if>		
 			<xsl:apply-templates select="doc:field[@name='identifierType']" mode="datacite_identifierType"/>
 		</xsl:attribute>
-            <xsl:value-of select="normalize-space(doc:field[@name='value']/text())"/>
+            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$max_string_size)"/>
         </field>
         <field name="link">
-            <xsl:value-of select="normalize-space(doc:field[@name='value']/text())"/>
+            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -342,7 +342,7 @@
 			<xsl:apply-templates select="doc:field[@name='relatedIdentifierType']"
                 mode="datacite_relatedIdentifierType"/>
 		</xsl:attribute>
-            <xsl:value-of select="normalize-space(doc:field[@name='value'])"/>
+            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -393,7 +393,7 @@ identifier.sici
 			<xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
                 mode="datacite_alternateIdentifierType"/>
 		</xsl:attribute>
-            <xsl:value-of select="normalize-space(doc:field[@name='value'])"/>
+            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -484,42 +484,42 @@ identifier.sici
       <!-- dc.language -->
     <xsl:template match="doc:element[@name='language']/doc:field[@name='value']" mode="dc">
         <field name="language">
-            <xsl:value-of select="normalize-space(text())"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
 	<!-- dc.description -->
     <xsl:template match="doc:element[@name='description']/doc:field[@name='value']" mode="dc">
         <field name="abstract">
-            <xsl:value-of select="normalize-space(text())"/>
+			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>  
   
       <!-- dc.publisher -->
     <xsl:template match="doc:element[@name='publisher']/doc:field[@name='value']" mode="dc">
         <field name="publisher">
-            <xsl:value-of select="normalize-space(text())"/>
+			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>        
 
       <!-- dc.format -->
     <xsl:template match="doc:element[@name='format']/doc:field[@name='value']" mode="dc">
         <field name="format">
-            <xsl:value-of select="normalize-space(text())"/>
+			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>         
 
       <!-- dc.source -->
     <xsl:template match="doc:element[@name='source']/doc:field[@name='value']" mode="dc">
         <field name="source">
-            <xsl:value-of select="normalize-space(text())"/>
+			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>      
 
       <!-- dc.coverage -->
     <xsl:template match="doc:element[@name='coverage']/doc:field[@name='value']" mode="dc">
         <field name="coverage">
-            <xsl:value-of select="normalize-space(text())"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -723,7 +723,7 @@ identifier.sici
         <!-- dc.type -->
     <xsl:template match="doc:element[@name='resourceType']/doc:field[@name='uri']" mode="oaire">
         <field name="type.coar">
-            <xsl:value-of select="normalize-space(text())"/>
+			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
