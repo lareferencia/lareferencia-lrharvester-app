@@ -89,17 +89,8 @@
                 select="doc:metadata/doc:element[@name='dc']/doc:element[@name='identifier']" mode="datacite"/>
                 
             <!-- if dc.identifier.uri has more than 1 value -->
-            <xsl:if
-                test="count(doc:metadata/doc:element[@name='dc']/doc:element[@name='identifier']/doc:element[@name='uri']/doc:element/doc:field[@name='value'])>1">
-                <xsl:element name="element">
-                    <xsl:attribute name="name">
-                   <xsl:text>alternateIdentifiers</xsl:text>
-                </xsl:attribute>
-                    <xsl:apply-templates
-                        select="doc:metadata/doc:element[@name='dc']/doc:element[@name='identifier']/doc:element[@name='uri']"
-                        mode="datacite_altid"/>
-                </xsl:element>
-            </xsl:if>            
+			<xsl:apply-templates
+                select="doc:metadata/doc:element[@name='dc']/doc:element[@name='identifier']" mode="datacite_altids"/>
 
             <!-- datacite:dates and embargo -->
             <xsl:apply-templates
@@ -410,19 +401,6 @@
         </xsl:for-each>
     </xsl:template>
     
-    <!-- handle: dc.identifier.tid -->
-    <xsl:template match="doc:element[@name='tid']" mode="datacite_relatedIdentifier">
-        <xsl:for-each select=".//doc:field[@name='value']">
-            <xsl:call-template name="relatedIdentifierTemplate">
-                <xsl:with-param name="value">
-                    <xsl:value-of select="concat('tid:',normalize-space(text()))"/>
-                </xsl:with-param>
-                <xsl:with-param name="relatedIdentifierType" select="'URN'"/>
-                <xsl:with-param name="relationType" select="'IsPartOf'"/>
-            </xsl:call-template>
-        </xsl:for-each>
-    </xsl:template>    
-
     <!-- handle: dc.identifier.* -->
     <xsl:template match="doc:element" mode="datacite_relatedIdentifier"/>    
     
@@ -452,28 +430,49 @@
     <!--  datacite:identifier  -->
     <!--  datacite:alternateIdentifier dc.identifier.uri  -->
     <!--  https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_alternativeidentifier.html -->
+    <xsl:template match="doc:element[@name='dc']/doc:element[@name='identifier']" mode="datacite_altids">
+		<xsl:element name="element">
+                <xsl:attribute name="name">
+                    <xsl:text>alternateIdentifiers</xsl:text>
+                 </xsl:attribute>
+            <xsl:if
+                test="count(./doc:element[@name='uri']/doc:element/doc:field[@name='value'])>1">
+                    <xsl:apply-templates
+                        select="./doc:element[@name='uri']"
+                        mode="datacite_altid"/>
+            </xsl:if>
+            <xsl:apply-templates select="*" mode="datacite_alternateIdentifier"/>
+        </xsl:element>
+    </xsl:template>
+
     <xsl:template match="doc:element[@name='dc']/doc:element[@name='identifier']/doc:element[@name='uri']"
         mode="datacite_altid">
 
         <xsl:if test="count(./doc:element/doc:field[@name='value'])>1">
-            <xsl:element name="element">
-                <xsl:attribute name="name">
-                    <xsl:text>alternateIdentifiers</xsl:text>
-                 </xsl:attribute>
-                <xsl:for-each select="./doc:element/doc:field[@name='value']">
-                    <!-- don't process the first element -->
-                    <xsl:if test="position()>1">
-                        <xsl:call-template name="alternateIdentifierTemplate">
-                            <xsl:with-param name="value" select="text()"/>
-                            <xsl:with-param name="identifierType" select="'DOI'"/>
-                        </xsl:call-template>
-                    </xsl:if>
-                </xsl:for-each>
-            </xsl:element>
+			<xsl:for-each select="./doc:element/doc:field[@name='value']">
+				<!-- don't process the first element -->
+				<xsl:if test="position()>1">
+					<xsl:call-template name="alternateIdentifierTemplate">
+						<xsl:with-param name="value" select="text()"/>
+						<xsl:with-param name="identifierType" select="'DOI'"/>
+					</xsl:call-template>
+				</xsl:if>
+			</xsl:for-each>
         </xsl:if>
     </xsl:template>
-                        
-                        
+
+    <!-- handle: dc.identifier.tid -->
+    <xsl:template match="doc:element[@name='tid']" mode="datacite_alternateIdentifier">
+        <xsl:for-each select=".//doc:field[@name='value']">
+            <xsl:call-template name="alternateIdentifierTemplate">
+                <xsl:with-param name="value">
+                    <xsl:value-of select="concat('tid:',normalize-space(text()))"/>
+                </xsl:with-param>
+                <xsl:with-param name="identifierType" select="'URN'"/>
+            </xsl:call-template>
+        </xsl:for-each>
+    </xsl:template>
+
     <!-- template for all alternateIdentifier -->
     <xsl:template name="alternateIdentifierTemplate">
         <xsl:param name="value"/>
@@ -488,7 +487,10 @@
             </xsl:call-template>
             <xsl:apply-templates select="$value" mode="field"/>
         </xsl:element>
-    </xsl:template>                            
+    </xsl:template>
+	
+
+
                         
    <!--  datacite:identifier  -->
    <!-- In the repository context Resource Identifier will be the Handle or the generated DOI that is present in dc.identifier.uri. -->
@@ -1597,5 +1599,6 @@
     <xsl:template match="*" mode="dc"/>
     <xsl:template match="*" mode="oaire"/>
     <xsl:template match="*" mode="dcterms"/>
+    <xsl:template match="*" mode="datacite_alternateIdentifier"/>
     <xsl:template match="text()|@*"/>
 </xsl:stylesheet>
