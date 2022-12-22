@@ -33,6 +33,9 @@
     </xsl:variable>
   
   <!--  Aquí se definen los prefijos utilizados para detectar contenidos con trato diferencial -->
+    <xsl:variable name="tid_prefix">
+        <xsl:text>TID:</xsl:text>
+    </xsl:variable>
     <xsl:variable name="driver_prefix">
         <xsl:text>info:eu-repo/semantics/</xsl:text>
     </xsl:variable>
@@ -89,8 +92,8 @@
             <field name="fulltext">
                 <xsl:value-of select="$fulltext"/>
             </field>
-	  
-			<!-- country -->
+      
+            <!-- country -->
             <xsl:if test="$attr_country and ($attr_country != '')">
                 <field name="country">
                     <xsl:value-of select="$attr_country"/>
@@ -113,12 +116,12 @@
                 <xsl:value-of select="$networkAcronym"/>
             </field>
       
-			<!-- networkName es parámetro -->
+            <!-- networkName es parámetro -->
             <field name="network_name_str">
                 <xsl:value-of select="$networkName"/>
             </field>
       
-			<!-- authorProfiles -->
+            <!-- authorProfiles -->
             <xsl:for-each select="tokenize($authorProfilesID,';')">
                 <field name="author.id">
                     <xsl:value-of select="."/>
@@ -152,7 +155,7 @@
     </xsl:template>
 
     <xsl:template match="doc:element[@name='titles']/doc:element[@name='title']" mode="datacite">
-	<!--field name="title.{../../@name}"-->
+    <!--field name="title.{../../@name}"-->
         <field name="title.main">
             <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
         </field>
@@ -160,7 +163,7 @@
 
 
     <xsl:template match="doc:element[@name='creators']/doc:element[@name='creator']" mode="datacite">
-	<!--field name="title.{../../@name}"-->
+    <!--field name="title.{../../@name}"-->
         <field name="creator">
             <xsl:value-of
                 select="doc:element[@name='creatorName']/doc:field[@name='value']"/>
@@ -172,11 +175,11 @@
         mode="datacite">
         <field>
             <xsl:attribute name="name">
-		<xsl:if test="not(doc:field[@name='contributorType'])">
-			<xsl:text>contributor</xsl:text>
-		</xsl:if>		
-			<xsl:apply-templates select="doc:field[@name='contributorType']" mode="datacite_contributorType"/>
-		</xsl:attribute>
+        <xsl:if test="not(doc:field[@name='contributorType'])">
+            <xsl:text>contributor</xsl:text>
+        </xsl:if>        
+            <xsl:apply-templates select="doc:field[@name='contributorType']" mode="datacite_contributorType"/>
+        </xsl:attribute>
             <xsl:value-of
                 select="doc:element[@name='contributorName']/doc:field[@name='value']"/>
         </field>
@@ -206,11 +209,11 @@
     <xsl:template match="doc:element[@name='subjects']/doc:element[@name='subject']" mode="datacite">
         <field>
             <xsl:attribute name="name">
-		<xsl:if test="not(doc:field[@name='subjectScheme'])">
-			<xsl:text>subject</xsl:text>
-		</xsl:if>
-			<xsl:apply-templates select="doc:field[@name='subjectScheme']" mode="datacite_subjectScheme"/>
-		</xsl:attribute>
+        <xsl:if test="not(doc:field[@name='subjectScheme'])">
+            <xsl:text>subject</xsl:text>
+        </xsl:if>
+            <xsl:apply-templates select="doc:field[@name='subjectScheme']" mode="datacite_subjectScheme"/>
+        </xsl:attribute>
             <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
@@ -243,15 +246,15 @@
   <!-- dc.rights -->
   <!-- PG: only consider one first entry -->
     <xsl:template match="doc:element[@name='rights'][1]" mode="datacite">
-		<!-- normalize rights -->
-		<!--  <field name="rights.access">
+        <!-- normalize rights -->
+        <!--  <field name="rights.access">
             <xsl:apply-templates select="doc:field[@name='value']/text()"
                 mode="datacite_rightsvalue"/>
         </field> -->
-		<!-- PG 2020-09-01: we choose to use rights.access
-			for COAR access type because of a legacy change that would disrupt functionality otherwise
-			https://app.asana.com/0/search/1191640932776009/1188612660534431
-		-->
+        <!-- PG 2020-09-01: we choose to use rights.access
+            for COAR access type because of a legacy change that would disrupt functionality otherwise
+            https://app.asana.com/0/search/1191640932776009/1188612660534431
+        -->
         <field name="rights.access">
             <xsl:value-of select="normalize-space(doc:field[@name='rightsURI']/text())"/>
         </field>
@@ -292,11 +295,11 @@
     <xsl:template match="doc:element[@name='identifier']" mode="datacite">
         <field>
             <xsl:attribute name="name">
-		<xsl:if test="not(doc:field[@name='identifierType'])">
-			<xsl:text>identifier</xsl:text>
-		</xsl:if>		
-			<xsl:apply-templates select="doc:field[@name='identifierType']" mode="datacite_identifierType"/>
-		</xsl:attribute>
+        <xsl:if test="not(doc:field[@name='identifierType'])">
+            <xsl:text>identifier</xsl:text>
+        </xsl:if>        
+            <xsl:apply-templates select="doc:field[@name='identifierType']" mode="datacite_identifierType"/>
+        </xsl:attribute>
             <xsl:value-of select="substring(normalize-space(doc:field[@name='value']/text()),1,$max_string_size)"/>
         </field>
         <field name="link">
@@ -312,8 +315,8 @@
             </xsl:when>
             <xsl:when test="text()='Handle'">
                 <xsl:text>identifier.url</xsl:text>
-            </xsl:when>		
-		<!-- TODO evaluate this mapping -->
+            </xsl:when>        
+        <!-- TODO evaluate this mapping -->
             <xsl:when test="text()='URN'">
                 <xsl:text>identifier.other</xsl:text>
             </xsl:when>
@@ -336,12 +339,12 @@
         mode="datacite">
         <field>
             <xsl:attribute name="name">
-		<xsl:if test="not(doc:field[@name='relatedIdentifierType'])">
-			<xsl:text>identifier.other</xsl:text>
-		</xsl:if>	
-			<xsl:apply-templates select="doc:field[@name='relatedIdentifierType']"
+        <xsl:if test="not(doc:field[@name='relatedIdentifierType'])">
+            <xsl:text>identifier.other</xsl:text>
+        </xsl:if>    
+            <xsl:apply-templates select="doc:field[@name='relatedIdentifierType']"
                 mode="datacite_relatedIdentifierType"/>
-		</xsl:attribute>
+        </xsl:attribute>
             <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
         </field>
     </xsl:template>
@@ -355,8 +358,8 @@
             </xsl:when>
             <xsl:when test="text()='Handle'">
                 <xsl:text>identifier.url</xsl:text>
-            </xsl:when>		
-		<!-- TODO evaluate this mapping -->
+            </xsl:when>        
+        <!-- TODO evaluate this mapping -->
             <xsl:when test="text()='URN'">
                 <xsl:text>identifier.other</xsl:text>
             </xsl:when>
@@ -373,13 +376,13 @@
                 <xsl:text>identifier.other</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
-	
+    
 <!--
 identifier.ismn
 identifier.govdoc
 identifier.slug
 identifier.tid
-identifier.sici	
+identifier.sici    
 -->
     </xsl:template>
 
@@ -387,16 +390,39 @@ identifier.sici
         match="doc:element[@name='alternateIdentifiers']/doc:element[@name='alternateIdentifier']" mode="datacite">
         <field>
             <xsl:attribute name="name">
-		<xsl:if test="not(doc:field[@name='alternateIdentifierType'])">
-			<xsl:text>identifier.other</xsl:text>
-		</xsl:if>	
-			<xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
-                mode="datacite_alternateIdentifierType"/>
-		</xsl:attribute>
-            <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
+                <xsl:if test="not(doc:field[@name='alternateIdentifierType'])">
+                    <xsl:text>identifier.other</xsl:text>
+                </xsl:if>
+                <xsl:choose>
+                    <xsl:when test="doc:field[@name='alternateIdentifierType']/text()='URN' and starts-with(doc:field[@name='value']/text(), $tid_prefix)">        
+                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
+                            mode="datacite_alternateIdentifierType_tid"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
+                            mode="datacite_alternateIdentifierType"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+			<xsl:choose>
+					<!-- test if is TID -->
+                    <xsl:when test="starts-with(doc:field[@name='value']/text(), $tid_prefix)">        
+                        <xsl:value-of select="substring(normalize-space(substring-after(doc:field[@name='value'],$tid_prefix)),1,$max_string_size)"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
+                    </xsl:otherwise>
+            </xsl:choose>
+            
         </field>
     </xsl:template>
 
+    <!-- TID -->
+    <xsl:template
+        match="doc:element[@name='alternateIdentifier']/doc:field[@name='alternateIdentifierType']"
+        mode="datacite_alternateIdentifierType_tid">
+        <xsl:text>identifier.tid</xsl:text>
+    </xsl:template>
     <xsl:template
         match="doc:element[@name='alternateIdentifier']/doc:field[@name='alternateIdentifierType']"
         mode="datacite_alternateIdentifierType">
@@ -477,9 +503,9 @@ identifier.sici
     <xsl:template match="/doc:metadata/doc:element[@name='dc']">
         <xsl:apply-templates select="*" mode="dc"/>
     </xsl:template>
-  	<xsl:template match="doc:element" mode="dc">
-		<xsl:apply-templates select="*" mode="dc"/>
-	</xsl:template>
+      <xsl:template match="doc:element" mode="dc">
+        <xsl:apply-templates select="*" mode="dc"/>
+    </xsl:template>
 
       <!-- dc.language -->
     <xsl:template match="doc:element[@name='language']/doc:field[@name='value']" mode="dc">
@@ -488,31 +514,31 @@ identifier.sici
         </field>
     </xsl:template>
 
-	<!-- dc.description -->
+    <!-- dc.description -->
     <xsl:template match="doc:element[@name='description']/doc:field[@name='value']" mode="dc">
         <field name="abstract">
-			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>  
   
       <!-- dc.publisher -->
     <xsl:template match="doc:element[@name='publisher']/doc:field[@name='value']" mode="dc">
         <field name="publisher">
-			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>        
 
       <!-- dc.format -->
     <xsl:template match="doc:element[@name='format']/doc:field[@name='value']" mode="dc">
         <field name="format">
-			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>         
 
       <!-- dc.source -->
     <xsl:template match="doc:element[@name='source']/doc:field[@name='value']" mode="dc">
         <field name="source">
-			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>      
 
@@ -530,7 +556,7 @@ identifier.sici
    <!-- resourceType -->
     <xsl:template match="doc:element[@name='resourceType']" mode="oaire">
         <field name="type">
-		<!-- normalize types -->
+        <!-- normalize types -->
             <xsl:apply-templates select="doc:field[@name='value']/text()" mode="oaire_typevalue"/>
         </field>
         <xsl:apply-templates select="doc:field[@name='uri']" mode="oaire"/>
@@ -540,7 +566,7 @@ identifier.sici
         mode="oaire_typevalue">
         <xsl:choose>
             <xsl:when test=".='journal article'">
-	<!--journalArticle http://purl.org/coar/resource_type/c_6501-->
+    <!--journalArticle http://purl.org/coar/resource_type/c_6501-->
                 <xsl:text>article</xsl:text>
             </xsl:when>
             <xsl:when test=".='book'">
@@ -723,7 +749,7 @@ identifier.sici
         <!-- dc.type -->
     <xsl:template match="doc:element[@name='resourceType']/doc:field[@name='uri']" mode="oaire">
         <field name="type.coar">
-			<xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
+            <xsl:value-of select="substring(normalize-space(text()),1,$max_string_size)"/>
         </field>
     </xsl:template>
 
@@ -754,7 +780,7 @@ identifier.sici
         </xsl:variable>
 
         <xsl:if test="$identifier">
-		<!-- project:  info:eu-repo/grantAgreement/FCT/5876-PPCDTI/99063/PT -->
+        <!-- project:  info:eu-repo/grantAgreement/FCT/5876-PPCDTI/99063/PT -->
             <field name="project">
                 <xsl:value-of
                     select="normalize-space(concat($project_prefix, $funderAcronym, '/', $fundingStream, '/', $identifier, '/', $funderJuridiction))"/>
@@ -764,7 +790,7 @@ identifier.sici
     </xsl:template>    
   
 
-	<!-- don't do nothing with funder name -->
+    <!-- don't do nothing with funder name -->
     <xsl:template match="doc:element[@name='fundingReference']/doc:element[@name='funderName']"
         mode="oaire_fundingReference"/>
 
@@ -853,7 +879,7 @@ identifier.sici
 
 
     <xsl:template match="doc:element[@name='files']" mode="oaire">
-	<!-- I can only have one full text -->
+    <!-- I can only have one full text -->
         <xsl:for-each select="doc:element[@name='file'][doc:field[@name='objectType']/text()='fulltext']">
             <xsl:if test="position() = 1">
                 <field name="fulltext.url">
@@ -870,8 +896,8 @@ identifier.sici
             <xsl:value-of select="normalize-space(doc:field[@name='value']/text())"/>
         </field>
     </xsl:template>
-	
-	<!-- citation -->
+    
+    <!-- citation -->
     <xsl:template match="doc:element[@name='citation']" mode="oaire">
 
         <xsl:variable name="resourceType">
