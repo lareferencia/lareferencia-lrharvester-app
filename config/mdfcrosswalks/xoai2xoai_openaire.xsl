@@ -466,7 +466,7 @@
         <xsl:for-each select=".//doc:field[@name='value']">
             <xsl:call-template name="alternateIdentifierTemplate">
                 <xsl:with-param name="value">
-                    <xsl:value-of select="concat('tid:',normalize-space(text()))"/>
+                    <xsl:value-of select="concat('TID:',normalize-space(text()))"/>
                 </xsl:with-param>
                 <xsl:with-param name="identifierType" select="'URN'"/>
             </xsl:call-template>

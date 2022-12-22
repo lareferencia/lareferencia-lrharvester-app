@@ -312,6 +312,20 @@
 				mode="field" />
 		</xsl:element>
 	</xsl:template>
+	<!-- datacite.alternateIdentifier[tid] -->
+	<xsl:template match="datacite:alternateIdentifier[@alternateIdentifierType='tid']">
+		<xsl:element name="element">
+			<xsl:attribute name="name">
+            <xsl:text>alternateIdentifier</xsl:text>
+         </xsl:attribute>
+			<xsl:apply-templates select="@*" mode="tid" />
+			<xsl:variable name="value">
+				<xsl:text>TID:</xsl:text>
+				<xsl:value-of select="./text()"/>
+			</xsl:variable>
+			<xsl:apply-templates select="$value" mode="field" />
+		</xsl:element>
+	</xsl:template>
 	<!-- datacite.relatedIdentifiers -->
 	<xsl:template match="datacite:relatedIdentifiers">
 		<xsl:element name="element">
@@ -616,6 +630,12 @@
 	</xsl:template>
 	<xsl:template match="@alternateIdentifierType">
 		<xsl:apply-templates select="." mode="field" />
+	</xsl:template>
+	<xsl:template match="@alternateIdentifierType" mode="tid">
+		<xsl:variable name="value">
+			<xsl:text>URN</xsl:text>
+		</xsl:variable>
+		<xsl:apply-templates select="$value" mode="field" />
 	</xsl:template>
 	<xsl:template match="@identifierType">
 		<xsl:apply-templates select="." mode="field" />
