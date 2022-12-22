@@ -64,6 +64,9 @@
                 <xsl:with-param name="relations" select="dc:relation"/>
                 <xsl:with-param name="identifiers" select="dc:identifier"/>
             </xsl:call-template>
+            <xsl:call-template name="datacite_alternativeId_wrapper">
+                <xsl:with-param name="identifiers" select="dc:identifier"/>
+            </xsl:call-template>
             <xsl:call-template name="datacite_date_wrapper">
                 <xsl:with-param name="nodes" select="dc:date"/>
             </xsl:call-template>
@@ -77,8 +80,8 @@
         <xsl:if test="$nodes">
             <xsl:element name="element">
                 <xsl:attribute name="name">
-				<xsl:value-of select="$wrapper"/>
-			 </xsl:attribute>
+                <xsl:value-of select="$wrapper"/>
+             </xsl:attribute>
                 <xsl:for-each select="$nodes">
                     <xsl:apply-templates select="." mode="datacite_child"/>
                 </xsl:for-each>
@@ -91,12 +94,12 @@
         <xsl:if test="$nodes">
             <xsl:element name="element">
                 <xsl:attribute name="name">
-				<xsl:text>dates</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>dates</xsl:text>
+             </xsl:attribute>
                 <xsl:element name="element">
                     <xsl:attribute name="name">
-				<xsl:text>date</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>date</xsl:text>
+             </xsl:attribute>
                     <xsl:for-each select="$nodes">
                         <xsl:apply-templates select="." mode="datacite_child"/>
                     </xsl:for-each>
@@ -111,17 +114,33 @@
         <xsl:if test="$identifiers or $relations">
             <xsl:element name="element">
                 <xsl:attribute name="name">
-				<xsl:text>relatedIdentifiers</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>relatedIdentifiers</xsl:text>
+             </xsl:attribute>
                 <xsl:for-each select="$identifiers">
-                    <xsl:apply-templates select="." mode="datacite_child"/>
+                    <xsl:apply-templates select="." mode="datacite_relatedchild"/>
                 </xsl:for-each>
                 <xsl:for-each select="$relations">
                     <xsl:apply-templates select="." mode="datacite_child"/>
                 </xsl:for-each>
             </xsl:element>
         </xsl:if>
-    </xsl:template> 	
+    </xsl:template>
+
+    <xsl:template name="datacite_alternativeId_wrapper">
+        <xsl:param name="identifiers"/>
+        <xsl:if test="$identifiers">
+            <xsl:element name="element">
+                <xsl:attribute name="name">
+                <xsl:text>alternateIdentifiers</xsl:text>
+             </xsl:attribute>
+                <xsl:for-each select="$identifiers">
+                    <xsl:apply-templates select="." mode="datacite_alternatechild"/>
+                </xsl:for-each>
+            </xsl:element>
+        </xsl:if>
+    </xsl:template> 
+    
+    
 
    <!-- datacite.title -->   
    <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_title.html -->
@@ -135,8 +154,8 @@
         </xsl:element>
     </xsl:template>   
 
-	
-	<!-- datacite.creator -->
+    
+    <!-- datacite.creator -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_creator.html -->
     <xsl:template match="dc:creator" mode="datacite_child">
         <xsl:element name="element">
@@ -145,9 +164,9 @@
          </xsl:attribute>
             <xsl:apply-templates select="." mode="creatorName"/>
         </xsl:element>
-    </xsl:template>	
-	
-	<!-- datacite.creator.creatorName -->
+    </xsl:template>    
+    
+    <!-- datacite.creator.creatorName -->
     <xsl:template match="dc:creator" mode="creatorName">
         <xsl:element name="element">
             <xsl:attribute name="name">
@@ -155,9 +174,9 @@
          </xsl:attribute>
             <xsl:apply-templates select="text()" mode="field"/>
         </xsl:element>
-    </xsl:template>	
-	
-	
+    </xsl:template>    
+    
+    
    <!-- datacite:subjects -->
    <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_subject.html -->
     <xsl:template match="dc:subject" mode="datacite_child">
@@ -167,8 +186,8 @@
          </xsl:attribute>
             <xsl:apply-templates select="text()" mode="field"/>
         </xsl:element>
-    </xsl:template>		
-	
+    </xsl:template>        
+    
    <!-- datacite:rights -->
    <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_accessrights.html -->
     <xsl:template match="dc:rights" mode="datacite">
@@ -200,14 +219,14 @@
             <xsl:with-param name="name" select="'rightsURI'"/>
             <xsl:with-param name="value" select="$rightsURI"/>
         </xsl:call-template>
-    </xsl:template>	
-	
-	
+    </xsl:template>    
+    
+    
     <!-- datacite.dates -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_embargoenddate.html -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_publicationdate.html -->
     <xsl:template match="dc:date[3]" mode="datacite_child">
-		<!-- accessioned -->
+        <!-- accessioned -->
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>Accepted</xsl:text>
@@ -232,8 +251,8 @@
          </xsl:attribute>
             <xsl:apply-templates select="text()" mode="field"/>
         </xsl:element>
-    </xsl:template>	
-	
+    </xsl:template>    
+    
    <!--  datacite:identifier  -->
    <!-- In the repository context Resource Identifier will be the Handle or the generated DOI that is present in dc.identifier.uri. -->
    <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_resourceidentifier.html -->
@@ -244,7 +263,7 @@
                 <xsl:with-param name="type" select="'Handle'"/>
             </xsl:call-template>
         </xsl:variable>
-		<!-- if is an handle -->
+        <!-- if is an handle -->
         <xsl:if test="string-length($identifierHandle)!=0">
             <xsl:copy-of select="$identifierHandle"/>
         </xsl:if>
@@ -256,10 +275,10 @@
                     <xsl:with-param name="type" select="'DOI'"/>
                 </xsl:call-template>
             </xsl:variable>
-			<!-- if is a DOI -->
+            <!-- if is a DOI -->
             <xsl:if test="string-length($identifierDOI)!=0">
-				
-                <xsl:copy-of select="$identifierDOI"/>				
+                
+                <xsl:copy-of select="$identifierDOI"/>                
             </xsl:if>
 
             <xsl:if test="string-length($identifierDOI)=0">
@@ -269,34 +288,12 @@
                         <xsl:with-param name="type" select="'URL'"/>
                     </xsl:call-template>
                 </xsl:variable>
-				<!-- if is a URL -->
+                <!-- if is a URL -->
                 <xsl:if test="string-length($identifierURL)!=0">
                     <xsl:copy-of select="$identifierURL"/>
                 </xsl:if>
             </xsl:if>
         </xsl:if>
-
-        <!-- oai identifier as alternateIdentifier -->
-        <xsl:if test="string-length($identifier)!=0">
-            <xsl:element name="element">
-                <xsl:attribute name="name">
-                    <xsl:text>alternateIdentifiers</xsl:text>
-                </xsl:attribute>    
-                <xsl:element name="element">
-                    <xsl:attribute name="name">
-                        <xsl:text>alternateIdentifier</xsl:text>
-                    </xsl:attribute>
-                    <xsl:call-template name="field">
-                        <xsl:with-param name="name" select="'value'"/>
-                            <xsl:with-param name="value" select="$identifier"/>
-                    </xsl:call-template>
-                    <xsl:call-template name="field">
-                        <xsl:with-param name="name" select="'alternateIdentifierType'"/>
-                            <xsl:with-param name="value" select="'OAI'"/>
-                    </xsl:call-template>
-                </xsl:element>
-            </xsl:element>
-        </xsl:if>        
 
     </xsl:template>
 
@@ -310,52 +307,51 @@
                     <xsl:with-param name="field" select="."/>
                 </xsl:call-template>
             </xsl:variable>
-			<xsl:if test="$identifierType = $type">
-			<!-- only process the first element -->
-				<xsl:apply-templates select="." mode="datacite_identifierField"/>
-			</xsl:if>				
+            <xsl:if test="$identifierType = $type">
+            <!-- only process the first element -->
+                <xsl:apply-templates select="." mode="datacite_identifierField"/>
+            </xsl:if>                
         </xsl:for-each>
     </xsl:template>
 
 
     <xsl:template match="dc:identifier" mode="datacite_prefix_doi">
-		<xsl:variable name="doiPrefix" select="'https://doi.org/'"/>
-		<xsl:choose>
-			<xsl:when test="starts-with(., $doiPrefix)">
-				<xsl:value-of select="."/>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>https://doi.org/</xsl:text>
-				<xsl:value-of select="."/>
-			</xsl:otherwise>
-		</xsl:choose>
+        <xsl:variable name="doiPrefix" select="'https://doi.org/'"/>
+        <xsl:choose>
+            <xsl:when test="starts-with(., $doiPrefix)">
+                <xsl:value-of select="."/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>https://doi.org/</xsl:text>
+                <xsl:value-of select="."/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
-
     <xsl:template match="dc:identifier" mode="datacite_identifierField">
-		<xsl:variable name="identifierType">
+        <xsl:variable name="identifierType">
             <xsl:call-template name="resolveFieldType">
                 <xsl:with-param name="field" select="."/>
             </xsl:call-template>
         </xsl:variable>
         <xsl:element name="element">
             <xsl:attribute name="name">
-			<xsl:text>identifier</xsl:text>
-		 </xsl:attribute>
-			<xsl:choose>
-				<xsl:when test="$identifierType = 'DOI'">
-					<xsl:variable name="identifierDOI">
-						<xsl:apply-templates select="." mode="datacite_prefix_doi"/>
-					</xsl:variable>					
-					<xsl:call-template name="field">
-						<xsl:with-param name="name" select="'value'"/>
-						<xsl:with-param name="value" select="$identifierDOI"/>
-					</xsl:call-template>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:apply-templates select="text()" mode="field"/>
-				</xsl:otherwise>
-			</xsl:choose>
+            <xsl:text>identifier</xsl:text>
+         </xsl:attribute>
+            <xsl:choose>
+                <xsl:when test="$identifierType = 'DOI'">
+                    <xsl:variable name="identifierDOI">
+                        <xsl:apply-templates select="." mode="datacite_prefix_doi"/>
+                    </xsl:variable>                    
+                    <xsl:call-template name="field">
+                        <xsl:with-param name="name" select="'value'"/>
+                        <xsl:with-param name="value" select="$identifierDOI"/>
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="text()" mode="field"/>
+                </xsl:otherwise>
+            </xsl:choose>
             
             <xsl:apply-templates select="." mode="datacite_identifierType"/>
         </xsl:element>
@@ -371,38 +367,51 @@
             <xsl:with-param name="name" select="'identifierType'"/>
             <xsl:with-param name="value" select="$identifierType"/>
         </xsl:call-template>
-    </xsl:template>		
-	
-	
+    </xsl:template>        
+    
+    
     <!-- datacite:relatedIdentifiers -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_relatedidentifier.html -->
    <!-- datacite:relatedIdentifier -->
-    <xsl:template match="dc:identifier" mode="datacite_child">
-		<xsl:variable name="identifierType">
+    <xsl:template match="dc:identifier" mode="datacite_relatedchild">
+        <xsl:variable name="identifierType">
             <xsl:call-template name="resolveFieldType">
                 <xsl:with-param name="field" select="."/>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:element name="element">
-            <xsl:attribute name="name">
-            <xsl:text>relatedIdentifier</xsl:text>
-         </xsl:attribute>
-			<xsl:choose>
-				<xsl:when test="$identifierType = 'DOI'">
-					<xsl:variable name="identifierDOI">
-						<xsl:apply-templates select="." mode="datacite_prefix_doi"/>
-					</xsl:variable>					
-					<xsl:call-template name="field">
-						<xsl:with-param name="name" select="'value'"/>
-						<xsl:with-param name="value" select="$identifierDOI"/>
-					</xsl:call-template>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:apply-templates select="text()" mode="field"/>
-				</xsl:otherwise>
-			</xsl:choose>            
-            <xsl:apply-templates select="." mode="datacite_relatedIdentifierType"/>
-        </xsl:element>
+
+        <xsl:variable name="isTID">
+            <xsl:call-template name="isTID">
+                <xsl:with-param name="field" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
+        
+        <!-- we will only consider related identifiers some specific types of identifiers -->
+        <xsl:if test="$isTID = 'false' and $identifierType != 'DOI' and $identifierType != 'Handle'">
+        
+            <xsl:element name="element">
+                <xsl:attribute name="name">
+                <xsl:text>relatedIdentifier</xsl:text>
+             </xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$identifierType = 'DOI'">
+                        <xsl:variable name="identifierDOI">
+                            <xsl:apply-templates select="." mode="datacite_prefix_doi"/>
+                        </xsl:variable>                    
+                        <xsl:call-template name="field">
+                            <xsl:with-param name="name" select="'value'"/>
+                            <xsl:with-param name="value" select="$identifierDOI"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="text()" mode="field"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:apply-templates select="." mode="datacite_relatedIdentifierType"/>
+                <xsl:apply-templates select="." mode="datacite_relationType"/>
+            </xsl:element>
+            
+        </xsl:if>
     </xsl:template>
 
 
@@ -428,8 +437,8 @@
         <xsl:if test="$isURL = 'true'">
             <xsl:element name="element">
                 <xsl:attribute name="name">
-				<xsl:text>relatedIdentifier</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>relatedIdentifier</xsl:text>
+             </xsl:attribute>
                 <xsl:apply-templates select="text()" mode="field"/>
                 <xsl:apply-templates select="." mode="datacite_relatedIdentifierType"/>
                 <xsl:apply-templates select="." mode="datacite_relationType"/>
@@ -450,15 +459,103 @@
         </xsl:call-template>
     </xsl:template>
 
+    <xsl:template match="dc:identifier" mode="datacite_relationType">
+        <xsl:call-template name="field">
+            <xsl:with-param name="name" select="'relationType'"/>
+            <xsl:with-param name="value" select="'HasVersion'"/>
+        </xsl:call-template>
+    </xsl:template>
 
     <xsl:template match="dc:relation" mode="datacite_relationType">
         <xsl:call-template name="field">
             <xsl:with-param name="name" select="'relationType'"/>
             <xsl:with-param name="value" select="'HasVersion'"/>
         </xsl:call-template>
-    </xsl:template>	
-	
-	<!-- dc -->
+    </xsl:template>
+    
+    <!-- datacite:relatedIdentifiers -->
+    <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_relatedidentifier.html -->
+   <!-- datacite:alternateIdentifier -->
+    <xsl:template match="dc:identifier" mode="datacite_alternatechild">
+        <xsl:variable name="identifierType">
+            <xsl:call-template name="resolveFieldType">
+                <xsl:with-param name="field" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
+        
+        <xsl:variable name="isTID">
+            <xsl:call-template name="isTID">
+                <xsl:with-param name="field" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
+
+        <!-- we will only consider alternate identifiers some specific types of identifiers -->
+        <xsl:if test="$isTID = 'true' or $identifierType = 'DOI' or $identifierType = 'Handle'">
+
+            <xsl:element name="element">
+                <xsl:attribute name="name">
+                <xsl:text>alternateIdentifier</xsl:text>
+             </xsl:attribute>
+                <xsl:choose>
+                    <xsl:when test="$identifierType = 'DOI'">
+                        <xsl:variable name="identifierDOI">
+                            <xsl:apply-templates select="." mode="datacite_prefix_doi"/>
+                        </xsl:variable>                    
+                        <xsl:call-template name="field">
+                            <xsl:with-param name="name" select="'value'"/>
+                            <xsl:with-param name="value" select="$identifierDOI"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="$identifierType = 'URN' and $isTID = 'true'">
+                        <xsl:variable name="identifierTID">
+                            <xsl:apply-templates select="." mode="datacite_prefix_tid"/>
+                        </xsl:variable>
+                        <xsl:call-template name="field">
+                            <xsl:with-param name="name" select="'value'"/>
+                            <xsl:with-param name="value" select="$identifierTID"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:apply-templates select="text()" mode="field"/>
+                    </xsl:otherwise>
+                </xsl:choose>            
+                <xsl:apply-templates select="." mode="datacite_alternateIdentifierType"/>
+            </xsl:element>
+        
+        </xsl:if>
+        
+    </xsl:template>
+    
+    
+    <xsl:template match="dc:identifier" mode="datacite_prefix_tid">
+        <xsl:variable name="tidPrefix" select="'TID:'"/>
+        <xsl:choose>
+            <xsl:when test="starts-with(., $tidPrefix)">
+                <xsl:value-of select="."/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>TID:</xsl:text>
+                <xsl:value-of select="."/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+
+    
+    <xsl:template match="dc:identifier" mode="datacite_alternateIdentifierType">
+        <xsl:variable name="alternateIdentifierType">
+            <xsl:call-template name="resolveFieldType">
+                <xsl:with-param name="field" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:call-template name="field">
+            <xsl:with-param name="name" select="'alternateIdentifierType'"/>
+            <xsl:with-param name="value" select="$alternateIdentifierType"/>
+        </xsl:call-template>
+    </xsl:template>
+
+
+    <!-- dc -->
     <xsl:template match="oai_dc:dc" mode="dc">
         <xsl:element name="element">
             <xsl:attribute name="name">
@@ -466,8 +563,8 @@
          </xsl:attribute>
             <xsl:apply-templates select="*" mode="dc"/>
         </xsl:element>
-    </xsl:template>  	
-	
+    </xsl:template>      
+    
 
     <!-- dc:description -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_description.html -->
@@ -479,8 +576,8 @@
             <xsl:apply-templates select="@*"/>
             <xsl:apply-templates select="text()" mode="field"/>
         </xsl:element>
-    </xsl:template>	
-	
+    </xsl:template>    
+    
     <!-- dc:publisher -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_publisher.html -->
     <xsl:template match="dc:publisher" mode="dc">
@@ -491,7 +588,7 @@
             <xsl:apply-templates select="text()" mode="field"/>
         </xsl:element>
     </xsl:template>
-	
+    
 
     <!-- dc:language -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_language.html -->
@@ -527,9 +624,9 @@
          </xsl:attribute>
             <xsl:apply-templates select="text()" mode="field"/>
         </xsl:element>
-    </xsl:template>	
-	
-	<!-- oaire -->
+    </xsl:template>    
+    
+    <!-- oaire -->
     <xsl:template match="oai_dc:dc" mode="oaire">
         <xsl:element name="element">
             <xsl:attribute name="name">
@@ -551,23 +648,23 @@
         <xsl:if test="$nodes">
             <xsl:element name="element">
                 <xsl:attribute name="name">
-				<xsl:value-of select="$wrapper"/>
-			 </xsl:attribute>
+                <xsl:value-of select="$wrapper"/>
+             </xsl:attribute>
                 <xsl:for-each select="$nodes">
                     <xsl:apply-templates select="." mode="oaire_child"/>
                 </xsl:for-each>
             </xsl:element>
         </xsl:if>
-    </xsl:template> 	
-	
+    </xsl:template>     
+    
     <!-- oaire:resourceType -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_publicationtype.html -->
     <xsl:template
         match="dc:type[not(text()='info:eu-repo/semantics/publishedVersion' 
-			or text()='info:eu-repo/semantics/submittedVersion' 
-			or text()='info:eu-repo/semantics/acceptedVersion'
-			or text()='info:eu-repo/semantics/draft'
-			or text()='info:eu-repo/semantics/updatedVersion' )]"
+            or text()='info:eu-repo/semantics/submittedVersion' 
+            or text()='info:eu-repo/semantics/acceptedVersion'
+            or text()='info:eu-repo/semantics/draft'
+            or text()='info:eu-repo/semantics/updatedVersion' )]"
         mode="oaire">
         <xsl:variable name="normalizedType">
             <xsl:copy>
@@ -613,14 +710,14 @@
             <xsl:with-param name="value" select="$resourceTypeURI"/>
         </xsl:call-template>
     </xsl:template>
-	
-	<!-- oaire:version -->
+    
+    <!-- oaire:version -->
     <xsl:template
         match="dc:type[text()='info:eu-repo/semantics/publishedVersion' 
-			or text()='info:eu-repo/semantics/submittedVersion' 
-			or text()='info:eu-repo/semantics/acceptedVersion'
-			or text()='info:eu-repo/semantics/draft'
-			or text()='info:eu-repo/semantics/updatedVersion']"
+            or text()='info:eu-repo/semantics/submittedVersion' 
+            or text()='info:eu-repo/semantics/acceptedVersion'
+            or text()='info:eu-repo/semantics/draft'
+            or text()='info:eu-repo/semantics/updatedVersion']"
         mode="oaire">
         <xsl:variable name="normalizedVersion">
             <xsl:copy>
@@ -655,7 +752,7 @@
 
     <!-- oaire:fundingReferences -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_projectid.html -->
-	<!-- oaire:fundingReference -->
+    <!-- oaire:fundingReference -->
     <xsl:template match="dc:relation" mode="oaire_child">
         <xsl:variable name="isURNProject">
             <xsl:call-template name="isURNProject">
@@ -665,8 +762,8 @@
         <xsl:if test="$isURNProject = 'true'">
             <xsl:element name="element">
                 <xsl:attribute name="name">
-				<xsl:text>fundingReference</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>fundingReference</xsl:text>
+             </xsl:attribute>
                 <xsl:call-template name="processFundingReference">
                     <xsl:with-param name="reference" select="."/>
                 </xsl:call-template>
@@ -697,22 +794,22 @@
         </xsl:call-template>
         <xsl:call-template name="oaire_awardNumber">
             <xsl:with-param name="field" select="$awardNumber"/>
-        </xsl:call-template>		
-		
-		<!-- it would be useful an OpenAIRE resolving service for the given URI 
-			to be used in oaire.awardURI
-		-->
+        </xsl:call-template>        
+        
+        <!-- it would be useful an OpenAIRE resolving service for the given URI 
+            to be used in oaire.awardURI
+        -->
     </xsl:template>
-		 
-		 
-		 
+         
+         
+         
     <!-- This template creates the sub-element <oaire:awardTitle> from a Funded Project built entity -->
     <xsl:template name="oaire_awardTitle">
         <xsl:param name="field"/>
         <xsl:element name="element">
             <xsl:attribute name="name">
-				<xsl:text>awardTitle</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>awardTitle</xsl:text>
+             </xsl:attribute>
             <xsl:apply-templates select="$field" mode="field"/>
         </xsl:element>
     </xsl:template>
@@ -727,8 +824,8 @@
         </xsl:variable>
         <xsl:element name="element">
             <xsl:attribute name="name">
-				<xsl:text>funderName</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>funderName</xsl:text>
+             </xsl:attribute>
             <xsl:apply-templates select="$funderName" mode="field"/>
         </xsl:element>
     </xsl:template>
@@ -743,8 +840,8 @@
         </xsl:variable>
         <xsl:element name="element">
             <xsl:attribute name="name">
-				<xsl:text>funderIdentifier</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>funderIdentifier</xsl:text>
+             </xsl:attribute>
             <xsl:apply-templates select="$funderDOI" mode="field"/>
             <xsl:call-template name="field">
                 <xsl:with-param name="name" select="'funderIdentifierType'"/>
@@ -759,8 +856,8 @@
 
         <xsl:element name="element">
             <xsl:attribute name="name">
-				<xsl:text>fundingStream</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>fundingStream</xsl:text>
+             </xsl:attribute>
             <xsl:call-template name="field">
                 <xsl:with-param name="name" select="'value'"/>
                 <xsl:with-param name="value" select="normalize-space($field)"/>
@@ -773,8 +870,8 @@
         <xsl:param name="field"/>
         <xsl:element name="element">
             <xsl:attribute name="name">
-				<xsl:text>awardNumber</xsl:text>
-			 </xsl:attribute>
+                <xsl:text>awardNumber</xsl:text>
+             </xsl:attribute>
             <xsl:call-template name="field">
                 <xsl:with-param name="name" select="'value'"/>
                 <xsl:with-param name="value" select="normalize-space($field)"/>
@@ -839,8 +936,21 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-	
-	<!-- it will verify if a given field is a URN - project -->
+
+    <!-- it will verify if a given field is a TID identifier -->
+    <xsl:template name="isTID">
+        <xsl:param name="field"/>
+        <xsl:choose>
+            <xsl:when test="string(number($field/text())) != 'NaN' and string-length($field/text()) = 9">
+                <xsl:value-of select="true()"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="false()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <!-- it will verify if a given field is a URN - project -->
     <xsl:template name="isURNProject">
         <xsl:param name="field"/>
         <xsl:variable name="project_prefix" select="'info:eu-repo/grantAgreement'"/>
@@ -853,7 +963,6 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-	  
 
     <!-- it will verify if a given field is an ORCID -->
     <xsl:template name="isORCID">
@@ -905,6 +1014,11 @@
                 <xsl:with-param name="field" select="$field"/>
             </xsl:call-template>
         </xsl:variable>
+        <xsl:variable name="isTID">
+            <xsl:call-template name="isTID">
+                <xsl:with-param name="field" select="$field"/>
+            </xsl:call-template>
+        </xsl:variable>
         <xsl:choose>
             <xsl:when test="$isHandle = 'true'">
                 <xsl:text>Handle</xsl:text>
@@ -915,15 +1029,18 @@
             <xsl:when test="$isURL = 'true' and $isHandle = 'false'">
                 <xsl:text>URL</xsl:text>
             </xsl:when>
+            <xsl:when test="$isTID = 'true'">
+                <xsl:text>URN</xsl:text>
+            </xsl:when>
             <xsl:otherwise>
                 <xsl:text>N/A</xsl:text>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-	
+    
    <!-- 
-	This template is temporary.
-	it's only purpose it to provide a funders name based on the URI
+    This template is temporary.
+    it's only purpose it to provide a funders name based on the URI
    -->
     <xsl:template name="resolveFunderNameByAcronym">
         <xsl:param name="field"/>
@@ -949,8 +1066,8 @@
     </xsl:template>
 
    <!-- 
-	This template is temporary.
-	it's only purpose it to provide a funders doi based on the URI
+    This template is temporary.
+    it's only purpose it to provide a funders doi based on the URI
    -->
     <xsl:template name="resolveCrossrefFunderId">
         <xsl:param name="field"/>
@@ -971,7 +1088,7 @@
                 <xsl:text>10.13039/100010269</xsl:text>
             </xsl:when>
         </xsl:choose>
-    </xsl:template>  	
+    </xsl:template>      
 
     <!--
         This template will return the general type of the resource
@@ -1007,9 +1124,7 @@
             <xsl:when test="$lc_dc_type = 'software'">
                 <xsl:text>software</xsl:text>
             </xsl:when>
-            <xsl:otherwise>
-                other research product
-            </xsl:otherwise>
+            <xsl:otherwise>other research product</xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
@@ -1433,8 +1548,8 @@
                 test="$lc_dc_type = 'research article' or $lc_dc_type = 'researcharticle' or $dc_type = 'http://purl.org/coar/resource_type/c_2df8fbb1'">
                 <xsl:text>research article</xsl:text>
             </xsl:when>
-			
-			<!-- when dc:type holds publishing status -->
+            
+            <!-- when dc:type holds publishing status -->
             <xsl:when test="$dc_type = 'info:eu-repo/semantics/publishedVersion'">
                 <xsl:text>VoR</xsl:text>
             </xsl:when>
@@ -1449,9 +1564,9 @@
             </xsl:when>
             <xsl:when test="$dc_type = 'info:eu-repo/semantics/updatedVersion'">
                 <xsl:text>CVoR</xsl:text>
-            </xsl:when>	
+            </xsl:when>    
 
-			<!-- other cases -->
+            <!-- other cases -->
             <xsl:otherwise>
                 <xsl:text>other</xsl:text>
             </xsl:otherwise>
@@ -1518,13 +1633,13 @@
                 <xsl:value-of select="$value"/>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>	
+    </xsl:template>    
 
 
-	<!-- 
-		Resource Version mapping URI
-		https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_resourceversion.html
-	-->
+    <!-- 
+        Resource Version mapping URI
+        https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_resourceversion.html
+    -->
     <xsl:template name="resolveVersionURI">
         <xsl:param name="field"/>
         <xsl:choose>
@@ -1592,7 +1707,7 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-	
+    
    <!-- xml:language -->
    <!-- this template will add a xml:lang parameter with the defined language of an element -->
     <xsl:template match="@xml:lang">
@@ -1603,7 +1718,7 @@
     </xsl:template>
 
 
-	<!-- generic template for fields -->
+    <!-- generic template for fields -->
     <xsl:template match="text()" mode="field">
         <xsl:call-template name="field">
             <xsl:with-param name="name" select="'value'"/>
@@ -1616,13 +1731,13 @@
         <xsl:param name="value"/>
         <xsl:element name="field">
             <xsl:attribute name="name">
-				<xsl:value-of select="$name"/>
-			 </xsl:attribute>
+                <xsl:value-of select="$name"/>
+             </xsl:attribute>
             <xsl:value-of select="$value"/>
         </xsl:element>
-    </xsl:template>  		
+    </xsl:template>          
 
-	<!-- ignore all non specified text values or attributes -->
+    <!-- ignore all non specified text values or attributes -->
     <xsl:template match="*" mode="datacite"/>
     <xsl:template match="*" mode="dc"/>
     <xsl:template match="*" mode="oaire"/>
