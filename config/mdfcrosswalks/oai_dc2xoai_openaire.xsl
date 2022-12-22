@@ -1124,9 +1124,7 @@
             <xsl:when test="$lc_dc_type = 'software'">
                 <xsl:text>software</xsl:text>
             </xsl:when>
-            <xsl:otherwise>
-                other research product
-            </xsl:otherwise>
+            <xsl:otherwise>other research product</xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
