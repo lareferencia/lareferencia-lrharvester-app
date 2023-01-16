@@ -388,33 +388,35 @@ identifier.sici
 
     <xsl:template
         match="doc:element[@name='alternateIdentifiers']/doc:element[@name='alternateIdentifier']" mode="datacite">
+        <xsl:for-each select="doc:field[@name='value']">
         <field>
             <xsl:attribute name="name">
-                <xsl:if test="not(doc:field[@name='alternateIdentifierType'])">
+                <xsl:if test="not(../doc:field[@name='alternateIdentifierType'])">
                     <xsl:text>identifier.other</xsl:text>
                 </xsl:if>
                 <xsl:choose>
-                    <xsl:when test="doc:field[@name='alternateIdentifierType']/text()='URN' and starts-with(doc:field[@name='value']/text(), $tid_prefix)">        
-                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
+                    <xsl:when test="../doc:field[@name='alternateIdentifierType']/text()='URN' and starts-with(./text(), $tid_prefix)">
+                        <xsl:apply-templates select="../doc:field[@name='alternateIdentifierType']"
                             mode="datacite_alternateIdentifierType_tid"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
+                        <xsl:apply-templates select="../doc:field[@name='alternateIdentifierType']"
                             mode="datacite_alternateIdentifierType"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
-			<xsl:choose>
-					<!-- test if is TID -->
-                    <xsl:when test="starts-with(doc:field[@name='value']/text(), $tid_prefix)">        
-                        <xsl:value-of select="substring(normalize-space(substring-after(doc:field[@name='value'],$tid_prefix)),1,$max_string_size)"/>
+            <xsl:choose>
+                    <!-- test if is TID -->
+                    <xsl:when test="starts-with(./text(), $tid_prefix)">
+                        <xsl:value-of select="substring(normalize-space(substring-after(./text(),$tid_prefix)),1,$max_string_size)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
+                        <xsl:value-of select="substring(normalize-space(./text()),1,$max_string_size)"/>
                     </xsl:otherwise>
             </xsl:choose>
             
         </field>
+        </xsl:for-each>
     </xsl:template>
 
     <!-- TID -->
