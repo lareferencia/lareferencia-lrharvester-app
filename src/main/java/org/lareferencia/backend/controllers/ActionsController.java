@@ -39,6 +39,7 @@ import org.lareferencia.backend.repositories.jpa.ValidatorRepository;
 import org.lareferencia.backend.taskmanager.NetworkAction;
 import org.lareferencia.backend.taskmanager.NetworkActionkManager;
 import org.lareferencia.backend.taskmanager.NetworkProperty;
+import org.lareferencia.core.monitor.LoadingProcessMonitorService;
 import org.lareferencia.core.worker.NetworkRunningContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,9 @@ public class ActionsController {
 	
 	@Autowired
 	private TransformerRepository transformerRepository;
+	
+    @Autowired
+    private LoadingProcessMonitorService monitorService;
 
 	
 	
@@ -240,14 +244,19 @@ public class ActionsController {
 			
 			if ( !running.isEmpty() )
 				status.getRunning().put(network.getAcronym(), running );
+				monitorService.getRunning().put(network.getAcronym(), running);
 			
 			if ( !queued.isEmpty() )
 				status.getQueued().put(network.getAcronym(), queued );
+				monitorService.getQueued().put(network.getAcronym(), running);
 			
 			if ( !scheduled.isEmpty() ) 
 				status.getScheduled().put(network.getAcronym(),  scheduled);
+				monitorService.getScheduled().put(network.getAcronym(), running);
+
+
 		}
-				
+	
 		return status;
 	}
 	
@@ -265,7 +274,7 @@ public class ActionsController {
 	@ResponseBody
 	@RequestMapping(value = "/private/networkAction/{action}/{incremental}/{ids}", method = RequestMethod.GET)
 	public ResponseEntity<SimpleResponse> networkAction(@PathVariable String action, @PathVariable Boolean incremental, @PathVariable Long... ids) {
-
+		loadingProcessInitilize();
 		List<Long> networkIdsWithErrors = new ArrayList<Long>();
 
 		for (Long id : ids) {
@@ -276,6 +285,7 @@ public class ActionsController {
 			// Si la red no existe se agrega a la list de redes con error
 			if (!network.isPresent()) {
 				networkIdsWithErrors.add(id);
+				monitorService.getNetworkIdsWithErrors().add(id);
 				logger.warn( "Network:" + id + " doesn't exist.");
 			}
 			else {
@@ -290,6 +300,17 @@ public class ActionsController {
 
 	}
 	
+	private void loadingProcessInitilize() {
+		monitorService.setIsLoadingProcessInProgress(Boolean.TRUE);
+		getRunningStatus();
+		monitorService.setDiscardedEntities(3);
+		monitorService.setDuplicatedEntities(3);
+		monitorService.setErrorFiles(3);
+		monitorService.setLoadedEntities(3);
+		System.out.println("!!!===>>> monitorService::getDiscardedEntities: "+monitorService.getDiscardedEntities());
+		
+	}
+
 	@ResponseBody
 	@RequestMapping(value = "/private/networkActions/{ids}", method = RequestMethod.GET)
 	public ResponseEntity<SimpleResponse> networkActions(@PathVariable Long... ids) {
