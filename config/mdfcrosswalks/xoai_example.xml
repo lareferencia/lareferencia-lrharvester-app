@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+
+<metadata xmlns="http://www.lyncode.com/xoai"
+          xmlns:fn="http://www.w3.org/2005/xpath-functions"
+          xmlns:fo="http://www.w3.org/1999/XSL/Format"
+          xmlns:xdt="http://www.w3.org/2005/xpath-datatypes"
+          xmlns:xs="http://www.w3.org/2001/XMLSchema"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.lyncode.com/xoai http://www.lyncode.com/xsd/xoai.xsd">
+   <element name="dc">
+      <element name="title">
+         <element name="none">
+            <field name="value">Descripción de estados fenológicos de pecán.</field>
+         </element>
+      </element>
+      <element name="creator">
+         <element name="none">
+            <field name="value">PROGRAMA NACIONAL PRODUCCIÓN FRUTÍCOLA</field>
+         </element>
+      </element>
+      <element name="subject">
+         <element name="none">
+            <field name="value">NUEZ</field>
+            <field name="value">FRUTALES</field>
+            <field name="value">PECAN</field>
+            <field name="value">FENOLOGIA</field>
+         </element>
+      </element>
+      <element name="description">
+         <element name="none">
+            <field name="value"/>
+         </element>
+      </element>
+      <element name="date">
+         <element name="none">
+            <field name="value">2022-12-16T20:50:16Z</field>
+            <field name="value">2022-12-16T20:50:16Z</field>
+            <field name="value">2016</field>
+            <field name="value">2022-12-16T20:50:16Z</field>
+         </element>
+      </element>
+      <element name="type">
+         <element name="none">
+            <element name="none">
+               <field name="value">info:eu-repo/semantics/publishedVersion</field>
+               <field name="value">info:eu-repo/semantics/report</field>
+            </element>
+         </element>
+      </element>
+      <element name="identifier">
+         <element name="none">
+            <field name="value">http://www.ainfo.inia.uy/consulta/busca?b=pc&amp;id=56088&amp;biblioteca=vazio&amp;busca=56088&amp;qFacets=56088</field>
+         </element>
+      </element>
+      <element name="source">
+         <element name="none">
+            <field name="value">reponame:Ainfo</field>
+            <field name="value">instname:Instituto Nacional de Investigación Agropecuaria</field>
+            <field name="value">instacron:Instituto Nacional de Investigación Agropecuaria</field>
+         </element>
+      </element>
+      <element name="language">
+         <element name="none">
+            <element name="none">
+               <element name="none">
+                  <field name="value">es</field>
+                  <field name="value">spa</field>
+               </element>
+            </element>
+         </element>
+      </element>
+
+      <element name="rights">
+         <element name="none">
+            <field name="value">info:eu-repo/semantics/openAccess</field>
+            <field name="value">Acceso abierto</field>
+         </element>
+      </element>
+   </element>
+   <element name="bundles"/>
+   <element name="others">
+      <field name="handle"/>
+      <field name="identifier">oai:redi.anii.org.uy:20.500.12381/2671</field>
+      <field name="lastModifyDate">2022-12-20T15:18:22Z</field>
+   </element>
+   <element name="repository">
+      <field name="mail"/>
+      <field name="name"/>
+   </element>
+</metadata>

@@ -86,6 +86,11 @@
                         value="${config.dir.path}/mdfcrosswalks/xoai2vufind4.xsl"/>
                 </bean>
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="entities-dc"/>
+                    <constructor-arg type="String" value="${config.dir.path}/mdfcrosswalks/xoai2oaidc_entities.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="xoai_openaire"/>
                     <constructor-arg type="String" value="vufind4"/>
                     <constructor-arg type="String"
