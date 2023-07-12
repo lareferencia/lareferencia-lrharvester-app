@@ -30,6 +30,7 @@
     <xsl:param name="fingerprint"/>
     <xsl:param name="networkAcronym"/>
 
+   	<xsl:variable name="field_list" select="tokenize('source,type,creator,title,rights,subject,identifier,date,language,description,publisher,relation,format,contributor,coverage',',')"/>
     <xsl:template match="/">
         <xsl:element name="entity-relation-data">
             <!-- general provenance - for all entities -->
@@ -53,26 +54,36 @@
 
                     <!-- dc.element.value -->
                     <xsl:for-each select="doc:metadata/doc:element[@name='dc']/doc:element/doc:element/doc:field[@name='value']">
+                        <xsl:if test="count(index-of($field_list, lower-case(../../@name)))&gt;0">
                         <xsl:element name="field">
                             <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../@name"/></xsl:attribute>
                             <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
                         </xsl:element>
+                        </xsl:if>
                     </xsl:for-each>
-
+                    
                     <!-- dc.element.x.value -->
                     <xsl:for-each select="doc:metadata/doc:element[@name='dc']/doc:element/doc:element/doc:element/doc:field[@name='value']">
-                        <xsl:element name="field">
-                            <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../../@name"/></xsl:attribute>
-                            <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
-                        </xsl:element>
+                        
+                        <!-- test if ../../../@name belongs to field_list usinglower-case -->
+                        <xsl:if test="count(index-of($field_list, lower-case(../../../@name)))&gt;0">
+                            <xsl:element name="field">
+                                <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../../@name"/></xsl:attribute>
+                                <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
+                            </xsl:element>
+                        </xsl:if>
+
                     </xsl:for-each>
 
                     <!-- dc.element.x.xvalue -->
                     <xsl:for-each select="doc:metadata/doc:element[@name='dc']/doc:element/doc:element/doc:element/doc:element/doc:field[@name='value']">
+                        
+                    <xsl:if test="count(index-of($field_list, lower-case(../../../../@name)))&gt;0">
                         <xsl:element name="field">
                             <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../../../@name"/></xsl:attribute>
                              <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
                         </xsl:element>
+                        </xsl:if>
                     </xsl:for-each>
 
                 </xsl:element>
