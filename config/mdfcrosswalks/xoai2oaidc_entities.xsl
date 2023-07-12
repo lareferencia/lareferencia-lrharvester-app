@@ -45,11 +45,11 @@
                     <xsl:attribute name="type"><xsl:text>Publication</xsl:text></xsl:attribute>
                     <xsl:attribute name="ref">publication01</xsl:attribute>
 
-                    <xsl:element name="semanticIdentifier"><xsl:value-of select="$networkAcronym"/>_<xsl:value-of select="$fingerprint"/></xsl:element>
+                    <xsl:element name="semanticIdentifier"><xsl:value-of select="$fingerprint"/></xsl:element>
 
                     <xsl:element name="field">
                         <xsl:attribute name="name">semanticIdentifier</xsl:attribute>
-                        <xsl:attribute name="value"><xsl:value-of select="$networkAcronym"/>_<xsl:value-of select="$fingerprint"/></xsl:attribute>
+                        <xsl:attribute name="value"><xsl:value-of select="$fingerprint"/></xsl:attribute>
                     </xsl:element>
 
                     <!-- dc.element.value -->
