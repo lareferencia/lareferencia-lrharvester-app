@@ -30,7 +30,38 @@
     <xsl:param name="fingerprint"/>
     <xsl:param name="networkAcronym"/>
 
-   	<xsl:variable name="field_list" select="tokenize('source,type,creator,title,rights,subject,identifier,date,language,description,publisher,relation,format,contributor,coverage',',')"/>
+   	<xsl:variable name="field_list" select="tokenize('source,type,creator,title,rights,identifier,date,language,publisher,relation,format,contributor,coverage',',')"/>
+   
+   
+   
+    <xsl:template name="processField">
+        <xsl:param name="field"/>
+        <xsl:param name="name"/>
+
+        <xsl:if test="count(index-of($field_list, lower-case($name)))&gt;0">
+            <xsl:element name="field">
+                <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="lower-case($name)"/></xsl:attribute>
+                <xsl:attribute name="value"><xsl:value-of select="normalize-space($field)"/></xsl:attribute>
+            </xsl:element>
+        </xsl:if>
+
+        <xsl:if test="lower-case($name)='description' and string-length(normalize-space($field))&gt;1">
+            <xsl:element name="field">
+                <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="lower-case($name)"/></xsl:attribute>
+                <xsl:attribute name="value">true</xsl:attribute>
+            </xsl:element>
+        </xsl:if>
+
+        <xsl:if test="lower-case($name)='subject'">
+            <xsl:element name="field">
+                <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="lower-case($name)"/></xsl:attribute>
+                <xsl:attribute name="value"><xsl:value-of select="normalize-space(lower-case($field))"/></xsl:attribute>
+            </xsl:element>
+        </xsl:if>
+
+    </xsl:template>
+   
+   
     <xsl:template match="/">
         <xsl:element name="entity-relation-data">
             <!-- general provenance - for all entities -->
@@ -54,36 +85,30 @@
 
                     <!-- dc.element.value -->
                     <xsl:for-each select="doc:metadata/doc:element[@name='dc']/doc:element/doc:element/doc:field[@name='value']">
-                        <xsl:if test="count(index-of($field_list, lower-case(../../@name)))&gt;0">
-                        <xsl:element name="field">
-                            <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../@name"/></xsl:attribute>
-                            <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
-                        </xsl:element>
-                        </xsl:if>
+                        <xsl:call-template name="processField">
+                            <xsl:with-param name="name" select="../../@name"/>
+                            <xsl:with-param name="field" select="."/>
+                        </xsl:call-template>
                     </xsl:for-each>
                     
                     <!-- dc.element.x.value -->
                     <xsl:for-each select="doc:metadata/doc:element[@name='dc']/doc:element/doc:element/doc:element/doc:field[@name='value']">
                         
-                        <!-- test if ../../../@name belongs to field_list usinglower-case -->
-                        <xsl:if test="count(index-of($field_list, lower-case(../../../@name)))&gt;0">
-                            <xsl:element name="field">
-                                <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../../@name"/></xsl:attribute>
-                                <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
-                            </xsl:element>
-                        </xsl:if>
-
+                        <xsl:call-template name="processField">
+                            <xsl:with-param name="name" select="../../../@name"/>
+                            <xsl:with-param name="field" select="."/>
+                        </xsl:call-template>
+                    
                     </xsl:for-each>
 
                     <!-- dc.element.x.xvalue -->
                     <xsl:for-each select="doc:metadata/doc:element[@name='dc']/doc:element/doc:element/doc:element/doc:element/doc:field[@name='value']">
-                        
-                    <xsl:if test="count(index-of($field_list, lower-case(../../../../@name)))&gt;0">
-                        <xsl:element name="field">
-                            <xsl:attribute name="name"><xsl:text>dc.</xsl:text><xsl:value-of select="../../../../@name"/></xsl:attribute>
-                             <xsl:attribute name="value"><xsl:value-of select="normalize-space()"/></xsl:attribute>
-                        </xsl:element>
-                        </xsl:if>
+
+                        <xsl:call-template name="processField">
+                            <xsl:with-param name="name" select="../../../../@name"/>
+                            <xsl:with-param name="field" select="."/>
+                        </xsl:call-template>
+
                     </xsl:for-each>
 
                 </xsl:element>
