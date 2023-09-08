@@ -31,6 +31,8 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
 	                      "source_url",
 	                      "oai_url",
 			      "repository_id",
+			      "stats_source_id",
+                  "oai_identifier_prefix",
 	                      "contact_email",
 	                      "content_type",
 			      "source_type",
@@ -75,6 +77,8 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
           
 /* opendoar_inicio */
           repository_id: { type: "string", default: "", title: "Identificador openDOAR do Repositório" },
+          stats_source_id:{ type: "string", default: "", title: "ID da fonte de estatísticas"},
+          oai_identifier_prefix:{ type: "string", default: "", title: "Prefixo OAI identifier"},
 /* opendoar_fim */
 
 	  contact_email:{ type: "string", default: "",   title: "E-mail principal de contato*" },
