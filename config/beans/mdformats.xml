@@ -179,6 +179,13 @@
                     <constructor-arg type="String"
                         value="${config.dir.path}/mdfcrosswalks/rcaap_entity2index.xsl"/>
                 </bean>
+                <!-- Custom Bean for transforming from datacite to xoai_openaire -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_datacite"/>
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_datacite42xoai_openaire.xsl"/>
+                </bean>
             </list>
         </property>
     </bean>
