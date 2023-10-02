@@ -52,7 +52,7 @@
 									confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">Full</a>
 									<span ng-if="action.incremental">/</span>
 									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="Execute {{action.description}} INCREMENTAL on selected repositoriess?" 
-									confirmed-click="executeNetworkAction(action.name, currentSelectedNetworkList(), networksTableRefreshCallback)"> Incr </a>
+									confirmed-click="executeNetworkAction(action.name, true, currentSelectedNetworkList(), networksTableRefreshCallback)"> Incr </a>
 								</div>
 							</li>
 							

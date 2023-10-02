@@ -44,14 +44,11 @@
 							
 							<li style="margin-top: 5px;" ng-repeat="action in networkActions">
 								
-								<a  class="action_button" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} sobre las redes seleccionadas?" 
-								confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">{{action.description}}</a>
+								<a  class="action_button" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} sobre las redes seleccionadas?" confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">{{action.description}}</a>
 								<div style="float:right; margin-right: 10px;">
-									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} FULL sobre las redes seleccionadas?" 
-									confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">Full</a>
+									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} FULL sobre las redes seleccionadas?" confirmed-click="executeNetworkAction(action.name, false, currentSelectedNetworkList(), networksTableRefreshCallback)">Full</a>
 									<span ng-if="action.incremental">/</span>
-									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} INCREMENTAL sobre las redes seleccionadas?" 
-									confirmed-click="executeNetworkAction(action.name, currentSelectedNetworkList(), networksTableRefreshCallback)"> Incr </a>
+									<a  ng-if="action.incremental" class="action_button incremental" href="" ng-confirm-click="¿Está seguro de ejecutar {{action.description}} INCREMENTAL sobre las redes seleccionadas?" confirmed-click="executeNetworkAction(action.name, true, currentSelectedNetworkList(), networksTableRefreshCallback)"> Incr </a>
 								</div>
 							</li>
 							
