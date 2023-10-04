@@ -44,6 +44,7 @@ angular.module('app', [
 			case "HARVESTING_STOPPED": return "Cosecha cancelada";
 			case "RETRYING": return "REITENTANDO ...";
 			case "INDEXING": return "INDEXANDO ...";
+			case "EMPTY_INCREMENTAL": return "Cosecha incremental sin cambios";
 
 			default:
 				return "No existen cosechas";

@@ -44,7 +44,7 @@ angular.module('app', [
 			case "HARVESTING_STOPPED": return "Harvesting canceled";
 			case "RETRYING": return "Retrying ...";
 			case "INDEXING": return "Indexing ...";
-
+            case "EMPTY_INCREMENTAL": return "Empty incremental harvest";
 			default:
 				return "No snapshots available";
 			}
