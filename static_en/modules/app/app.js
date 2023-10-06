@@ -64,6 +64,7 @@ angular.module('app', [
 			case "HARVESTING_STOPPED": return "S";
 			case "RETRYING": return "R";
 			case "INDEXING": return "I";
+            case "EMPTY_INCREMENTAL": return "0";
 
 			default:
 				return "?";
