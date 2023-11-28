@@ -184,15 +184,55 @@
     </xsl:template>
 
     <!-- related identifier -->
-    <xsl:template match="doc:element[@name='relatedIdentifier']/doc:field[@name='relatedIdentifierType']">
-        <xsl:variable name="name">
-            <xsl:call-template name="fieldNameByIdentifierType">
-                <xsl:with-param name="idType" select="."/>
+    <xsl:template match="doc:element[@name='relatedIdentifier']">
+        <xsl:variable name="lc_type">
+            <xsl:call-template name="lowercase">
+                <xsl:with-param name="value" select="./doc:field[@name='relatedIdentifierType']"/>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:call-template name="field">
+        <xsl:variable name="name">
+            <xsl:call-template name="fieldNameByRelatedIdentifierType">
+                <xsl:with-param name="identifier" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
+        <!-- value will be something like: handle:https://hdl.handle.net/123/45 -->
+        <xsl:variable name="value">
+            <xsl:value-of select="$lc_type"/>
+            <xsl:text>:</xsl:text>
+            <xsl:value-of select="./doc:field[@name='value']/text()"/>
+        </xsl:variable>
+        <xsl:call-template name="field_value">
             <xsl:with-param name="name" select="$name"/>
-            <xsl:with-param name="node" select="../."/>
+            <xsl:with-param name="value" select="$value"/>
+            <xsl:with-param name="lang" select="''"/>
+        </xsl:call-template>
+    </xsl:template>
+
+    <!-- Alternate identifier Fields -->
+    <xsl:template match="doc:element[@name='datacite']/doc:element[@name='alternateIdentifiers']"
+        mode="Publication">
+        <xsl:for-each select="doc:element[@name='alternateIdentifier']">
+            <xsl:apply-templates select="."/>
+        </xsl:for-each>
+    </xsl:template>
+
+    <!-- alternate identifier -->
+    <xsl:template match="doc:element[@name='alternateIdentifier']">
+        <xsl:variable name="lc_type">
+            <xsl:call-template name="lowercase">
+                <xsl:with-param name="value" select="./doc:field[@name='alternateIdentifierType']"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <!-- value will be something like: handle:https://hdl.handle.net/123/45 -->
+        <xsl:variable name="value">
+            <xsl:value-of select="$lc_type"/>
+            <xsl:text>:</xsl:text>
+            <xsl:value-of select="./doc:field[@name='value']/text()"/>
+        </xsl:variable>
+        <xsl:call-template name="field_value">
+            <xsl:with-param name="name" select="'CreativeWork.identifier'"/>
+            <xsl:with-param name="value" select="$value"/>
+            <xsl:with-param name="lang" select="''"/>
         </xsl:call-template>
     </xsl:template>
 
@@ -207,6 +247,30 @@
             <xsl:with-param name="name" select="$name"/>
             <xsl:with-param name="node" select="."/>
         </xsl:call-template>
+    </xsl:template>
+
+
+    <xsl:template name="fieldNameByRelatedIdentifierType">
+        <xsl:param name="identifier"/>
+        <xsl:variable name="lc_relationType">
+            <xsl:call-template name="lowercase">
+                <xsl:with-param name="value" select="$identifier/doc:field[@name='relationType']"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:choose>
+            <xsl:when test="$lc_relationType='ispartof'">
+                <xsl:text>CreativeWork.isPartOf.identifier</xsl:text>
+            </xsl:when>
+            <xsl:when test="$lc_relationType='haspart'">
+                <xsl:text>CreativeWork.hasPart.identifier</xsl:text>
+            </xsl:when>
+            <xsl:when test="$lc_relationType='IsContinuedBy' or $lc_relationType='IsVersionOf' or $lc_relationType='IsNewVersionOf' or $lc_relationType='IsDerivedFrom'">
+                <xsl:text>CreativeWork.isBasedOn.identifier</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>CreativeWork.isPartOf.identifier</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template name="fieldNameByIdentifierType">
