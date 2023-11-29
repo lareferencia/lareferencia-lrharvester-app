@@ -851,16 +851,18 @@
                 <xsl:with-param name="field" select="$field"/>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:element name="element">
-            <xsl:attribute name="name">
-                <xsl:text>funderIdentifier</xsl:text>
-             </xsl:attribute>
-            <xsl:apply-templates select="$funderDOI" mode="field"/>
-            <xsl:call-template name="field">
-                <xsl:with-param name="name" select="'funderIdentifierType'"/>
-                <xsl:with-param name="value" select="'Crossref Funder ID'"/>
-            </xsl:call-template>
-        </xsl:element>
+        <xsl:if test="$funderDOI != ''">
+            <xsl:element name="element">
+                <xsl:attribute name="name">
+                    <xsl:text>funderIdentifier</xsl:text>
+                 </xsl:attribute>
+                <xsl:apply-templates select="$funderDOI" mode="field"/>
+                <xsl:call-template name="field">
+                    <xsl:with-param name="name" select="'funderIdentifierType'"/>
+                    <xsl:with-param name="value" select="'Crossref Funder ID'"/>
+                </xsl:call-template>
+            </xsl:element>
+        </xsl:if>
     </xsl:template>
 
     <!-- This template creates the sub-element <oaire:fundingStream> from a Funded Project built entity -->
@@ -1089,16 +1091,15 @@
                 <xsl:with-param name="value" select="$field"/>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:text>http://doi.org/</xsl:text>
         <xsl:choose>
             <xsl:when test="$lc_type='ec'">
-                <xsl:text>10.13039/501100008530</xsl:text>
+                <xsl:text>http://doi.org/10.13039/501100008530</xsl:text>
             </xsl:when>
             <xsl:when test="$lc_type='fct'">
-                <xsl:text>10.13039/501100001871</xsl:text>
+                <xsl:text>http://doi.org/10.13039/501100001871</xsl:text>
             </xsl:when>
             <xsl:when test="$lc_type='wt'">
-                <xsl:text>10.13039/100010269</xsl:text>
+                <xsl:text>http://doi.org/10.13039/100010269</xsl:text>
             </xsl:when>
         </xsl:choose>
     </xsl:template>
