@@ -777,10 +777,18 @@
 
         <!-- info:eu-repo/grantAgreement/Funder/FundingProgram/ProjectID/[Jurisdiction]/[ProjectName]/[ProjectAcronym] -->
         <xsl:variable name="eu_prefix" select="'info:eu-repo/grantAgreement/'"/>
-        <xsl:variable name="parts" select="tokenize(substring-after(normalize-space($reference/text()),$eu_prefix),$delimiter)"/>
-        <xsl:variable name="funder" select="$parts[1]"/>
-        <xsl:variable name="program" select="$parts[2]"/>
-        <xsl:variable name="awardNumber" select="$parts[3]"/>
+
+        <xsl:variable name="uri_stripped" select="concat(substring-after(normalize-space($reference/text()),$eu_prefix), $delimiter)"/>
+        <xsl:variable name="funder" select="normalize-space(substring-before($uri_stripped,'/'))"/>
+        <xsl:variable name="funderTail" select="normalize-space(substring-after($uri_stripped,'/'))"/>
+        <xsl:variable name="program"
+            select="normalize-space(substring-before($funderTail,'/'))"/>
+        <xsl:variable name="programTail"
+            select="normalize-space(substring-after($funderTail,'/'))"/>
+        <xsl:variable name="awardNumber"
+            select="normalize-space(substring-before($programTail,'/'))"/>
+        <xsl:variable name="awardNumberTail"
+            select="normalize-space(substring-after($programTail,'/'))"/>
 
         <!-- if we don't have the mandatory Funder/FundingProgram/ProjectID then don't do this -->
         <xsl:if test="$funder!='' and $program!='' and $awardNumber!=''">
@@ -801,7 +809,7 @@
                 <xsl:with-param name="field" select="$awardNumber"/>
             </xsl:call-template>
 
-        </xsl:if >
+        </xsl:if>
         <!-- it would be useful an OpenAIRE resolving service for the given URI 
             to be used in oaire.awardURI
         -->
