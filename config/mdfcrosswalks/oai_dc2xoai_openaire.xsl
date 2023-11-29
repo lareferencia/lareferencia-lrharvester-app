@@ -139,8 +139,7 @@
             </xsl:element>
         </xsl:if>
     </xsl:template> 
-    
-    
+
 
    <!-- datacite.title -->   
    <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_title.html -->
@@ -154,7 +153,7 @@
         </xsl:element>
     </xsl:template>   
 
-    
+
     <!-- datacite.creator -->
     <!-- https://openaire-guidelines-for-literature-repository-managers.readthedocs.io/en/v4.0.0/field_creator.html -->
     <xsl:template match="dc:creator" mode="datacite_child">
@@ -219,7 +218,7 @@
             <xsl:with-param name="name" select="'rightsURI'"/>
             <xsl:with-param name="value" select="$rightsURI"/>
         </xsl:call-template>
-    </xsl:template>    
+    </xsl:template>
     
     
     <!-- datacite.dates -->
@@ -277,8 +276,7 @@
             </xsl:variable>
             <!-- if is a DOI -->
             <xsl:if test="string-length($identifierDOI)!=0">
-                
-                <xsl:copy-of select="$identifierDOI"/>                
+                <xsl:copy-of select="$identifierDOI"/>
             </xsl:if>
 
             <xsl:if test="string-length($identifierDOI)=0">
@@ -773,36 +771,43 @@
 
     <xsl:template name="processFundingReference">
         <xsl:param name="reference"/>
+        <xsl:param name="delimiter" select="'/'"/>
+
+        <!-- this is based on OpenAIRE 3 Guidelines - please check: https://guidelines.openaire.eu/en/latest/literature/field_projectid.html -->
+
+        <!-- info:eu-repo/grantAgreement/Funder/FundingProgram/ProjectID/[Jurisdiction]/[ProjectName]/[ProjectAcronym] -->
         <xsl:variable name="eu_prefix" select="'info:eu-repo/grantAgreement/'"/>
-        <xsl:variable name="uri_stripped" select="substring-after($reference/text(),$eu_prefix)"/>
-        <xsl:variable name="funder" select="substring-before($uri_stripped,'/')"/>
-        <xsl:variable name="program"
-            select="substring-before(substring-after($uri_stripped,concat($funder,'/')),'/')"/>
-        <xsl:variable name="awardNumber"
-            select="substring-before(substring-after($uri_stripped,concat($funder,'/',$program,'/')),'/')"/>
+        <xsl:variable name="parts" select="tokenize(substring-after(normalize-space($reference/text()),$eu_prefix),$delimiter)"/>
+        <xsl:variable name="funder" select="$parts[1]"/>
+        <xsl:variable name="program" select="$parts[2]"/>
+        <xsl:variable name="awardNumber" select="$parts[3]"/>
 
+        <!-- if we don't have the mandatory Funder/FundingProgram/ProjectID then don't do this -->
+        <xsl:if test="$funder!='' and $program!='' and $awardNumber!=''">
 
-        <xsl:call-template name="oaire_funderName">
-            <xsl:with-param name="field" select="$funder"/>
-        </xsl:call-template>
-        <xsl:call-template name="oaire_funderDOI">
-            <xsl:with-param name="field" select="$funder"/>
-        </xsl:call-template>
+            <xsl:call-template name="oaire_funderName">
+                <xsl:with-param name="field" select="$funder"/>
+            </xsl:call-template>
 
-        <xsl:call-template name="oaire_fundingStream">
-            <xsl:with-param name="field" select="$program"/>
-        </xsl:call-template>
-        <xsl:call-template name="oaire_awardNumber">
-            <xsl:with-param name="field" select="$awardNumber"/>
-        </xsl:call-template>        
-        
+            <xsl:call-template name="oaire_funderDOI">
+                <xsl:with-param name="field" select="$funder"/>
+            </xsl:call-template>
+
+            <xsl:call-template name="oaire_fundingStream">
+                <xsl:with-param name="field" select="$program"/>
+            </xsl:call-template>
+
+            <xsl:call-template name="oaire_awardNumber">
+                <xsl:with-param name="field" select="$awardNumber"/>
+            </xsl:call-template>
+
+        </xsl:if >
         <!-- it would be useful an OpenAIRE resolving service for the given URI 
             to be used in oaire.awardURI
         -->
     </xsl:template>
-         
-         
-         
+
+
     <!-- This template creates the sub-element <oaire:awardTitle> from a Funded Project built entity -->
     <xsl:template name="oaire_awardTitle">
         <xsl:param name="field"/>
@@ -1088,7 +1093,7 @@
                 <xsl:text>10.13039/100010269</xsl:text>
             </xsl:when>
         </xsl:choose>
-    </xsl:template>      
+    </xsl:template>
 
     <!--
         This template will return the general type of the resource
