@@ -31,7 +31,12 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<bean id="darkService" class="org.lareferencia.core.dark.contract.DarkService" scope="singleton" destroy-method="onStop" init-method="onStart" />
+
+
+  <context:component-scan base-package="org.lareferencia.core.dark.domain" />
+	<context:component-scan base-package="org.lareferencia.core.dark.services" />
+  <jpa:repositories base-package="org.lareferencia.core.dark.repositories" />
+  <bean id="darkService" class="org.lareferencia.core.dark.contract.DarkService" scope="singleton" destroy-method="onStop" init-method="onStart" />
 
 
 </beans>
