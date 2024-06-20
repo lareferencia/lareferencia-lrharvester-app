@@ -32,7 +32,5 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 
-	<bean id="darkService" class="org.lareferencia.core.dark.contract.DarkService" scope="singleton" destroy-method="onStop" init-method="onStart" />
-
 
 </beans>
