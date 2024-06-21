@@ -33,9 +33,8 @@
 
 
 
-  <context:component-scan base-package="org.lareferencia.core.dark.domain" />
 	<context:component-scan base-package="org.lareferencia.core.dark.services" />
-  <jpa:repositories base-package="org.lareferencia.core.dark.repositories" />
+
   <bean id="darkService" class="org.lareferencia.core.dark.contract.DarkService" scope="singleton" destroy-method="onStop" init-method="onStart" />
 
 
