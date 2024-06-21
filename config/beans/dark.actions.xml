@@ -35,60 +35,26 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 
-	<!-- Include all actions beans here -->
-	<import resource="harvesting.actions.xml" />
-
-	<import resource="dark.actions.xml" />
-
-	<import resource="cleaning.actions.xml" />
-	<import resource="validation.actions.xml" />
-	
-	<import resource="index.frontend.actions.xml" /> <!-- OTHER THAN RCAPP -->
-	<!--import resource="index.thesis.actions.xml" /--> <!-- IBICT ONLY -->
-	
-	<import resource="xoai.actions.xml" />
-	<import resource="fulltext.actions.xml" />
-
-	<!--import resource="historic.actions.xml" /-->
-	<!--import resource="network.actions.xml" /-->
-	<!--import resource="project.actions.xml" /-->
-	<!--import resource="lr.entity.actions.xml" /-->
-	
-	<!-- Append bean references inside networkActionManager actions list -->
-	<bean id="networkActionManager" class="org.lareferencia.backend.taskmanager.NetworkActionkManager"
-		scope="singleton">
-		<property name="actions">
+	<!-- Actions -->
+	<bean id="darkNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+		<property name="name" value="DARK_ACTION" />
+		<property name="description" value="Dark PIDS"></property>
+		<property name="incremental" value="true" />
+		<property name="runOnSchedule" value="true" />
+		<property name="allwaysRunOnSchedule" value="true" />
+		<property name="workers">
 			<list>
-
-				<!-- Harvesting Actions -->
-				<ref bean="harvestingNetworkAction" />
-
-				<!-- DARK Actions -->
-				<ref bean="darkNetworkAction" />
-
-				<!-- Validation Actions -->
-				<ref bean="validationNetworkAction" />
-				
-				<!--ref bean="entityExtractionAction" /-->
-				<!--ref bean="entityIndexingAction" /-->
-				
-				<!-- Indexing Actions --> 
-				<ref bean="frontendIndexingNetworkAction" />
-				<ref bean="frontendDeleteAction" />
-				
-				<!--ref bean="thesisIndexingNetworkAction" /-->
-				<!--ref bean="thesisDeleteAction" /-->
-
-				<!-- XOAI Actions -->
-				<ref bean="xoaiIndexingNetworkAction" />
-				<ref bean="xoaiDeleteAction" />
-			
-				<!-- Cleaning Actions -->
-				<ref bean="networkCleanNetworkAction" />
-				<ref bean="networkDeleteNetworkAction" />
-
+				<value>darkWorker</value>
 			</list>
 		</property>
+		<property name="properties">
+		</property>
 	</bean>
+
+
+	<!-- Harvesting workers -->
+	<bean id="darkWorker" class="org.lareferencia.core.dark.DarkWorker" scope="prototype">
+	</bean>
+
 
 </beans>
