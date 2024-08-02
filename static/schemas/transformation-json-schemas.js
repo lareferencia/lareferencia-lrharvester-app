@@ -392,8 +392,21 @@ angular.module('transformation.json.schemas', []).service('JSONTransformationSch
 			    	sourceXPathExpression:{ type: "string", title: "XPATH expression para Campo origen", description: "El XPath v1.0 para campo de origen. Ej: //*[local-name()='element' and @name='rights']/*[local-name()='field' and @name='value' and contains(text(), 'https://creativecommons.org')] " },
 			    	targetFieldName:{ type: "string", title: "Campo destino", description: "El nombre del campo de reemplazo Ej: oaire.licenseCondition " },
 			    }
+		}
+	},
+
+	{
+		name : "Dark",
+		className: "org.lareferencia.core.dark.transformer.AddDarkIdentifier",
+		form: [
+			{ type: "submit", title: "Guardar cambios" }, "sourceFieldName", "targetFieldName", { type: "submit", title: "Guardar cambios" }],
+		schema: {
+			type: "object",
+			properties: {
+				targetFieldName:{ type: "string", title: "Campo destino", description: "El nombre del campo oai_dc  Ej: dc.type " },
+			}
 		} /* fin schema */
-	},	
+	},
 
 ]; //***** fin de _RULES ******/// 
 	
