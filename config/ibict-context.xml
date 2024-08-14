@@ -34,7 +34,7 @@
 
 
 	<context:component-scan base-package="org.lareferencia.core.dark.services" />
-  <bean id="darkService" class="org.lareferencia.core.dark.contract.DarkService" scope="singleton" destroy-method="onStop" init-method="onStart" />
+  <bean id="darkService" class="org.lareferencia.core.dark.contract.DarkBlockChainService" scope="singleton" destroy-method="onStop" init-method="onStart" />
 
 
 </beans>

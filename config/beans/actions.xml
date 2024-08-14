@@ -63,11 +63,11 @@
 				<!-- Harvesting Actions -->
 				<ref bean="harvestingNetworkAction" />
 
-				<!-- DARK Actions -->
-				<ref bean="darkNetworkAction" />
-
 				<!-- Validation Actions -->
 				<ref bean="validationNetworkAction" />
+
+				<!-- DARK Actions -->
+				<ref bean="darkNetworkAction" />
 				
 				<!--ref bean="entityExtractionAction" /-->
 				<!--ref bean="entityIndexingAction" /-->
