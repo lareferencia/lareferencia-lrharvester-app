@@ -124,3 +124,16 @@ historic.access.metadataonly=http://purl.org/coar/access_right/c_14cb
 
 #entity
 entity.solr.url = http://localhost:8983/solr/entity
+
+
+############################ DARK ##################################
+
+blockchain.url=
+blockchain.chain-id=
+blockchain.account-private-key=
+blockchain.contract-address.generate-pid=
+blockchain.contract-address.format-pid=
+blockchain.generate-pid.sleeptime-milliseconds=2100
+logging.level.org.lareferencia.core.dark=DEBUG
+
+basebatchworker.page.transaction.timeout-seconds=500
