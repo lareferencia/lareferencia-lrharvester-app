@@ -8,6 +8,10 @@ spring.datasource.hikari.minimum-idle=10
 # maximum pool size
 spring.datasource.hikari.maximum-pool-size=50
 
+# dont run sheel interactive
+spring.shell.interactive.enabled = false
+spring.shell.script.enabled = false
+
 #rest port
 server.port=8090
 # UNCOMMENT if you use a Apache proxy pass and need Spring to handle request types

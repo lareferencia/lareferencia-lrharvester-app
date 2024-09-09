@@ -31,3 +31,4 @@ config/application.properties
 harvester.jar
 config/third-party-context.xml
 pom.xml.versionsBackup
+spring-shell.log

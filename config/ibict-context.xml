@@ -32,9 +32,9 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 
+	<context:component-scan base-package="org.lareferencia.contrib.dark.services" />
 
-	<context:component-scan base-package="org.lareferencia.core.dark.services" />
-  <bean id="darkService" class="org.lareferencia.core.dark.contract.DarkBlockChainService" scope="singleton" destroy-method="onStop" init-method="onStart" />
+  <bean id="darkService" class="org.lareferencia.contrib.dark.contract.DarkBlockChainService" scope="singleton" destroy-method="onStop" init-method="onStart" />
 
 
 </beans>

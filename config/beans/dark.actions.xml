@@ -52,7 +52,7 @@
 
 
 	<!-- Harvesting workers -->
-	<bean id="darkWorker" class="org.lareferencia.core.dark.DarkWorker" scope="prototype">
+	<bean id="darkWorker" class="org.lareferencia.contrib.dark.DarkWorker" scope="prototype">
 	</bean>
 
 
