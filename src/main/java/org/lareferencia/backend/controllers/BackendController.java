@@ -177,7 +177,7 @@ public class BackendController {
 		// replace %2F by /
 		identifier = identifier.replace("%2F", "/");
 
-		System.out.println("getRecordMetadataBySnapshotAndIdentifier: " + snapshotId + " - " + identifier);
+		//System.out.println("getRecordMetadataBySnapshotAndIdentifier: " + snapshotId + " - " + identifier);
 
 		OAIRecord record = metadataStoreService.findRecordByIdentifier(snapshotId, identifier);
 		if (record != null )
