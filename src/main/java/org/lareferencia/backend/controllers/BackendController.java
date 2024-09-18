@@ -169,6 +169,23 @@ public class BackendController {
 			return "No record found - Probably the diagnose report is outdated";
 
 	}
+
+	@ResponseBody
+	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifier/{snapshotId}/{identifier}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
+	public String getRecordMetadataBySnapshotAndIdentifier(@PathVariable Long snapshotId, @PathVariable String identifier) throws Exception {
+
+		// replace %2F by /
+		identifier = identifier.replace("%2F", "/");
+
+		System.out.println("getRecordMetadataBySnapshotAndIdentifier: " + snapshotId + " - " + identifier);
+
+		OAIRecord record = metadataStoreService.findRecordByIdentifier(snapshotId, identifier);
+		if (record != null )
+			return metadataStoreService.getPublishedMetadata(record).toString();
+		else
+			return "No record found - Probably the diagnose report is outdated";
+
+	}
 	
 	
 	/******************************************************

@@ -40,6 +40,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 
 @SpringBootApplication
@@ -68,6 +70,17 @@ public class MainApp {
 		builder.initializers(new MainAppContextInitializer());
 		builder.run(args);
 	}
+
+    @Bean
+    public HttpFirewall looseHttpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowBackSlash(true);
+        firewall.setAllowUrlEncodedPercent(true);
+        firewall.setAllowUrlEncodedPeriod(true);
+        return firewall;
+    }
+
 	
 	/** Metadata Store Service  */
 	@Bean(name="metadataStoreService")

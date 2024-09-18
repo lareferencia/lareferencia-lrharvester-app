@@ -213,4 +213,10 @@ angular.module('rest.url.helper', ['rest.url.rebase']).service('RestURLHelper', 
 	  this.recordMetadataURLByID = function (recordID) {		  
 		  return ReBaseURLHelper.rebaseURL('public/getRecordMetadataByID/' + recordID);	
 	  };
+
+	  this.recordMetadataURLByIdentifier = function (snapshotID, identifier) {		  
+		// escape / character in identifier
+		identifier = identifier.replace(/\//g, '%2F');
+		return ReBaseURLHelper.rebaseURL('public/getRecordMetadataBySnapshotAndIdentifier/' + snapshotID + '/' + encodeURI(identifier));	
+	  };
 }]);
