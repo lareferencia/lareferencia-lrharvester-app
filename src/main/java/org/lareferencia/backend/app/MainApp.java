@@ -65,6 +65,10 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 public class MainApp {
 
 	public static void main(String[] args) {
+
+        System.setProperty("spring.shell.interactive.enabled", "false");
+        System.setProperty("spring.shell.script.enabled", "false");
+
 		
 		SpringApplicationBuilder builder =  new SpringApplicationBuilder(MainApp.class);
 		builder.initializers(new MainAppContextInitializer());
