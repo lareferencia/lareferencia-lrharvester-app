@@ -132,4 +132,4 @@ entity.solr.url = http://localhost:8983/solr/entity
 
 ############################ DARK ##################################
 
-dark.minter.url=http://minter.dark-pid.net/
+dark.minter.url=http://minter.dark-pid.net/load
