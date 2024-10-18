@@ -21,27 +21,29 @@
 
 package org.lareferencia.backend.app;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.SecurityFilterChain;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-	
-	 @Override
-	  protected void configure(HttpSecurity http) throws Exception {
+public class WebSecurityConfig {
 
-	    http
-	      .httpBasic().and()
-	      .authorizeRequests()
-	      	.antMatchers(HttpMethod.GET, "/**").hasRole("USER")
-	        .antMatchers(HttpMethod.POST, "/**").hasRole("USER")
-	        .antMatchers(HttpMethod.PUT, "/**").hasRole("USER")
-	        .antMatchers(HttpMethod.PATCH, "/**").hasRole("USER").and()
-	      .csrf().disable();
-	  }
-	
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .httpBasic(withDefaults())
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers(HttpMethod.GET, "/**").hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/**").hasRole("USER")
+                .requestMatchers(HttpMethod.PUT, "/**").hasRole("USER")
+                .requestMatchers(HttpMethod.PATCH, "/**").hasRole("USER")
+            )
+            .csrf(csrf -> csrf.disable());
+        return http.build();
+    }
 }

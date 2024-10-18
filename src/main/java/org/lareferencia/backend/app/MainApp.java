@@ -38,8 +38,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.solr.core.SolrTemplate;
-import org.springframework.data.solr.repository.config.EnableSolrRepositories;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
@@ -53,9 +51,6 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 							"org.lareferencia.backend.repositories.jpa", 
 							"org.lareferencia.core.entity.repositories.jpa" } )
 
-@EnableSolrRepositories( basePackages= { 
-							"org.lareferencia.backend.repositories.solr",  
-							"org.lareferencia.core.entity.repositories.solr"} )
 
 @EnableAutoConfiguration( exclude = { org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class })
 
@@ -104,24 +99,11 @@ public class MainApp {
     public SolrClient validationSolrClient(@Value("${vstats.solr.server}") String solrHost) {
         return new HttpSolrClient.Builder(solrHost).build();
     }
-	
-	@Bean(name="solrTemplate")
-    public SolrTemplate solrTemplate(@Qualifier("solrClient") SolrClient client) throws Exception {
-        return new SolrTemplate(client);
-    }	
-
-    @Bean(name="validationSolrTemplate")
-    public SolrTemplate validationSolrTemplate(@Qualifier("validationSolrClient") SolrClient solrClient) throws Exception {
-        return new SolrTemplate(solrClient);
-    }	
-    
+	    
     @Bean(name="validationSolrCoreName")
     public String validationSolrCoreName(@Value("${vstats.solr.core}") String validationSolrCoreName) throws Exception {
         return validationSolrCoreName;
-    }	
-    
-    
-   
+    }
 	
 
 }

@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +45,6 @@ import org.lareferencia.backend.domain.SnapshotIndexStatus;
 import org.lareferencia.backend.domain.SnapshotStatus;
 import org.lareferencia.backend.domain.Transformer;
 import org.lareferencia.backend.domain.TransformerRule;
-import org.lareferencia.backend.domain.ValidationStatObservation;
 import org.lareferencia.backend.domain.Validator;
 import org.lareferencia.backend.domain.ValidatorRule;
 import org.lareferencia.backend.repositories.jpa.NetworkRepository;
@@ -54,6 +53,7 @@ import org.lareferencia.backend.repositories.jpa.OAIBitstreamRepository;
 import org.lareferencia.backend.repositories.jpa.OAIRecordRepository;
 import org.lareferencia.backend.repositories.jpa.TransformerRepository;
 import org.lareferencia.backend.repositories.jpa.ValidatorRepository;
+import org.lareferencia.backend.services.ValidationStatObservation;
 import org.lareferencia.backend.services.ValidationStatisticsService;
 import org.lareferencia.backend.services.ValidationStatisticsService.ValidationRuleOccurrencesCount;
 import org.lareferencia.backend.taskmanager.NetworkAction;
@@ -203,7 +203,7 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + snapshotID);
 		
 
-		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fq);
+		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get().getId(), fq);
 	}
 	
 	@RequestMapping(value = "/public/diagnose/{snapshotID}", method = RequestMethod.GET)
@@ -218,7 +218,7 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + snapshotID);
 		
 
-		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fq);
+		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get().getId(), fq);
 	}
 
 	@RequestMapping(value = "/public/diagnoseValidationOcurrences/{snapshotID}/{ruleID}/{fq}", method = RequestMethod.GET)
@@ -253,7 +253,7 @@ public class BackendController {
     @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/{fq}", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<Page<ValidationStatObservation>> diagnoseListRecordValidationResults(
-            @PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params) {
+            @PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params) throws Exception {
 
         int count = Integer.parseInt(params.get("count"));
         int page = Integer.parseInt(params.get("page"));
@@ -270,7 +270,7 @@ public class BackendController {
     @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/fq", method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<Page<ValidationStatObservation>> diagnoseListRecordValidationResults(
-            @PathVariable Long snapshotID, @RequestParam Map<String, String> params) {
+            @PathVariable Long snapshotID, @RequestParam Map<String, String> params) throws Exception {
 
         List<String> fq = new ArrayList<String>();
         int count = Integer.parseInt(params.get("count"));
