@@ -22,6 +22,7 @@ package org.lareferencia.backend.app;
 
 
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.lareferencia.core.metadata.IMetadataRecordStoreService;
 import org.lareferencia.core.metadata.MetadataRecordStoreServiceImpl;
@@ -92,12 +93,12 @@ public class MainApp {
 	/** Configurations beans for solr services */
 	@Bean(name="solrClient")
     public SolrClient solrClient(@Value("${default.solr.server}") String solrHost) {
-        return new HttpSolrClient.Builder(solrHost).build();
+        return new Http2SolrClient.Builder(solrHost).build();
     }
 	
 	@Bean(name="validationSolrClient")
     public SolrClient validationSolrClient(@Value("${vstats.solr.server}") String solrHost) {
-        return new HttpSolrClient.Builder(solrHost).build();
+        return new Http2SolrClient.Builder(solrHost).build();
     }
 	    
     @Bean(name="validationSolrCoreName")
