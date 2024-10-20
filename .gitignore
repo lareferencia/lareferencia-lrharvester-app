@@ -32,3 +32,4 @@ harvester.jar
 config/third-party-context.xml
 pom.xml.versionsBackup
 spring-shell.log
+.DS_Store
