@@ -30,12 +30,12 @@
 	<name>LA Referencia LRHarvester APP</name>
 	<description>LA Referencia LRHarvester APP</description>
 
-	<version>4.2.4</version>
+	<version>5.0.0</version>
 
 	<parent>
 		<groupId>org.lareferencia</groupId>
 		<artifactId>lareferencia-parent</artifactId>
-		<version>4.2.4</version>
+		<version>5.0.0</version>
 	</parent>
 
 	<dependencies>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.lareferencia</groupId>
 			<artifactId>lareferencia-core-lib</artifactId>
-			<version>4.2.4</version>
+			<version>5.0.0</version>
 		</dependency>
 
 
@@ -112,7 +112,7 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.2.4</version>
+					<version>5.0.0</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -147,7 +147,7 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.2.4</version>
+					<version>5.0.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
@@ -187,12 +187,12 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.2.4</version>
+					<version>5.0.0</version>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-dark-lib</artifactId>
-					<version>4.2.4</version>
+					<version>5.0.0</version>
 				</dependency>
 			</dependencies>
 			<build>
