@@ -53,6 +53,7 @@
 
 	<!-- Harvesting workers -->
 	<bean id="darkWorker" class="org.lareferencia.contrib.dark.DarkWorker" scope="prototype">
+		<property name="serialLaneId" value="4"/>
 	</bean>
 
 
