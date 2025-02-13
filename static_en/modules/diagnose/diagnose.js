@@ -48,21 +48,21 @@ mod_diagnose.config(['$stateProvider', function ($stateProvider) {
 		};
 	})
 	
-    .filter('siNo', function() {
+    .filter('yesNo', function() {
     	return function(input) {
-    		return input ? 'Si' : 'No';
+    		return input ? 'Yes' : 'No';
     	};
     })
     
     .filter('isValid', function() {
     	return function(input) {
-    		return input ? 'Válido' : 'Inválido';
+    		return input ? 'Valid' : 'Invalid';
     	};
     })
     
     .filter('isTransformed', function() {
     	return function(input) {
-    		return input ? ' | Transformado' : '';
+    		return input ? ' | Transformed' : '';
     	};
     })
    
