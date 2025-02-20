@@ -30,15 +30,15 @@
                     <ul class="nav" id="side-menu">
                         
                         <li class="nav-first-level">
-                            <a><i class="fa fa-check-square-o fa-fw"></i> Validez de registros <span class="fa arrow"></span></a>
+                            <a><i class="fa fa-check-square-o fa-fw"></i> Validity of records <span class="fa arrow"></span></a>
                             <ul id="record_is_valid_facet" class="nav nav-second-level" ng-repeat="facet in facets.record_is_valid">
-                            		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{facet.value == "true" ? 'Válidos' : 'Inválidos'}} ({{facet.valueCount}})</a></li>
+                            		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{facet.value == "true" ? 'Valid' : 'Invalid'}} ({{facet.valueCount}})</a></li>
                             </ul>  
                             <!-- /.nav-second-level -->
                         </li>
                         
                          <li class="nav-first-level">
-                            <a><i class="fa fa-cog fa-fw"></i> Transformación de registros <span class="fa arrow"></span></a>
+                            <a><i class="fa fa-cog fa-fw"></i> Transformation of records <span class="fa arrow"></span></a>
                             <ul id="record_is_transformed_facet" class="nav nav-second-level" ng-repeat="facet in facets.record_is_transformed">
                             		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{facet.value == "true" ? 'Transformados' : 'Sin transformar'}} ({{facet.valueCount}})</a></li>
                             </ul>  
@@ -46,7 +46,7 @@
                         </li>
                        
                         <li class="nav-first-level">
-                            <a><i class="fa fa-check fa-fw"></i> Reglas Válidas  <span class="fa arrow"></span></a>
+                            <a><i class="fa fa-check fa-fw"></i> Valid rules  <span class="fa arrow"></span></a>
                             <ul id="valid_rules_facet" class="nav nav-second-level" ng-repeat="facet in facets.valid_rules">
                             		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{ruleNameByID[facet.value]}} ({{facet.valueCount}})</a></li>
                             </ul>  
@@ -54,7 +54,7 @@
                         </li>
                         
                         <li class="nav-first-level">
-                            <a><i class="fa fa-times fa-fw"></i> Reglas Inválidas <span class="fa arrow"></span></a>
+                            <a><i class="fa fa-times fa-fw"></i> Invalid rules <span class="fa arrow"></span></a>
                             <ul id="invalid_rules_facet" class="nav nav-second-level" ng-repeat="facet in facets.invalid_rules">  
                             		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{ruleNameByID[facet.value]}} ({{facet.valueCount}})</a></li>
                             </ul>  
@@ -62,7 +62,7 @@
                         </li>
                         
                         <li class="nav-first-level">
-                            <a><i class="fa fa-university fa-fw"></i> Instituciones <span class="fa arrow"></span></a>
+                            <a><i class="fa fa-university fa-fw"></i> Institutions <span class="fa arrow"></span></a>
                             <ul id="institution_name_facet" class="nav nav-second-level" ng-repeat="facet in facets.institution_name"> 
                             		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{facet.value}} ({{facet.valueCount}})</a></li>
                              </ul>  
@@ -70,7 +70,7 @@
                         </li>
                        
                         <li class="nav-first-level">
-                            <a><i class="fa fa-sitemap fa-fw"></i> Subredes <span class="fa arrow"></span></a>
+                            <a><i class="fa fa-sitemap fa-fw"></i> Subnets <span class="fa arrow"></span></a>
                             <ul id="repository_name_facet" class="nav nav-second-level" ng-repeat="facet in facets.repository_name">
                             		<li><a  ng-class="{'facet_selected': is_facet_selected(facet), 'facet_deselected': !is_facet_selected(facet) }" ng-click="toogleFacetFilter(facet)">{{facet.value}} ({{facet.valueCount}})</a></li>
                       		</ul>   
@@ -105,7 +105,7 @@
                                 </div>
                                 <div class="col-xs-9 text-right">
                                     <div class="medium" id="totalRegs">{{recordsSize}}</div>
-                                    <div>R. Totales</div>
+                                    <div>Total records</div>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +121,7 @@
                                 </div>
                                 <div class="col-xs-9 text-right">
                                        <div class="medium" id="validRegs">{{validSize}}</div>
-                                    <div>R. Válidos</div>
+                                    <div>Valid records</div>
                                 </div>
                             </div>
                         </div>
@@ -136,7 +136,7 @@
                                 </div>
                                 <div class="col-xs-9 text-right">
                                     <div class="medium" id="transformedRegs">{{transformedSize}}</div>
-                                    <div>R. Transf.</div>
+                                    <div>Transf. records</div>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +152,7 @@
                                 
                                  <div class="col-xs-9 text-right">
                                     <div class="medium" id="invalidRegs">{{recordsSize - validSize}}</div>
-                                    <div>Reg. Inválidos</div>
+                                    <div>Invalid records</div>
                                 </div>
                             </div>
                         </div>
@@ -165,11 +165,11 @@
                   
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Nivel de cumplimiento de reglas
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Level of rule compliance
                             <div class="pull-right">
 								<div class="btn-group">
 									<a class="btn btn-xs" title="Exportar reglas" ng-click='csvRules.generate()' ng-href="{{csvRules.link()}}" download="reglas.csv"> 
-										<i class="glyphicon glyphicon-new-window"></i> &#160;Exportar CSV
+										<i class="glyphicon glyphicon-new-window"></i> &#160;Export CSV
 									</a>
 								</div>
 							</div>
@@ -180,14 +180,14 @@
                                 <div class="col-lg-12">
                                    <table ng-table="rulesTable" class="table table-bordered table-striped table-condensed" export-csv="csvRules" separator=";">
 										<tr ng-repeat="rule in $data">
-											<td  data-title="'Nombre'" sortable="'name'">{{rule.name}}</td>
-											<td  data-title="'Descripción'">{{rule.description}}</td>
-											<td  data-title="'Mandatoria'" sortable="'mandatory'">{{rule.mandatory | siNo }}</td>
-											<td style="width: 40px;" data-title="'% Cumplimiento'" sortable="'validCount'">{{(rule.validCount / recordsSize)*100 | number:2 }}%</td>
-											<td style="width: 40px;" data-title="'#R. Válidos'" sortable="'validCount'">{{rule.validCount}}</td>
+											<td  data-title="'Name'" sortable="'name'">{{rule.name}}</td>
+											<td  data-title="'Description'">{{rule.description}}</td>
+											<td  data-title="'Mandatory'" sortable="'mandatory'">{{rule.mandatory | yesNo }}</td>
+											<td style="width: 40px;" data-title="'% Compliance'" sortable="'validCount'">{{(rule.validCount / recordsSize)*100 | number:2 }}%</td>
+											<td style="width: 40px;" data-title="'#Valid R.'" sortable="'validCount'">{{rule.validCount}}</td>
 											<td>
 												<button class="btn btn-primary btn-xs" ng-click="openRuleOccrStats(snapshotID, rule, currentFilterQueryList())">
-													Detalles
+													Details
 												</button>			
 											</td>
 										</tr>
@@ -204,11 +204,11 @@
                     
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <i class="fa fa-bar-chart-o fa-fw"></i> Detalle de registros 
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Record details
                             <div class="pull-right">
                                	<div class="btn-group">
 									<a class="btn btn-xs" title="Exportar registros" ng-click='csvRegisters.generate()' ng-href="{{csvRegisters.link()}}" download="registros.csv"> 
-										<i class="glyphicon glyphicon-new-window"></i> &#160;Exportar CSV
+										<i class="glyphicon glyphicon-new-window"></i> &#160;Export CSV
 									</a>
 								</div>
                             </div>
@@ -225,14 +225,14 @@
 											<td  data-title="'Identifier'">
 												<a target="_blank" href="{{record.origin}}?verb=GetRecord&metadataPrefix={{record.metadataPrefix}}&identifier={{record.identifier}}">{{record.identifier}}</a>
 											</td>
-											<td  data-title="'Estado'">
+											<td  data-title="'State'">
 												<button type="button" class="btn btn-xs btn-{{record.isValid | successOrDanger}}">{{record.isValid | isValid}}</button>
-												<button ng-if="record.isTransformed" type="button" class="btn btn-xs btn-warning">Transformado</button>
+												<button ng-if="record.isTransformed" type="button" class="btn btn-xs btn-warning">Transformed</button>
 												
 											</td>
 											<td>
 												<button type="button" class="btn btn-xs btn-primary" ng-click="openRecordDiagnose(record)">
-													Detalles
+													Details
 												</button>			
 											</td>
 											

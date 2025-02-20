@@ -167,7 +167,7 @@ angular.module('rules', [
         else if ( $scope.type == 'validator' ) {
         	$scope.schemas = JSONValidationSchemas;	
         } else {
-        	alert("Error!! Llamada inválida del editor de reglas ")
+        	alert("Error!! Invalid call to the rule editor ")
         }
 
         
