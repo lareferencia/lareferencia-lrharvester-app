@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!--
+  ~   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
+  ~
+  ~   This program is free software: you can redistribute it and/or modify
+  ~   it under the terms of the GNU Affero General Public License as published by
+  ~   the Free Software Foundation, either version 3 of the License, or
+  ~   (at your option) any later version.
+  ~
+  ~   This program is distributed in the hope that it will be useful,
+  ~   but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~   GNU Affero General Public License for more details.
+  ~
+  ~   You should have received a copy of the GNU Affero General Public License
+  ~   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~   This file is part of LA Referencia software platform LRHarvester v4.x
+  ~   For any further information please contact Lautaro Matas <lmatas@gmail.com>
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:solr="http://www.springframework.org/schema/data/solr"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+	<!-- Actions -->
+
+	<bean id="validationNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+		<property name="name" value="VALIDATION_ACTION" />
+		<property name="description" value="Validation/Transf"></property>
+		<property name="incremental" value="true" />
+		<property name="runOnSchedule" value="true" />
+		<property name="allwaysRunOnSchedule" value="true" />
+		<property name="workers">
+			<list>
+				<value>validationWorker</value>
+			</list>
+		</property>
+		<property name="properties">
+			<list>
+				<!--bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+					<property name="name" value="VALIDATE" />
+					<property name="description" value="Validar los registos?" />
+				</bean>
+				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+					<property name="name" value="TRANSFORM" />
+					<property name="description" value="Transformar los registos?" />
+				</bean>
+				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+					<property name="name" value="DIAGNOSE" />
+					<property name="description" value="Diagnosticar la validación?" />
+				</bean-->
+				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+					<property name="name" value="DETAILED_DIAGNOSE" />
+					<property name="description"
+						value="Perform detailed diagnostics (occurrences)" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- Workers -->
+	<bean id="validationWorker" class="org.lareferencia.backend.workers.validator.ValidationWorker"
+		scope="prototype">
+	</bean>
+
+
+</beans>
