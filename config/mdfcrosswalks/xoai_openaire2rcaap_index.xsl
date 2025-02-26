@@ -34,7 +34,7 @@
   
   <!--  Aquí se definen los prefijos utilizados para detectar contenidos con trato diferencial -->
     <xsl:variable name="tid_prefix">
-        <xsl:text>TID:</xsl:text>
+        <xsl:text>tid:</xsl:text>
     </xsl:variable>
     <xsl:variable name="driver_prefix">
         <xsl:text>info:eu-repo/semantics/</xsl:text>
@@ -388,35 +388,35 @@ identifier.sici
 
     <xsl:template
         match="doc:element[@name='alternateIdentifiers']/doc:element[@name='alternateIdentifier']" mode="datacite">
-        <xsl:for-each select="doc:field[@name='value']">
+        <xsl:variable name="lc_alternateIdentifier" select="translate(doc:field[@name='value']/text(), $uppercase, $smallcase)"/>
+        <xsl:variable name="lc_alternateIdentifierType" select="translate(doc:field[@name='alternateIdentifierType']/text(), $uppercase, $smallcase)"/>
         <field>
             <xsl:attribute name="name">
-                <xsl:if test="not(../doc:field[@name='alternateIdentifierType'])">
+                <xsl:if test="not(doc:field[@name='alternateIdentifierType'])">
                     <xsl:text>identifier.other</xsl:text>
                 </xsl:if>
                 <xsl:choose>
-                    <xsl:when test="../doc:field[@name='alternateIdentifierType']/text()='URN' and starts-with(./text(), $tid_prefix)">
-                        <xsl:apply-templates select="../doc:field[@name='alternateIdentifierType']"
+                    <xsl:when test="$lc_alternateIdentifierType='urn' and contains($lc_alternateIdentifier, $tid_prefix)">
+                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
                             mode="datacite_alternateIdentifierType_tid"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:apply-templates select="../doc:field[@name='alternateIdentifierType']"
+                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
                             mode="datacite_alternateIdentifierType"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
-            <xsl:choose>
-                    <!-- test if is TID -->
-                    <xsl:when test="starts-with(./text(), $tid_prefix)">
-                        <xsl:value-of select="substring(normalize-space(substring-after(./text(),$tid_prefix)),1,$max_string_size)"/>
+			<xsl:choose>
+					<!-- test if is TID -->
+                    <xsl:when test="contains($lc_alternateIdentifier, $tid_prefix)">        
+                        <xsl:value-of select="substring(normalize-space(substring-after($lc_alternateIdentifier,$tid_prefix)),1,$max_string_size)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="substring(normalize-space(./text()),1,$max_string_size)"/>
+                        <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
                     </xsl:otherwise>
             </xsl:choose>
             
         </field>
-        </xsl:for-each>
     </xsl:template>
 
     <!-- TID -->
@@ -944,6 +944,9 @@ identifier.sici
 
     <xsl:template match="/doc:metadata/doc:element[@name='dcterms']">
     </xsl:template>
+
+    <xsl:param name="smallcase" select="'abcdefghijklmnopqrstuvwxyzàèìòùáéíóúýâêîôûãñõäëïöüÿåæœçðø'"/>
+    <xsl:param name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÃÑÕÄËÏÖÜŸÅÆŒÇÐØ'"/>
 
     <xsl:template match="*" mode="openaire"/>
     <xsl:template match="*" mode="dc"/>
