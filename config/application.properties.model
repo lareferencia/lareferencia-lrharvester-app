@@ -133,3 +133,11 @@ entity.solr.url = http://localhost:8983/solr/entity
 ############################ DARK ##################################
 
 dark.minter.url=http://minter.dark-pid.net/load
+
+## SSL
+#server.ssl.key-store=config/localhost.p12
+#server.ssl.key-store-password=
+#server.ssl.key-alias=localhost
+#server.ssl.key-password=
+#server.ssl.key-store-type=pkcs12
+#server.port=8443
