@@ -48,6 +48,8 @@ import org.lareferencia.backend.domain.SnapshotStatus;
 import org.lareferencia.backend.domain.Transformer;
 import org.lareferencia.backend.domain.TransformerRule;
 import org.lareferencia.backend.domain.parquet.ValidationStatObservationParquet;
+import org.lareferencia.backend.domain.validation.ValidationStatsQueryResult;
+import org.lareferencia.backend.services.validation.ValidationStatisticsException;
 import org.lareferencia.backend.domain.Validator;
 import org.lareferencia.backend.domain.ValidatorRule;
 
@@ -302,8 +304,8 @@ public class BackendController {
 	
     @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/{fq}", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Page<ValidationStatObservationParquet>> diagnoseListRecordValidationResults(
-            @PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params) {
+    public ResponseEntity<ValidationStatsQueryResult> diagnoseListRecordValidationResults(
+            @PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params) throws ValidationStatisticsException {
 
         int count = Integer.parseInt(params.getOrDefault("size", params.getOrDefault("count", "20")));
         int page = Integer.parseInt(params.getOrDefault("page", "1"));
@@ -319,7 +321,7 @@ public class BackendController {
 
         // Usar solo Parquet
         Pageable pageable = PageRequest.of(springDataPage, count);
-        return new ResponseEntity<Page<ValidationStatObservationParquet>>(
+        return new ResponseEntity<ValidationStatsQueryResult>(
                 validationStatisticsParquetService.queryValidationStatsObservationsBySnapshotID(snapshotID, processedFq, pageable),
                 HttpStatus.OK);
     }
@@ -327,8 +329,8 @@ public class BackendController {
 
     @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/fq", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Page<ValidationStatObservationParquet>> diagnoseListRecordValidationResults(
-            @PathVariable Long snapshotID, @RequestParam Map<String, String> params) {
+    public ResponseEntity<ValidationStatsQueryResult> diagnoseListRecordValidationResults(
+            @PathVariable Long snapshotID, @RequestParam Map<String, String> params) throws ValidationStatisticsException {
 
         List<String> fq = new ArrayList<String>();
         int count = Integer.parseInt(params.getOrDefault("size", params.getOrDefault("count", "20")));
@@ -342,7 +344,7 @@ public class BackendController {
         Pageable pageable = PageRequest.of(springDataPage, count);
 
         // Usar solo Parquet
-        return new ResponseEntity<Page<ValidationStatObservationParquet>>(
+        return new ResponseEntity<ValidationStatsQueryResult>(
                 validationStatisticsParquetService.queryValidationStatsObservationsBySnapshotID(snapshotID, fq, pageable),
                 HttpStatus.OK);
     }
