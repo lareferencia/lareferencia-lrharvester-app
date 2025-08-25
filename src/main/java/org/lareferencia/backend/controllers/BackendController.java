@@ -357,7 +357,7 @@ public class BackendController {
         String filterNameExpression = null;
 
         // Debug: log todos los parámetros recibidos
-        System.out.println("DEBUG: Parámetros recibidos: " + params);
+        logger.debug("DIAGNOSE FILTER: Received parameters: {}", params);
 
         for (String key : params.keySet()) {
             filterColumn = null;
@@ -377,43 +377,43 @@ public class BackendController {
                         case "identifier":
                             // Para Parquet: formato simple field:value para OAI identifier
                             String identifierValue = params.get(filterNameExpression);
-                            System.out.println("DEBUG: Identifier filter value original: " + identifierValue);
+                            logger.debug("DIAGNOSE FILTER: Identifier filter value original: {}", identifierValue);
                             try {
                                 identifierValue = java.net.URLDecoder.decode(identifierValue, "UTF-8");
-                                System.out.println("DEBUG: Identifier filter value decodificado: " + identifierValue);
+                                logger.debug("DIAGNOSE FILTER: Identifier filter value decoded: {}", identifierValue);
                             } catch (UnsupportedEncodingException e) {
-                                System.out.println("DEBUG: Error decodificando identifier: " + e.getMessage());
+                                logger.debug("DIAGNOSE FILTER: Error decoding identifier: {}", e.getMessage());
                             }
                             
                             String identifierExpression = "identifier:" + identifierValue;
                             fq.add(identifierExpression);
-                            System.out.println("DEBUG: Identifier filter expression agregado: " + identifierExpression);
+                            logger.debug("DIAGNOSE FILTER: Identifier filter expression added: {}", identifierExpression);
                             break;
                             
                         case "isValid":
                             // Filtro por estado de validación (true/false)
                             String validValue = params.get(filterNameExpression);
-                            System.out.println("DEBUG: isValid filter value: " + validValue);
+                            logger.debug("DIAGNOSE FILTER: isValid filter value: {}", validValue);
                             try {
                                 validValue = java.net.URLDecoder.decode(validValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String validExpression = "isValid:" + validValue;
                             fq.add(validExpression);
-                            System.out.println("DEBUG: isValid filter expression agregado: " + validExpression);
+                            logger.debug("DIAGNOSE FILTER: isValid filter expression added: {}", validExpression);
                             break;
                             
                         case "isTransformed":
                             // Filtro por estado de transformación (true/false)
                             String transformedValue = params.get(filterNameExpression);
-                            System.out.println("DEBUG: isTransformed filter value: " + transformedValue);
+                            logger.debug("DIAGNOSE FILTER: isTransformed filter value: {}", transformedValue);
                             try {
                                 transformedValue = java.net.URLDecoder.decode(transformedValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String transformedExpression = "isTransformed:" + transformedValue;
                             fq.add(transformedExpression);
-                            System.out.println("DEBUG: isTransformed filter expression agregado: " + transformedExpression);
+                            logger.debug("DIAGNOSE FILTER: isTransformed filter expression added: {}", transformedExpression);
                             break;
                             
                         case "networkAcronym":
@@ -503,13 +503,13 @@ public class BackendController {
     private List<String> processValidationRuleFilters(List<String> rawFq) {
         List<String> processedFq = new ArrayList<>();
         
-        System.out.println("DEBUG: Procesando filtros de reglas de validación: " + rawFq);
+        logger.debug("VALIDATION FILTER: Processing validation rule filters: {}", rawFq);
         
         for (String fqItem : rawFq) {
             try {
                 // Decodificar URL
                 String decodedItem = java.net.URLDecoder.decode(fqItem, "UTF-8");
-                System.out.println("DEBUG: Item decodificado: " + decodedItem);
+                logger.debug("VALIDATION FILTER: Decoded item: {}", decodedItem);
                 
                 // Parsear formato tipo@@"valor"
                 if (decodedItem.contains("@@")) {
@@ -527,33 +527,33 @@ public class BackendController {
                         if ("invalid_rules".equals(filterType) || "valid_rules".equals(filterType)) {
                             String processedFilter = filterType + ":" + filterValue;
                             processedFq.add(processedFilter);
-                            System.out.println("DEBUG: Filtro de regla procesado: " + processedFilter);
+                            logger.debug("VALIDATION FILTER: Rule filter processed: {}", processedFilter);
                         } else if ("record_is_valid".equals(filterType)) {
                             // Mapear record_is_valid a isValid
                             String processedFilter = "isValid:" + filterValue;
                             processedFq.add(processedFilter);
-                            System.out.println("DEBUG: Filtro record_is_valid procesado: " + processedFilter);
+                            logger.debug("VALIDATION FILTER: record_is_valid processed: {}", processedFilter);
                         } else if ("record_is_transformed".equals(filterType)) {
                             // Mapear record_is_transformed a isTransformed
                             String processedFilter = "isTransformed:" + filterValue;
                             processedFq.add(processedFilter);
-                            System.out.println("DEBUG: Filtro record_is_transformed procesado: " + processedFilter);
+                            logger.info("VALIDATION FILTER: record_is_transformed processed: {}", processedFilter);
                         } else {
                             // Para otros tipos, mantener el formato original
                             processedFq.add(decodedItem);
-                            System.out.println("DEBUG: Filtro no reconocido, mantenido original: " + decodedItem);
+                            logger.debug("VALIDATION FILTER: Unrecognized filter, kept original: {}", decodedItem);
                         }
                     } else {
                         processedFq.add(decodedItem);
-                        System.out.println("DEBUG: Formato @@ inválido, mantenido original: " + decodedItem);
+                        logger.debug("VALIDATION FILTER: Invalid @@ format, kept original: {}", decodedItem);
                     }
                 } else {
                     // Sin formato @@, mantener original
                     processedFq.add(decodedItem);
-                    System.out.println("DEBUG: Sin formato @@, mantenido original: " + decodedItem);
+                    logger.debug("VALIDATION FILTER: No @@ format, kept original: {}", decodedItem);
                 }
             } catch (UnsupportedEncodingException e) {
-                System.out.println("DEBUG: Error decodificando item: " + fqItem + " - " + e.getMessage());
+                logger.error("VALIDATION FILTER: Error decoding item: {} - {}", fqItem, e.getMessage());
                 processedFq.add(fqItem); // Mantener original si hay error de decodificación
             }
         }
