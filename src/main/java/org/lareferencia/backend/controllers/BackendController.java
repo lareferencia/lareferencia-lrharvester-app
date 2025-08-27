@@ -419,70 +419,70 @@ public class BackendController {
                         case "networkAcronym":
                             // Filtro por red/colección
                             String networkValue = params.get(filterNameExpression);
-                            logger.debug("networkAcronym filter value: {}", networkValue);
+                            System.out.println("DEBUG: networkAcronym filter value: " + networkValue);
                             try {
                                 networkValue = java.net.URLDecoder.decode(networkValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String networkExpression = "networkAcronym:" + networkValue;
                             fq.add(networkExpression);
-                            logger.debug("networkAcronym filter expression agregado: {}", networkExpression);
+                            System.out.println("DEBUG: networkAcronym filter expression agregado: " + networkExpression);
                             break;
                             
                         case "repositoryName":
                             // Filtro por repositorio
                             String repoValue = params.get(filterNameExpression);
-                            logger.debug("repositoryName filter value: {}", repoValue);
+                            System.out.println("DEBUG: repositoryName filter value: " + repoValue);
                             try {
                                 repoValue = java.net.URLDecoder.decode(repoValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String repoExpression = "repositoryName:" + repoValue;
                             fq.add(repoExpression);
-                            logger.debug("repositoryName filter expression agregado: {}", repoExpression);
+                            System.out.println("DEBUG: repositoryName filter expression agregado: " + repoExpression);
                             break;
                             
                         case "institutionName":
                             // Filtro por institución
                             String instValue = params.get(filterNameExpression);
-                            logger.debug("institutionName filter value: {}", instValue);
+                            System.out.println("DEBUG: institutionName filter value: " + instValue);
                             try {
                                 instValue = java.net.URLDecoder.decode(instValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String instExpression = "institutionName:" + instValue;
                             fq.add(instExpression);
-                            logger.debug("institutionName filter expression agregado: {}", instExpression);
+                            System.out.println("DEBUG: institutionName filter expression agregado: " + instExpression);
                             break;
                             
                         case "origin":
                             // Filtro por origen/fuente
                             String originValue = params.get(filterNameExpression);
-                            logger.debug("origin filter value: {}", originValue);
+                            System.out.println("DEBUG: origin filter value: " + originValue);
                             try {
                                 originValue = java.net.URLDecoder.decode(originValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String originExpression = "origin:" + originValue;
                             fq.add(originExpression);
-                            logger.debug("origin filter expression agregado: {}", originExpression);
+                            System.out.println("DEBUG: origin filter expression agregado: " + originExpression);
                             break;
                             
                         case "setSpec":
                             // Filtro por conjunto OAI
                             String setSpecValue = params.get(filterNameExpression);
-                            logger.debug("setSpec filter value: {}", setSpecValue);
+                            System.out.println("DEBUG: setSpec filter value: " + setSpecValue);
                             try {
                                 setSpecValue = java.net.URLDecoder.decode(setSpecValue, "UTF-8");
                             } catch (UnsupportedEncodingException e) {}
                             
                             String setSpecExpression = "setSpec:" + setSpecValue;
                             fq.add(setSpecExpression);
-                            logger.debug("setSpec filter expression agregado: {}", setSpecExpression);
+                            System.out.println("DEBUG: setSpec filter expression agregado: " + setSpecExpression);
                             break;
 
                         default:
-                            logger.debug("Filtro no soportado: {}", filterColumn);
+                            System.out.println("DEBUG: Filtro no soportado: " + filterColumn);
                             break;
                     }
 
@@ -490,7 +490,7 @@ public class BackendController {
             }
         }
 
-        logger.debug("Lista final de filtros: {}", fq);
+        System.out.println("DEBUG: Lista final de filtros: " + fq);
         return fq;
     }
 
@@ -558,7 +558,7 @@ public class BackendController {
             }
         }
         
-        logger.debug("Lista de filtros de reglas procesados: {}", processedFq);
+        System.out.println("DEBUG: Lista de filtros de reglas procesados: " + processedFq);
         return processedFq;
     }
 
