@@ -23,12 +23,8 @@ package org.lareferencia.backend.controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
-import javax.servlet.http.HttpServletRequest;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,34 +41,20 @@ import org.lareferencia.backend.domain.OAIBitstream;
 import org.lareferencia.backend.domain.OAIBitstreamStatus;
 import org.lareferencia.backend.domain.SnapshotIndexStatus;
 import org.lareferencia.backend.domain.SnapshotStatus;
-import org.lareferencia.backend.domain.Transformer;
-import org.lareferencia.backend.domain.TransformerRule;
-import org.lareferencia.backend.domain.parquet.ValidationStatObservationParquet;
-import org.lareferencia.backend.domain.validation.ValidationStatsQueryResult;
-import org.lareferencia.backend.services.validation.ValidationStatisticsException;
-import org.lareferencia.backend.domain.Validator;
-import org.lareferencia.backend.domain.ValidatorRule;
-
-
 import org.lareferencia.backend.repositories.jpa.NetworkRepository;
 import org.lareferencia.backend.repositories.jpa.NetworkSnapshotRepository;
 import org.lareferencia.backend.repositories.jpa.OAIBitstreamRepository;
-import org.lareferencia.backend.repositories.jpa.OAIRecordRepository;
-import org.lareferencia.backend.repositories.jpa.TransformerRepository;
-import org.lareferencia.backend.repositories.jpa.ValidatorRepository;
-
-import org.lareferencia.backend.services.parquet.ValidationStatisticsParquetService.ValidationRuleOccurrencesCount;
-import org.lareferencia.backend.services.parquet.ValidationStatisticsParquetService;
-import org.lareferencia.backend.taskmanager.NetworkAction;
 import org.lareferencia.backend.taskmanager.NetworkActionkManager;
-import org.lareferencia.backend.taskmanager.NetworkProperty;
+import org.lareferencia.backend.validation.IValidationStatisticsService;
+import org.lareferencia.backend.validation.ValidationStatisticsException;
+import org.lareferencia.backend.validation.ValidationStatsResult;
+import org.lareferencia.backend.validation.ValidationStatsObservationsResult;
+import org.lareferencia.backend.validation.ValidationRuleOccurrencesCount;
 import org.lareferencia.core.metadata.MDFormatTransformerService;
-import org.lareferencia.core.metadata.MedatadaDOMHelper;
 import org.lareferencia.backend.domain.OAIRecord;
 import org.lareferencia.core.metadata.IMetadataRecordStoreService;
 import org.lareferencia.core.util.JsonDateSerializer;
 import org.lareferencia.core.worker.NetworkRunningContext;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -86,7 +68,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -125,7 +106,10 @@ public class BackendController {
 	private NetworkSnapshotRepository networkSnapshotRepository;
 	
 	@Autowired
-	private ValidationStatisticsParquetService validationStatisticsParquetService;
+	private IValidationStatisticsService validationStatisticsService;
+	
+	// @Autowired
+	// private ValidationStatisticsParquetService validationStatisticsParquetService;
 	
 
 
@@ -208,7 +192,7 @@ public class BackendController {
 	// Endpoint con query parameters (nuevo formato)
 	@RequestMapping(value = "/public/diagnose/{snapshotID}", method = RequestMethod.GET)
 	@ResponseBody
-	public ValidationStatisticsParquetService.ValidationStats diagnoseListRules(@PathVariable Long snapshotID, @RequestParam(required = false) String fq) throws Exception {
+	public ValidationStatsResult diagnoseListRules(@PathVariable Long snapshotID, @RequestParam(required = false) String fq) throws Exception {
 
 		logger.info("Recibido diagnose request - snapshotID: {}, fq parameter RAW: '{}'", snapshotID, fq);
 
@@ -236,13 +220,13 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + snapshotID);
 		
 		// Usar solo Parquet - retornar directamente el objeto ValidationStats
-		return validationStatisticsParquetService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fqList);
+		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fqList);
 	}
 
 	// Endpoint con path parameters (compatibilidad con frontend)
 	@RequestMapping(value = "/public/diagnose/{snapshotID}/{fq}", method = RequestMethod.GET)
 	@ResponseBody
-	public ValidationStatisticsParquetService.ValidationStats diagnoseListRulesWithPathParams(@PathVariable Long snapshotID, @PathVariable String fq) throws Exception {
+	public ValidationStatsResult diagnoseListRulesWithPathParams(@PathVariable Long snapshotID, @PathVariable String fq) throws Exception {
 
 		logger.info("Recibido diagnose request con path params - snapshotID: {}, fq path parameter RAW: '{}'", snapshotID, fq);
 
@@ -270,7 +254,7 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + snapshotID);
 		
 		// Usar solo Parquet - retornar directamente el objeto ValidationStats
-		return validationStatisticsParquetService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fqList);
+		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fqList);
 	}
 
 	@RequestMapping(value = "/public/diagnoseValidationOcurrences/{snapshotID}/{ruleID}/{fq}", method = RequestMethod.GET)
@@ -283,7 +267,7 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + snapshotID);
 
 		// Usar solo Parquet
-		return validationStatisticsParquetService.queryValidRuleOccurrencesCountBySnapshotID(snapshotID, ruleID, fq);
+		return validationStatisticsService.queryValidRuleOccurrencesCountBySnapshotID(snapshotID, ruleID, fq);
 	}
 
 	@RequestMapping(value = "/public/diagnoseValidationOcurrences/{snapshotID}/{ruleID}", method = RequestMethod.GET)
@@ -298,13 +282,13 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + snapshotID);
 
 
-		return validationStatisticsParquetService.queryValidRuleOccurrencesCountBySnapshotID(snapshotID, ruleID, fq);
+		return validationStatisticsService.queryValidRuleOccurrencesCountBySnapshotID(snapshotID, ruleID, fq);
 	}
 
 	
     @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/{fq}", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<ValidationStatsQueryResult> diagnoseListRecordValidationResults(
+    public ResponseEntity<ValidationStatsObservationsResult> diagnoseListRecordValidationResults(
             @PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params) throws ValidationStatisticsException {
 
         int count = Integer.parseInt(params.getOrDefault("size", params.getOrDefault("count", "20")));
@@ -321,15 +305,15 @@ public class BackendController {
 
         // Usar solo Parquet
         Pageable pageable = PageRequest.of(springDataPage, count);
-        return new ResponseEntity<ValidationStatsQueryResult>(
-                validationStatisticsParquetService.queryValidationStatsObservationsBySnapshotID(snapshotID, processedFq, pageable),
+        return new ResponseEntity<ValidationStatsObservationsResult>(
+                validationStatisticsService.queryValidationStatsObservationsBySnapshotID(snapshotID, processedFq, pageable),
                 HttpStatus.OK);
     }
 
 
     @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/fq", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<ValidationStatsQueryResult> diagnoseListRecordValidationResults(
+    public ResponseEntity<ValidationStatsObservationsResult> diagnoseListRecordValidationResults(
             @PathVariable Long snapshotID, @RequestParam Map<String, String> params) throws ValidationStatisticsException {
 
         List<String> fq = new ArrayList<String>();
@@ -344,8 +328,8 @@ public class BackendController {
         Pageable pageable = PageRequest.of(springDataPage, count);
 
         // Usar solo Parquet
-        return new ResponseEntity<ValidationStatsQueryResult>(
-                validationStatisticsParquetService.queryValidationStatsObservationsBySnapshotID(snapshotID, fq, pageable),
+        return new ResponseEntity<ValidationStatsObservationsResult>(
+                validationStatisticsService.queryValidationStatsObservationsBySnapshotID(snapshotID, fq, pageable),
                 HttpStatus.OK);
     }
 
