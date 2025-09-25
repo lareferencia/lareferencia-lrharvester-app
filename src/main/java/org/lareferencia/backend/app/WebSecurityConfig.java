@@ -39,6 +39,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public HttpFirewall httpFirewall() {
 		StrictHttpFirewall firewall = new StrictHttpFirewall();
 		firewall.setAllowUrlEncodedDoubleSlash(true); // <— permite %2F%2F
+		firewall.setAllowUrlEncodedPercent(true);      // <— permite %25
+
+
 		// opcional: firewall.setAllowUrlEncodedSlash(true); // permite %2F
 		return firewall;
 	}
@@ -63,4 +66,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   	}
 	
 }
+
 
