@@ -28,6 +28,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
@@ -60,11 +61,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	      .csrf().disable();
 	  }
 
+	@Bean
+	public HttpFirewall allowAllFirewall() {
+		return new DefaultHttpFirewall(); // <— permite todas las URLs
+	}
+
 	@Override
-  	public void configure(WebSecurity web) {
-    	web.httpFirewall(httpFirewall());
-  	}
+	public void configure(WebSecurity web) {
+		web.httpFirewall(allowAllFirewall());
+	}
 	
 }
+
 
 
