@@ -21,15 +21,28 @@
 
 package org.lareferencia.backend.app;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Bean
+	public HttpFirewall httpFirewall() {
+		StrictHttpFirewall firewall = new StrictHttpFirewall();
+		firewall.setAllowUrlEncodedDoubleSlash(true); // <— permite %2F%2F
+		// opcional: firewall.setAllowUrlEncodedSlash(true); // permite %2F
+		return firewall;
+	}
+
 	
 	 @Override
 	  protected void configure(HttpSecurity http) throws Exception {
@@ -43,5 +56,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	        .antMatchers(HttpMethod.PATCH, "/**").hasRole("USER").and()
 	      .csrf().disable();
 	  }
+
+	@Override
+  	public void configure(WebSecurity web) {
+    	web.httpFirewall(httpFirewall());
+  	}
 	
 }
+
