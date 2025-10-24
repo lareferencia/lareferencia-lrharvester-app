@@ -1,3 +1,7 @@
+# NOTE: Spring Data Solr was removed in Spring Boot 3.x
+# If you need Solr functionality, use Apache Solr Client directly
+# See SOLR_MIGRATION_NOTES.md for details
+
 ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
 spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
 spring.datasource.username=lrharvester
@@ -19,7 +23,6 @@ server.port=8090
 # server.servlet.context-path = /
 spring.data.rest.basePath=/rest
 
-spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
 spring.jackson.serialization.fail-on-empty-beans=false
 
 # The SQL dialect makes Hibernate generate better SQL for the chosen database
@@ -42,7 +45,7 @@ hashing.algorithm.class = MD5Hashing
 # spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 spring.security.user.name=admin
 spring.security.user.password=admin
-spring.security.user.roles=USER
+spring.security.user.role=USER
 
 # Hibernate ddl auto (create, create-drop, validate, update)
 spring.jpa.hibernate.ddl-auto = none

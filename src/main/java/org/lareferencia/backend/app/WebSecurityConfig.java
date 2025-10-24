@@ -21,54 +21,86 @@
 
 package org.lareferencia.backend.app;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * Spring Security 6 configuration (Spring Boot 3.x compatible)
+ * Migrated from WebSecurityConfigurerAdapter (deprecated in Spring Security 5.7, removed in 6.0)
+ */
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
 	@Bean
 	public HttpFirewall httpFirewall() {
 		StrictHttpFirewall firewall = new StrictHttpFirewall();
-		firewall.setAllowUrlEncodedDoubleSlash(true); // <— permite %2F%2F
-		firewall.setAllowUrlEncodedPercent(true);      // <— permite %25
-
-
-		// opcional: firewall.setAllowUrlEncodedSlash(true); // permite %2F
+		firewall.setAllowUrlEncodedDoubleSlash(true);
+		firewall.setAllowUrlEncodedPercent(true);
+		firewall.setAllowUrlEncodedSlash(true);
+		firewall.setAllowSemicolon(true);
 		return firewall;
 	}
 
-	
-	 @Override
-	  protected void configure(HttpSecurity http) throws Exception {
-
-	    http
-	      .httpBasic().and()
-	      .authorizeRequests()
-	      	.antMatchers(HttpMethod.GET, "/**").hasRole("USER")
-	        .antMatchers(HttpMethod.POST, "/**").hasRole("USER")
-	        .antMatchers(HttpMethod.PUT, "/**").hasRole("USER")
-	        .antMatchers(HttpMethod.PATCH, "/**").hasRole("USER").and()
-	      .csrf().disable();
-	  }
-
+	/**
+	 * Main security filter chain configuration
+	 * Replaces the old configure(HttpSecurity http) method
+	 */
 	@Bean
-	public HttpFirewall allowAllFirewall() {
-		return new DefaultHttpFirewall(); // <— permite todas las URLs
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+			.authorizeHttpRequests(authz -> authz
+				// Solo estos endpoints requieren autenticación
+				.requestMatchers("/rest/**").authenticated()
+				.requestMatchers("/private/**").authenticated()
+				
+				// Todo lo demás es público
+				.anyRequest().permitAll()
+			)
+			.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Backend"))
+			.csrf(csrf -> csrf.disable())
+			.sessionManagement(session -> session.maximumSessions(1));
+		
+		return http.build();
 	}
 
-	@Override
-	public void configure(WebSecurity web) {
-		web.httpFirewall(allowAllFirewall());
+	/**
+	 * CORS configuration to allow credentials (HTTP Basic Auth) in cross-origin requests
+	 */
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		
+		// Allow requests from any origin (adjust in production for specific origins)
+		configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+		
+		// Allow common HTTP methods
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		
+		// Allow common headers including Authorization for HTTP Basic Auth
+		configuration.setAllowedHeaders(Arrays.asList("*"));
+		
+		// CRITICAL: Allow credentials (cookies, authorization headers, etc.)
+		configuration.setAllowCredentials(true);
+		
+		// How long the response from a pre-flight request can be cached
+		configuration.setMaxAge(3600L);
+		
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		
+		return source;
 	}
 	
 }

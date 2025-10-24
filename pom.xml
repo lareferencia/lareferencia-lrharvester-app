@@ -76,6 +76,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- ADDED: Bean Validation (Hibernate Validator) for Spring Boot 3.x -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
