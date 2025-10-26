@@ -34,10 +34,11 @@ spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.Ph
 #
 
 # metadata store
-metadata.store.class = MetadataStoreSQLImpl
+# Production - absolute path with dedicated storage
+# metadata.store.fs.basepath=/var/lib/lareferencia/metadata-store
 
-# hashing method used by metadata store: MD5Hashing, XXHash64Hashing 
-hashing.algorithm.class = MD5Hashing
+# Development - temporary storage (data lost on reboot)
+metadata.store.fs.basepath=/tmp/metadata-store
 
 # spring security
 
