@@ -167,13 +167,54 @@ public class BackendController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifier/{snapshotId}/{identifier}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
-	public String getRecordMetadataBySnapshotAndIdentifier(@PathVariable Long snapshotId, @PathVariable String identifier) throws Exception {
+	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifier/{snapshotId}/{identifier:.*}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
+	public String getRecordMetadataBySnapshotAndIdentifier(
+			@PathVariable Long snapshotId, 
+			@PathVariable String identifier) throws Exception {
 
-		// replace %2F by /
-		identifier = identifier.replace("%2F", "/");
+		logger.debug("getRecordMetadataBySnapshotAndIdentifier RAW: snapshotId={}, identifier={}", snapshotId, identifier);
 
-		//System.out.println("getRecordMetadataBySnapshotAndIdentifier: " + snapshotId + " - " + identifier);
+		// Decodificar el identificador URL si es necesario
+		// Spring ya decodifica una vez automáticamente, pero por si acaso viene doblemente codificado
+		if (identifier.contains("%")) {
+			try {
+				identifier = java.net.URLDecoder.decode(identifier, "UTF-8");
+				logger.debug("Identifier after URL decoding: {}", identifier);
+			} catch (UnsupportedEncodingException e) {
+				logger.warn("Error decoding identifier: {}", identifier, e);
+			}
+		}
+
+		logger.info("getRecordMetadataBySnapshotAndIdentifier FINAL: snapshotId={}, identifier={}", snapshotId, identifier);
+
+		OAIRecord record = metadataStoreService.findRecordByIdentifier(snapshotId, identifier);
+		if (record != null )
+			return metadataStoreService.getPublishedMetadata(record).toString();
+		else
+			return "No record found - Probably the diagnose report is outdated";
+
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifierEncoded/{snapshotId}/{encodedIdentifier}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
+	public String getRecordMetadataBySnapshotAndIdentifierEncoded(
+			@PathVariable Long snapshotId, 
+			@PathVariable String encodedIdentifier) throws Exception {
+
+		String identifier = null;
+		
+		try {
+			// Decodificar desde Base64
+			byte[] decodedBytes = java.util.Base64.getUrlDecoder().decode(encodedIdentifier);
+			identifier = new String(decodedBytes, "UTF-8");
+			logger.info("getRecordMetadataBySnapshotAndIdentifierEncoded: snapshotId={}, identifier={}", snapshotId, identifier);
+		} catch (IllegalArgumentException e) {
+			logger.error("Invalid Base64 encoded identifier: {}", encodedIdentifier, e);
+			return "Invalid encoded identifier";
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Error decoding identifier from Base64: {}", encodedIdentifier, e);
+			return "Error decoding identifier";
+		}
 
 		OAIRecord record = metadataStoreService.findRecordByIdentifier(snapshotId, identifier);
 		if (record != null )
