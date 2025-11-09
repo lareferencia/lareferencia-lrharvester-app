@@ -507,54 +507,18 @@ public class BackendController {
                 String decodedItem = java.net.URLDecoder.decode(fqItem, "UTF-8");
                 logger.debug("VALIDATION FILTER: Decoded item: {}", decodedItem);
                 
-                // Parsear formato tipo@@"valor"
-                if (decodedItem.contains("@@")) {
-                    String[] parts = decodedItem.split("@@", 2);
-                    if (parts.length == 2) {
-                        String filterType = parts[0].trim();
-                        String filterValue = parts[1].trim();
-                        
-                        // Remover comillas si están presentes
-                        if (filterValue.startsWith("\"") && filterValue.endsWith("\"")) {
-                            filterValue = filterValue.substring(1, filterValue.length() - 1);
-                        }
-                        
-                        // Mapear tipos conocidos
-                        if ("invalid_rules".equals(filterType) || "valid_rules".equals(filterType)) {
-                            String processedFilter = filterType + ":" + filterValue;
-                            processedFq.add(processedFilter);
-                            logger.debug("VALIDATION FILTER: Rule filter processed: {}", processedFilter);
-                        } else if ("record_is_valid".equals(filterType)) {
-                            // Mapear record_is_valid a isValid
-                            String processedFilter = "isValid:" + filterValue;
-                            processedFq.add(processedFilter);
-                            logger.debug("VALIDATION FILTER: record_is_valid processed: {}", processedFilter);
-                        } else if ("record_is_transformed".equals(filterType)) {
-                            // Mapear record_is_transformed a isTransformed
-                            String processedFilter = "isTransformed:" + filterValue;
-                            processedFq.add(processedFilter);
-                            logger.info("VALIDATION FILTER: record_is_transformed processed: {}", processedFilter);
-                        } else {
-                            // Para otros tipos, mantener el formato original
-                            processedFq.add(decodedItem);
-                            logger.debug("VALIDATION FILTER: Unrecognized filter, kept original: {}", decodedItem);
-                        }
-                    } else {
-                        processedFq.add(decodedItem);
-                        logger.debug("VALIDATION FILTER: Invalid @@ format, kept original: {}", decodedItem);
-                    }
-                } else {
-                    // Sin formato @@, mantener original
-                    processedFq.add(decodedItem);
-                    logger.debug("VALIDATION FILTER: No @@ format, kept original: {}", decodedItem);
-                }
-            } catch (UnsupportedEncodingException e) {
-                logger.error("VALIDATION FILTER: Error decoding item: {} - {}", fqItem, e.getMessage());
-                processedFq.add(fqItem); // Mantener original si hay error de decodificación
+                // MANTENER FORMATO ORIGINAL - NO CONVERTIR
+                // Consistencia con otros endpoints que usan record_is_valid, record_is_transformed, etc.
+                processedFq.add(decodedItem);
+                logger.debug("VALIDATION FILTER: Kept original format: {}", decodedItem);
+                
+            } catch (Exception e) {
+                logger.error("VALIDATION FILTER: Error processing filter: {}", fqItem, e);
+                processedFq.add(fqItem);
             }
         }
         
-        logger.debug("VALIDATION FILTER: Processed validation rule filters: {}", processedFq);
+        logger.debug("VALIDATION FILTER: Processed filters: {}", processedFq);
         return processedFq;
     }
 
