@@ -30,12 +30,12 @@
 	<name>LA Referencia LRHarvester APP</name>
 	<description>LA Referencia LRHarvester APP</description>
 
-	<version>4.2.6</version>
+	<version>5.0.0-alpha</version>
 
 	<parent>
 		<groupId>org.lareferencia</groupId>
 		<artifactId>lareferencia-parent</artifactId>
-		<version>4.2.6</version>
+		<version>5.0.0-alpha</version>
 	</parent>
 
 	<dependencies>
@@ -43,7 +43,18 @@
 		<dependency>
 			<groupId>org.lareferencia</groupId>
 			<artifactId>lareferencia-core-lib</artifactId>
-			<version>4.2.6</version>
+			<version>5.0.0-alpha</version>
+			<exclusions>
+				<!-- Exclude conflicting logging implementations -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-slf4j2-impl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 
@@ -65,6 +76,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- ADDED: Bean Validation (Hibernate Validator) for Spring Boot 3.x -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
@@ -84,7 +101,7 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.2.6</version>
+					<version>5.0.0-alpha</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -119,7 +136,7 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.2.6</version>
+					<version>5.0.0-alpha</version>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
@@ -159,12 +176,12 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.2.6</version>
+					<version>5.0.0-alpha</version>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-dark-lib</artifactId>
-					<version>4.2.6</version>
+					<version>5.0.0-alpha</version>
 				</dependency>
 			</dependencies>
 			<build>

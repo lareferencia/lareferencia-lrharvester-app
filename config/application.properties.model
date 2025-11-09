@@ -1,3 +1,7 @@
+# NOTE: Spring Data Solr was removed in Spring Boot 3.x
+# If you need Solr functionality, use Apache Solr Client directly
+# See SOLR_MIGRATION_NOTES.md for details
+
 ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
 spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
 spring.datasource.username=lrharvester
@@ -19,7 +23,6 @@ server.port=8090
 # server.servlet.context-path = /
 spring.data.rest.basePath=/rest
 
-spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
 spring.jackson.serialization.fail-on-empty-beans=false
 
 # The SQL dialect makes Hibernate generate better SQL for the chosen database
@@ -31,10 +34,11 @@ spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.Ph
 #
 
 # metadata store
-metadata.store.class = MetadataStoreSQLImpl
+# Production - absolute path with dedicated storage
+# metadata.store.fs.basepath=/var/lib/lareferencia/metadata-store
 
-# hashing method used by metadata store: MD5Hashing, XXHash64Hashing 
-hashing.algorithm.class = MD5Hashing
+# Development - temporary storage (data lost on reboot)
+metadata.store.fs.basepath=/tmp/metadata-store
 
 # spring security
 
@@ -42,7 +46,7 @@ hashing.algorithm.class = MD5Hashing
 # spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 spring.security.user.name=admin
 spring.security.user.password=admin
-spring.security.user.roles=USER
+spring.security.user.role=USER
 
 # Hibernate ddl auto (create, create-drop, validate, update)
 spring.jpa.hibernate.ddl-auto = none
@@ -68,9 +72,28 @@ thesis.solr.url=http://localhost:8983/solr/biblio
 # XOAI indexer config
 xoai.solr.url=http://localhost:8983/solr/oai
 
-# Validation Stats config
-vstats.solr.server=http://localhost:8983/solr/
-vstats.solr.core=vstats
+
+## Parquet validation statistics configuration
+# Directory where Parquet files for validation statistics are stored
+validation.stats.parquet.path=/tmp/validation-stats-parquet
+
+# Records per file (base/fallback value when dynamic sizing is disabled)
+# With dynamic sizing enabled, this value is automatically adjusted based on snapshot size:
+#   - Snapshots < 100K records:      50,000 records/file
+#   - Snapshots 100K-1M records:    500,000 records/file  
+#   - Snapshots 1M-10M records:   1,000,000 records/file
+#   - Snapshots > 10M records:    2,000,000 records/file
+parquet.validation.records-per-file=100000
+
+# Enable dynamic file size adjustment based on snapshot size
+# Recommended: true (optimizes the number of generated files)
+parquet.validation.enable-dynamic-sizing=true
+
+# Logging configuration for Apache Parquet and Hadoop
+logging.level.org.apache.parquet.hadoop.InternalParquetRecordReader=WARN
+logging.level.org.apache.hadoop.io.compress.CodecPool=WARN
+logging.level.org.apache.parquet=WARN
+logging.level.org.apache.hadoop=WARN
 
 #harvester config
 harvester.max.retries = 10
