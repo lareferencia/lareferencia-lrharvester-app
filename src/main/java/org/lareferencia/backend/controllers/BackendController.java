@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.hadoop.yarn.webapp.hamlet.Hamlet.I;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lareferencia.backend.domain.Network;
@@ -41,6 +42,7 @@ import org.lareferencia.backend.domain.OAIBitstream;
 import org.lareferencia.backend.domain.OAIBitstreamStatus;
 import org.lareferencia.backend.domain.SnapshotIndexStatus;
 import org.lareferencia.backend.domain.SnapshotStatus;
+import org.lareferencia.backend.domain.parquet.RecordValidation;
 import org.lareferencia.backend.repositories.jpa.NetworkRepository;
 import org.lareferencia.backend.repositories.jpa.NetworkSnapshotRepository;
 import org.lareferencia.backend.repositories.jpa.OAIBitstreamRepository;
@@ -52,7 +54,8 @@ import org.lareferencia.backend.validation.ValidationStatsObservationsResult;
 import org.lareferencia.backend.validation.ValidationRuleOccurrencesCount;
 import org.lareferencia.core.metadata.MDFormatTransformerService;
 import org.lareferencia.backend.domain.OAIRecord;
-import org.lareferencia.core.metadata.IMetadataRecordStoreService;
+import org.lareferencia.core.metadata.IMetadataStore;
+import org.lareferencia.core.metadata.ISnapshotStore;
 import org.lareferencia.core.util.JsonDateSerializer;
 import org.lareferencia.core.worker.NetworkRunningContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +103,12 @@ public class BackendController {
 	private NetworkRepository networkRepository;
 	
 	@Autowired
-	private IMetadataRecordStoreService metadataStoreService;
+	private IMetadataStore metadataStoreService;
+
+	@Autowired 
+	private ISnapshotStore snapshotStoreService;
+
+	
 	
 	@Autowired
 	private NetworkSnapshotRepository networkSnapshotRepository;
@@ -154,46 +162,43 @@ public class BackendController {
 	}
 */
 	
-	@ResponseBody
-	@RequestMapping(value = "/public/getRecordMetadataByID/{id}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
-	public String getRecordMetadataByID(@PathVariable Long id) throws Exception {
+	// // @ResponseBody
+	// // @RequestMapping(value = "/public/getRecordMetadataByID/{id}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
+	// // public String getRecordMetadataByID(@PathVariable Long id) throws Exception {
 
-		OAIRecord record = metadataStoreService.findRecordByRecordId(id);
-		if (record != null )
-			return metadataStoreService.getPublishedMetadata(record).toString();
-		else
-			return "No record found - Probably the diagnose report is outdated";
+	// // 	OAIRecord record = metadataStoreService.findRecordByRecordId(id);
+	// // 	if (record != null )
+	// // 		return metadataStoreService.getPublishedMetadata(record).toString();
+	// // 	else
+	// // 		return "No record found - Probably the diagnose report is outdated";
 
-	}
+	// // }
 
-	@ResponseBody
-	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifier/{snapshotId}/{identifier:.*}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
-	public String getRecordMetadataBySnapshotAndIdentifier(
-			@PathVariable Long snapshotId, 
-			@PathVariable String identifier) throws Exception {
+	// @ResponseBody
+	// @RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifier/{snapshotId}/{identifier:.*}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
+	// public String getRecordMetadataBySnapshotAndIdentifier(
+	// 		@PathVariable Long snapshotId, 
+	// 		@PathVariable String identifier) throws Exception {
 
-		logger.debug("getRecordMetadataBySnapshotAndIdentifier RAW: snapshotId={}, identifier={}", snapshotId, identifier);
+	// 	logger.debug("getRecordMetadataBySnapshotAndIdentifier RAW: snapshotId={}, identifier={}", snapshotId, identifier);
 
-		// Decodificar el identificador URL si es necesario
-		// Spring ya decodifica una vez automáticamente, pero por si acaso viene doblemente codificado
-		if (identifier.contains("%")) {
-			try {
-				identifier = java.net.URLDecoder.decode(identifier, "UTF-8");
-				logger.debug("Identifier after URL decoding: {}", identifier);
-			} catch (UnsupportedEncodingException e) {
-				logger.warn("Error decoding identifier: {}", identifier, e);
-			}
-		}
+	// 	// Decodificar el identificador URL si es necesario
+	// 	// Spring ya decodifica una vez automáticamente, pero por si acaso viene doblemente codificado
+	// 	if (identifier.contains("%")) {
+	// 		try {
+	// 			identifier = java.net.URLDecoder.decode(identifier, "UTF-8");
+	// 			logger.debug("Identifier after URL decoding: {}", identifier);
+	// 		} catch (UnsupportedEncodingException e) {
+	// 			logger.warn("Error decoding identifier: {}", identifier, e);
+	// 		}
+	// 	}
 
-		logger.info("getRecordMetadataBySnapshotAndIdentifier FINAL: snapshotId={}, identifier={}", snapshotId, identifier);
+	// 	logger.info("getRecordMetadataBySnapshotAndIdentifier FINAL: snapshotId={}, identifier={}", snapshotId, identifier);
 
-		OAIRecord record = metadataStoreService.findRecordByIdentifier(snapshotId, identifier);
-		if (record != null )
-			return metadataStoreService.getPublishedMetadata(record).toString();
-		else
-			return "No record found - Probably the diagnose report is outdated";
 
-	}
+		
+
+	// }
 
 	@ResponseBody
 	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifierEncoded/{snapshotId}/{encodedIdentifier}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
@@ -216,9 +221,10 @@ public class BackendController {
 			return "Error decoding identifier";
 		}
 
-		OAIRecord record = metadataStoreService.findRecordByIdentifier(snapshotId, identifier);
-		if (record != null )
-			return metadataStoreService.getPublishedMetadata(record).toString();
+		RecordValidation recordValidation = validationStatisticsService.getRecordValidationListBySnapshotAndIdentifier(snapshotId, identifier);
+
+		if (recordValidation != null )
+			return metadataStoreService.getMetadata(snapshotStoreService.getSnapshotMetadata(snapshotId), recordValidation.getPublishedMetadataHash());
 		else
 			return "No record found - Probably the diagnose report is outdated";
 

@@ -47,7 +47,6 @@
 	<!--import resource="index.thesis.actions.xml" /--> <!-- IBICT ONLY -->
 	
 	<import resource="xoai.actions.xml" />
-	<import resource="fulltext.actions.xml" />
 
 	<!--import resource="historic.actions.xml" /-->
 	<!--import resource="network.actions.xml" /-->
