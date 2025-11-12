@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet.I;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lareferencia.core.domain.Network;
@@ -53,7 +52,6 @@ import org.lareferencia.core.service.validation.ValidationStatsResult;
 import org.lareferencia.core.service.validation.ValidationStatsObservationsResult;
 import org.lareferencia.core.service.validation.ValidationRuleOccurrencesCount;
 import org.lareferencia.core.metadata.MDFormatTransformerService;
-import org.lareferencia.core.domain.OAIRecord;
 import org.lareferencia.core.metadata.IMetadataStore;
 import org.lareferencia.core.metadata.ISnapshotStore;
 import org.lareferencia.core.util.JsonDateSerializer;
