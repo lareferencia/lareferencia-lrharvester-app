@@ -73,21 +73,19 @@ thesis.solr.url=http://localhost:8983/solr/biblio
 xoai.solr.url=http://localhost:8983/solr/oai
 
 
-## Parquet validation statistics configuration
-# Directory where Parquet files for validation statistics are stored
-validation.stats.parquet.path=/tmp/validation-stats-parquet
+## Parquet storage configuration
+store.basepath=/tmp/data/parquet
 
-# Records per file (base/fallback value when dynamic sizing is disabled)
-# With dynamic sizing enabled, this value is automatically adjusted based on snapshot size:
-#   - Snapshots < 100K records:      50,000 records/file
-#   - Snapshots 100K-1M records:    500,000 records/file  
-#   - Snapshots 1M-10M records:   1,000,000 records/file
-#   - Snapshots > 10M records:    2,000,000 records/file
+## Parquet general configuration
+parquet.compression=SNAPPY
+parquet.page.size=1048576
+parquet.enable.dictionary=true
+
+## Catalog configuration (OAI Records)
+parquet.catalog.records-per-file=100000
+
+## Validation statistics configuration
 parquet.validation.records-per-file=100000
-
-# Enable dynamic file size adjustment based on snapshot size
-# Recommended: true (optimizes the number of generated files)
-parquet.validation.enable-dynamic-sizing=true
 
 # Logging configuration for Apache Parquet and Hadoop
 logging.level.org.apache.parquet.hadoop.InternalParquetRecordReader=WARN

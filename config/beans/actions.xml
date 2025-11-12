@@ -47,7 +47,6 @@
 	<!--import resource="index.thesis.actions.xml" /--> <!-- IBICT ONLY -->
 	
 	<import resource="xoai.actions.xml" />
-	<import resource="fulltext.actions.xml" />
 
 	<!--import resource="historic.actions.xml" /-->
 	<!--import resource="network.actions.xml" /-->
@@ -55,7 +54,7 @@
 	<!--import resource="lr.entity.actions.xml" /-->
 	
 	<!-- Append bean references inside networkActionManager actions list -->
-	<bean id="networkActionManager" class="org.lareferencia.backend.taskmanager.NetworkActionkManager"
+	<bean id="networkActionManager" class="org.lareferencia.core.task.NetworkActionkManager"
 		scope="singleton">
 		<property name="actions">
 			<list>

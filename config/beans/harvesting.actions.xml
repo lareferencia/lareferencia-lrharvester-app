@@ -36,7 +36,7 @@
 
 
 	<!-- Actions -->
-	<bean id="harvestingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="harvestingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="HARVESTING_ACTION" />
 		<property name="description" value="Harvesting"></property>
 		<property name="incremental" value="true" />
@@ -49,15 +49,15 @@
 		</property>
 		<property name="properties">
 			<list>
-				<!--bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<!--bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="HARVEST" />
 					<property name="description" value="Cosechar?" />
 				</bean>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="HARVEST_IDENTIFY_PARAMETERS" />
 					<property name="description" value="Consultar Identify?" />
 				</bean-->
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="FORCE_FULL_HARVESTING" />
 					<property name="description" value="Forzar cosecha full?" />
 				</bean>
@@ -67,7 +67,7 @@
 
 
 	<!-- Harvesting workers -->
-	<bean id="harvestingWorker" class="org.lareferencia.core.harvester.workers.HarvestingWorker" scope="prototype">
+	<bean id="harvestingWorker" class="org.lareferencia.core.worker.harvesting.HarvestingWorker" scope="prototype">
 		<property name="fetchIdentifyParameters" value="false"></property>
 	</bean>
 

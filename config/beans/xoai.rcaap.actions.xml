@@ -38,7 +38,7 @@
 
 
 	<!-- Actions -->
-	<bean id="rcaapXoaiIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="rcaapXoaiIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="XOAI_INDEXING_ACTION" />
 		<property name="description" value="Index OAI-PMH"></property>
 		<property name="incremental" value="true" />
@@ -50,7 +50,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="INDEX_XOAI" />
 					<property name="description" value="Exportar a OAI-PMH Provider?" />
 				</bean>
@@ -59,7 +59,7 @@
 	</bean>
 
 
-	<bean id="rcaapXoaiDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="rcaapXoaiDeleteAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="XOAI_DELETE_ACTION" />
 		<property name="description" value="UnIndex OAI-PMH"></property>
 		<property name="workers">
@@ -70,7 +70,7 @@
 	</bean>
 
 	<!-- Workers -->
-	<bean id="rcaapXoaiIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="rcaapXoaiIndexerWorker" class="org.lareferencia.core.worker.indexing.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>
@@ -94,7 +94,7 @@
 	</bean>
 
 
-	<bean id="rcaapXoaiDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="rcaapXoaiDeleteWorker" class="org.lareferencia.core.worker.indexing.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>

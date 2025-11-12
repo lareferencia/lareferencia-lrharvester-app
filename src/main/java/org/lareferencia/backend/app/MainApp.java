@@ -21,8 +21,6 @@
 package org.lareferencia.backend.app;
 
 
-import org.lareferencia.core.metadata.IMetadataRecordStoreService;
-import org.lareferencia.core.metadata.MetadataRecordStoreServiceImpl;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
@@ -32,7 +30,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -40,11 +37,11 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 @SpringBootApplication
 
-@EntityScan( basePackages= { "org.lareferencia.backend.domain", 
+@EntityScan( basePackages= { "org.lareferencia.core.domain", 
 							 "org.lareferencia.core.entity.domain" } )
 
 @EnableJpaRepositories( basePackages={ 
-							"org.lareferencia.backend.repositories.jpa", 
+							"org.lareferencia.core.repository.jpa", 
 							"org.lareferencia.core.entity.repositories.jpa" } )
 
 @EnableAutoConfiguration( exclude = { org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class })
@@ -75,12 +72,5 @@ public class MainApp {
         return firewall;
     }
 
-	
-	/** Metadata Store Service  */
-	@Bean(name="metadataStoreService")
-	@Scope("prototype")
-	public IMetadataRecordStoreService metadaStoreService() {
-        return new MetadataRecordStoreServiceImpl();
-    }
-	
+
 }
