@@ -37,11 +37,11 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 @SpringBootApplication
 
-@EntityScan( basePackages= { "org.lareferencia.backend.domain", 
+@EntityScan( basePackages= { "org.lareferencia.core.domain", 
 							 "org.lareferencia.core.entity.domain" } )
 
 @EnableJpaRepositories( basePackages={ 
-							"org.lareferencia.backend.repositories.jpa", 
+							"org.lareferencia.core.repository.jpa", 
 							"org.lareferencia.core.entity.repositories.jpa" } )
 
 @EnableAutoConfiguration( exclude = { org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class })

@@ -26,7 +26,7 @@
 
 
 	<!-- ACTIONS -->
-    <bean id="rcaapEntityIndexingSimpleAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+    <bean id="rcaapEntityIndexingSimpleAction" class="org.lareferencia.core.task.NetworkAction">
         <property name="name" value="ENTITYRELATION_SIMPLE_INDEXING_ACTION"/>
         <property name="description" value="Index entities (simple)"></property>
         <property name="incremental" value="false"/>
@@ -38,7 +38,7 @@
         </property>
         <property name="properties">
             <list>
-                <bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+                <bean class="org.lareferencia.core.task.NetworkProperty">
                     <property name="name" value="SIMPLE_INDEX_ENTITIES"/>
                     <property name="description" value="Index entities simple?"/>
                 </bean>
@@ -46,7 +46,7 @@
         </property>
     </bean>
 
-    <bean id="rcaapIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+    <bean id="rcaapIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
         <property name="name" value="RCAAP_INDEXING_ACTION"/>
         <property name="description" value="Indexar no RCAAP"></property>
         <property name="incremental" value="true"/>
@@ -58,11 +58,11 @@
         </property>
         <property name="properties">
             <list>
-                <bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+                <bean class="org.lareferencia.core.task.NetworkProperty">
                     <property name="name" value="INDEX_RCAAP"/>
                     <property name="description" value="Indexar no RCAAP?"/>
                 </bean>
-                <bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+                <bean class="org.lareferencia.core.task.NetworkProperty">
                     <property name="name" value="INDEX_FULLTEXT"/>
                     <property name="description" value="Indexar texto completo?"/>
                 </bean>
@@ -70,7 +70,7 @@
         </property>
     </bean>
 
-    <bean id="rcaapDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+    <bean id="rcaapDeleteAction" class="org.lareferencia.core.task.NetworkAction">
         <property name="name" value="RCAAP_DELETE_ACTION"/>
         <property name="description" value="Apagar do indice RCAAP"></property>
         <property name="workers">
@@ -88,7 +88,7 @@
 		<property name="entityTypeNameList" value="${entity.indexing.entities}"/>
 	</bean>
 
-    <bean id="rcaapIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+    <bean id="rcaapIndexerWorker" class="org.lareferencia.core.worker.indexing.IndexerWorker" scope="prototype">
         <constructor-arg>
             <value>${frontend.solr.url}</value>
         </constructor-arg>
@@ -108,7 +108,7 @@
         <property name="indexNetworkAttributes" value="true" />
     </bean>
 
-    <bean id="rcaapDeleteWorker" class="org.lareferencia.backend.workers.indexer.FullUnindexerWorker" scope="prototype">
+    <bean id="rcaapDeleteWorker" class="org.lareferencia.core.worker.indexing.FullUnindexerWorker" scope="prototype">
         <constructor-arg>
             <value>${frontend.solr.url}</value>
         </constructor-arg>

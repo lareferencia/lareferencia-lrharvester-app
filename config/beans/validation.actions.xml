@@ -37,7 +37,7 @@
 
 	<!-- Actions -->
 
-	<bean id="validationNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="validationNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="VALIDATION_ACTION" />
 		<property name="description" value="Validación/Transf"></property>
 		<property name="incremental" value="true" />
@@ -50,19 +50,19 @@
 		</property>
 		<property name="properties">
 			<list>
-				<!--bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<!--bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="VALIDATE" />
 					<property name="description" value="Validar los registos?" />
 				</bean>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="TRANSFORM" />
 					<property name="description" value="Transformar los registos?" />
 				</bean>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="DIAGNOSE" />
 					<property name="description" value="Diagnosticar la validación?" />
 				</bean-->
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="DETAILED_DIAGNOSE" />
 					<property name="description"
 						value="Realizar diagnósticos detallado (ocurrencias)?" />
@@ -73,7 +73,7 @@
 
 
 	<!-- Workers -->
-	<bean id="validationWorker" class="org.lareferencia.backend.workers.validator.ValidationWorker"
+	<bean id="validationWorker" class="org.lareferencia.core.worker.validation.ValidationWorker"
 		scope="prototype">
 	</bean>
 

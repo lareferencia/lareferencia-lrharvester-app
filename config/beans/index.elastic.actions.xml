@@ -36,7 +36,7 @@
 		
 		
 	<!-- ACTIONS -->		
-	<bean id="elasticIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="elasticIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="ELASTIC_INDEXING_ACTION"/>
     	<property name="description" value="Index Elastic"></property>
     	<property name="incremental" value="true"/>
@@ -48,11 +48,11 @@
     	</property>
     	<property name="properties">
         <list>
-        	<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+        	<bean class="org.lareferencia.core.task.NetworkProperty">
         		<property name="name" value="INDEX_ELASTIC" />
         		<property name="description" value="Indexar en elasticsearch?" />
         	</bean>
-        	<!--bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+        	<!--bean class="org.lareferencia.core.task.NetworkProperty">
         		<property name="name" value="INDEX_FULLTEXT_ELASTIC" />
         		<property name="description" value="Indexar texto completo?" />
         	</bean-->
@@ -61,7 +61,7 @@
     </bean>
     
 		
-    <!--bean id="frontendDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+    <!--bean id="frontendDeleteAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="FRONTEND_DELETE_ACTION"/>
     	<property name="description" value="UnIndex Frontend"></property>
     	<property name="workers">
@@ -73,7 +73,7 @@
 		    
 		
     <!-- WORKERS -->
-	<bean id="elasticIndexerWorker" class="org.lareferencia.backend.indexer.ElasticIndexerWorker"
+	<bean id="elasticIndexerWorker" class="org.lareferencia.core.worker.indexing.ElasticIndexerWorker"
 		scope="prototype">
 	
 		<property name="serialLaneId" value="1"/>

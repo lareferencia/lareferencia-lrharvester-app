@@ -36,7 +36,7 @@
 
 
 	<!-- Actions -->
-	<bean id="darkNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="darkNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="DARK_ACTION" />
 		<property name="description" value="Dark PIDS"></property>
 		<property name="incremental" value="true" />

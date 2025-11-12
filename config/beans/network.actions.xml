@@ -28,7 +28,7 @@
 
     <!-- ACTIONS -->
 
-	<bean id="networkIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="networkIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="NETWORK_INDEX_ACTION" />
 		<property name="description" value="Index network profile"></property>
 		<property name="runOnSchedule" value="true" />
@@ -39,7 +39,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="INDEX_NETWORK"/>
 					<property name="description" value="Indexar network"/>
 				</bean>
@@ -47,7 +47,7 @@
 		</property>
 	</bean>
 
-	<bean id="networkUnindexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="networkUnindexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="NETWORK_UNINDEX_ACTION" />
 		<property name="description" value="UnIndex network profile"></property>
 		<property name="runOnSchedule" value="true" />
@@ -58,7 +58,7 @@
 		</property>
 	</bean>
 
-    <bean id="network2EntityNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+    <bean id="network2EntityNetworkAction" class="org.lareferencia.core.task.NetworkAction">
         <property name="name" value="NETWORK2ENTITY_ACTION" />
         <property name="description" value="Extract entity from network attributes"></property>
         <property name="runOnSchedule" value="true" />
@@ -69,7 +69,7 @@
         </property>
     </bean>
     
-    <bean id="networkDeleteNetworkAction2" class="org.lareferencia.backend.taskmanager.NetworkAction">
+    <bean id="networkDeleteNetworkAction2" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="NETWORK_DELETE_ACTION" />
 		<property name="description" value="Delete network (!)"></property>
 		<property name="workers">
@@ -83,7 +83,7 @@
 		</property>
 	</bean>
 	
-	<bean id="networkCleanNetworkAction2" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="networkCleanNetworkAction2" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="NETWORK_CLEAN_ACTION" />
 		<property name="description" value="Remove snapshots"></property>
 		<property name="runOnSchedule" value="true" />
@@ -94,7 +94,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="CLEAN_NETWORK" />
 					<property name="description" value="Remove old Snapshots?" />
 				</bean>
@@ -105,7 +105,7 @@
 
     <!-- WORKERS -->
     
-	<bean id="xoaiDeleteWorker2" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="xoaiDeleteWorker2" class="org.lareferencia.core.worker.indexing.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${xoai.solr.url}</value>
@@ -139,18 +139,18 @@
         <property name="serialLaneId" value="100"/>
     </bean>
     
-	<bean id="networkDeleteWorker2" class="org.lareferencia.backend.taskmanager.NetworkCleanWorker"
+	<bean id="networkDeleteWorker2" class="org.lareferencia.core.worker.management.NetworkCleanWorker"
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="true"></property>
 	</bean>    
 
-	<bean id="networkCleanWorker2" class="org.lareferencia.backend.taskmanager.NetworkCleanWorker"
+	<bean id="networkCleanWorker2" class="org.lareferencia.core.worker.management.NetworkCleanWorker"
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="false"></property>
 	</bean>
 	
 	
-	<bean id="rcaapDeleteWorker2" class="org.lareferencia.backend.workers.indexer.FullUnindexerWorker" scope="prototype">
+	<bean id="rcaapDeleteWorker2" class="org.lareferencia.core.worker.indexing.FullUnindexerWorker" scope="prototype">
 		<constructor-arg>
 			<value>${frontend.solr.url}</value>
 		</constructor-arg>
