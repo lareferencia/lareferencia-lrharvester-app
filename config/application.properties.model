@@ -1,164 +1,98 @@
-# NOTE: Spring Data Solr was removed in Spring Boot 3.x
-# If you need Solr functionality, use Apache Solr Client directly
-# See SOLR_MIGRATION_NOTES.md for details
+# ==============================================================================
+# LA REFERENCIA LRHARVESTER - APPLICATION CONFIGURATION TEMPLATE
+# ==============================================================================
+# This file serves as a template for configuring the LA Referencia LRHarvester
+# application. Copy this file to 'application.properties' and adjust the values
+# according to your environment.
+#
+# Sections:
+# 1. General Configuration
+# 2. Database Settings
+# 3. Security
+# 4. Storage
+# 5. Search Engine (Solr)
+# 6. Integration Services
+# ==============================================================================
 
-## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+
+# ==============================================================================
+# 1. GENERAL CONFIGURATION
+# ==============================================================================
+
+# Application configuration directory path
+# Default: config
+config.dir.path=config
+
+# Action beans configuration filename
+# Default: actions.xml
+actions.beans.filename=actions.xml
+
+
+# ==============================================================================
+# 2. DATABASE SETTINGS
+# ==============================================================================
+
+# PostgreSQL connection URL
+# Format: jdbc:postgresql://<host>:<port>/<database>
+# Default: jdbc:postgresql://localhost:5432/lrharvester
 spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
+
+# Database credentials
+# Default: lrharvester
 spring.datasource.username=lrharvester
 spring.datasource.password=lrharvester
 
-# minimum number of idle connections maintained by HikariCP in a connection pool
-spring.datasource.hikari.minimum-idle=10
-# maximum pool size
-spring.datasource.hikari.maximum-pool-size=50
 
-# dont run sheel interactive
-spring.shell.interactive.enabled = false
-spring.shell.script.enabled = false
+# ==============================================================================
+# 3. SECURITY
+# ==============================================================================
 
-#rest port
-server.port=8090
-# UNCOMMENT if you use a Apache proxy pass and need Spring to handle request types
-# server.forward-headers-strategy = framework
-# server.servlet.context-path = /
-spring.data.rest.basePath=/rest
-
-spring.jackson.serialization.fail-on-empty-beans=false
-
-# The SQL dialect makes Hibernate generate better SQL for the chosen database
-spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-
-#spring.jpa.show-sql=true
-#spring.jpa.properties.hibernate.format_sql=true
-#
-
-# metadata store
-# Production - absolute path with dedicated storage
-# metadata.store.fs.basepath=/var/lib/lareferencia/metadata-store
-
-# Development - temporary storage (data lost on reboot)
-metadata.store.fs.basepath=/tmp/metadata-store
-
-# spring security
-
-# # comment this to turn on security
-# spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+# Default admin user credentials
+# WARNING: Change these values in production environments
 spring.security.user.name=admin
 spring.security.user.password=admin
-spring.security.user.role=USER
 
-# Hibernate ddl auto (create, create-drop, validate, update)
-spring.jpa.hibernate.ddl-auto = none
+# To disable Spring Security, uncomment the following line:
+# spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
-config.dir.path = config
-# you can specify the location for the index config file
-entity.indexing.configfile = config/entity-indexing-config.xml
-# you can specify which entities should be indexed (remember to separate them using commas) 
-entity.indexing.entities=Person,Publication 
-actions.beans.filename=actions.xml
+# ==============================================================================
+# 4. STORAGE
+# ==============================================================================
 
-downloaded.files.path=/tmp
+# Base directory for Parquet data storage
+# This directory will contain OAI records catalog and validation statistics
+# Default: /tmp/data/
+store.basepath=/tmp/data/
 
-default.solr.server = http://localhost:8983/solr
+# ==============================================================================
+# 5. SEARCH ENGINE (SOLR)
+# ==============================================================================
 
-# metadata store format (xoai)
-metadata.store.format = xoai
+# Default Solr server URL
+# Default: http://localhost:8983/solr
+default.solr.server=http://localhost:8983/solr
 
-# frontend indexer config
+# Frontend indexer configuration
 frontend.solr.url=http://localhost:8983/solr/biblio
 thesis.solr.url=http://localhost:8983/solr/biblio
 
-# XOAI indexer config
+# OAI indexer configuration
 xoai.solr.url=http://localhost:8983/solr/oai
 
 
-## Parquet storage configuration
-store.basepath=/tmp/data/parquet
+# ==============================================================================
+# 6. INTEGRATION SERVICES
+# ==============================================================================
 
-## Parquet general configuration
-parquet.compression=SNAPPY
-parquet.page.size=1048576
-parquet.enable.dictionary=true
-
-## Catalog configuration (OAI Records)
-parquet.catalog.records-per-file=100000
-
-## Validation statistics configuration
-parquet.validation.records-per-file=100000
-
-# Logging configuration for Apache Parquet and Hadoop
-logging.level.org.apache.parquet.hadoop.InternalParquetRecordReader=WARN
-logging.level.org.apache.hadoop.io.compress.CodecPool=WARN
-logging.level.org.apache.parquet=WARN
-logging.level.org.apache.hadoop=WARN
-
-#harvester config
-harvester.max.retries = 10
-harvester.retry.seconds = 3
-harvester.retry.factor = 2
-
-# set sizes according to #repositories
-scheduler.pool.size = 10
-taskexecutor.pool.size = 10
-
-#tiempo de limpieza de procesos terminados en milisegundos
-taskmanager.clean.interval = 60000
-taskmanager.concurrent.tasks = 4
-taskmanager.max_queuded.tasks = 32
-
-#reponame e instname
-reponame.fieldname=dc:source
-reponame.prefix=reponame:
-
-instname.fieldname=dc:source
-instname.prefix=instname:
-
-# DEBUG
-
-# uncomment the following setting to activade logging debugging mode
-# for root class level
-#logging.level.root=DEBUG
-
-# uncomment the following setting to activade logging debugging mode
-# for oai harvester
-#logging.level.org.oclc.oai.harvester2=DEBUG
-
-############################ RCAAP ##################################
-
-# Historic Stats config
-historic.solr.server=http://localhost:8983/solr/
-historic.solr.core=historic
-
-network.solr.server=http://localhost:8983/solr/
-network.solr.core=network
-
-# projects indexer config
-project.solr.server=http://localhost:8983/solr
-project.solr.core=projects
-
-#project
-project.file.path = /etc/lrharvester/project/projects.xlsx
-
-#historic
-historic.access.field=dc.rights.access.*
-historic.access.open=http://purl.org/coar/access_right/c_abf2
-historic.access.restricted=http://purl.org/coar/access_right/c_16ec
-historic.access.embargoed=http://purl.org/coar/access_right/c_f1cf
-historic.access.metadataonly=http://purl.org/coar/access_right/c_14cb
-
-#entity
-entity.solr.url = http://localhost:8983/solr/entity
-
-
-############################ DARK ##################################
-
+# DARK PID Minter service
+# URL for generating persistent identifiers
 dark.minter.url=http://minter.dark-pid.net/load
 
-## SSL
-#server.ssl.key-store=config/localhost.p12
-#server.ssl.key-store-password=
-#server.ssl.key-alias=localhost
-#server.ssl.key-password=
-#server.ssl.key-store-type=pkcs12
-#server.port=8443
+
+# ==============================================================================
+# ADDITIONAL CONFIGURATION
+# ==============================================================================
+
+# ==============================================================================
+# END OF CONFIGURATION
+# ==============================================================================

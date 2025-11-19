@@ -89,11 +89,7 @@ public class BackendController {
 	
 	private static Logger logger = LogManager.getLogger(BackendController.class);
 
-	@Value("${downloaded.files.path}")
-	private String BITSTREAM_PATH;
-	
-	
-	
+
 	@Autowired
 	private OAIBitstreamRepository bitstreamRepository;
 
@@ -612,35 +608,35 @@ public class BackendController {
 		return response;
 	}
 	
-	@ResponseBody
-	@RequestMapping(value = "/public/getBitstream/{hash}", method = RequestMethod.GET)
-	public ResponseEntity<InputStreamResource> getBitstream(@PathVariable String hash, HttpServletResponse response) throws Exception {		
+	// @ResponseBody
+	// @RequestMapping(value = "/public/getBitstream/{hash}", method = RequestMethod.GET)
+	// public ResponseEntity<InputStreamResource> getBitstream(@PathVariable String hash, HttpServletResponse response) throws Exception {		
 		
-	    try {
+	//     try {
 	    
-	      OAIBitstream bitstream = bitstreamRepository.findOneByHash(hash);
+	//       OAIBitstream bitstream = bitstreamRepository.findOneByHash(hash);
 	      
-	      if ( bitstream != null && bitstream.getStatus() == OAIBitstreamStatus.DOWNLOADED ) {
+	//       if ( bitstream != null && bitstream.getStatus() == OAIBitstreamStatus.DOWNLOADED ) {
 	    	
-		    	// get your file as InputStream
-			  File file = new File( BITSTREAM_PATH + "/" + hash);
+	// 	    	// get your file as InputStream
+	// 		  File file = new File( BITSTREAM_PATH + "/" + hash);
 			  
-		      HttpHeaders respHeaders = new HttpHeaders();
-			    respHeaders.setContentType( MediaType.parseMediaType( bitstream.getMime())  );
-			    respHeaders.setContentDispositionFormData("attachment", bitstream.getFilename());
+	// 	      HttpHeaders respHeaders = new HttpHeaders();
+	// 		    respHeaders.setContentType( MediaType.parseMediaType( bitstream.getMime())  );
+	// 		    respHeaders.setContentDispositionFormData("attachment", bitstream.getFilename());
 	
-			  InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
+	// 		  InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
 			  
-			  return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
-	      } else
-	    	  return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+	// 		  return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+	//       } else
+	//     	  return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
 	    
-	    } catch (Exception ex) {
-	    	//log.info("Error writing file to output stream. Filename was '{}'", ex);
-	    	return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
-	    }
+	//     } catch (Exception ex) {
+	//     	//log.info("Error writing file to output stream. Filename was '{}'", ex);
+	//     	return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+	//     }
 
-	}
+	// }
 	
 	
 

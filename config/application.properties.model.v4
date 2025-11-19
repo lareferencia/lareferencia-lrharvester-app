@@ -1,3 +1,7 @@
+# NOTE: Spring Data Solr was removed in Spring Boot 3.x
+# If you need Solr functionality, use Apache Solr Client directly
+# See SOLR_MIGRATION_NOTES.md for details
+
 ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
 spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
 spring.datasource.username=lrharvester
@@ -8,6 +12,10 @@ spring.datasource.hikari.minimum-idle=10
 # maximum pool size
 spring.datasource.hikari.maximum-pool-size=50
 
+# dont run sheel interactive
+spring.shell.interactive.enabled = false
+spring.shell.script.enabled = false
+
 #rest port
 server.port=8090
 # UNCOMMENT if you use a Apache proxy pass and need Spring to handle request types
@@ -15,16 +23,6 @@ server.port=8090
 # server.servlet.context-path = /
 spring.data.rest.basePath=/rest
 
-## SSL
-server.ssl.key-store=config/localhost.p12
-server.ssl.key-store-password=
-server.ssl.key-alias=localhost
-server.ssl.key-password=
-server.ssl.key-store-type=pkcs12
-server.port=8443
-
-
-spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
 spring.jackson.serialization.fail-on-empty-beans=false
 
 # The SQL dialect makes Hibernate generate better SQL for the chosen database
@@ -36,10 +34,11 @@ spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.Ph
 #
 
 # metadata store
-metadata.store.class = MetadataStoreSQLImpl
+# Production - absolute path with dedicated storage
+# metadata.store.fs.basepath=/var/lib/lareferencia/metadata-store
 
-# hashing method used by metadata store: MD5Hashing, XXHash64Hashing 
-hashing.algorithm.class = MD5Hashing
+# Development - temporary storage (data lost on reboot)
+metadata.store.fs.basepath=/tmp/metadata-store
 
 # spring security
 
@@ -47,7 +46,7 @@ hashing.algorithm.class = MD5Hashing
 # spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 spring.security.user.name=admin
 spring.security.user.password=admin
-spring.security.user.roles=USER
+spring.security.user.role=USER
 
 # Hibernate ddl auto (create, create-drop, validate, update)
 spring.jpa.hibernate.ddl-auto = none
@@ -73,9 +72,26 @@ thesis.solr.url=http://localhost:8983/solr/biblio
 # XOAI indexer config
 xoai.solr.url=http://localhost:8983/solr/oai
 
-# Validation Stats config
-vstats.solr.server=http://localhost:8983/solr/
-vstats.solr.core=vstats
+
+## Parquet storage configuration
+store.basepath=/tmp/data/parquet
+
+## Parquet general configuration
+parquet.compression=SNAPPY
+parquet.page.size=1048576
+parquet.enable.dictionary=true
+
+## Catalog configuration (OAI Records)
+parquet.catalog.records-per-file=100000
+
+## Validation statistics configuration
+parquet.validation.records-per-file=100000
+
+# Logging configuration for Apache Parquet and Hadoop
+logging.level.org.apache.parquet.hadoop.InternalParquetRecordReader=WARN
+logging.level.org.apache.hadoop.io.compress.CodecPool=WARN
+logging.level.org.apache.parquet=WARN
+logging.level.org.apache.hadoop=WARN
 
 #harvester config
 harvester.max.retries = 10
@@ -133,3 +149,16 @@ historic.access.metadataonly=http://purl.org/coar/access_right/c_14cb
 
 #entity
 entity.solr.url = http://localhost:8983/solr/entity
+
+
+############################ DARK ##################################
+
+dark.minter.url=http://minter.dark-pid.net/load
+
+## SSL
+#server.ssl.key-store=config/localhost.p12
+#server.ssl.key-store-password=
+#server.ssl.key-alias=localhost
+#server.ssl.key-password=
+#server.ssl.key-store-type=pkcs12
+#server.port=8443

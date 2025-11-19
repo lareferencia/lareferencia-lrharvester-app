@@ -21,6 +21,11 @@
 package org.lareferencia.backend.app;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
@@ -30,9 +35,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.core.io.Resource;
+
+
 
 
 @SpringBootApplication
@@ -57,9 +67,11 @@ public class MainApp {
         System.setProperty("spring.shell.script.enabled", "false");
 
 		
-		SpringApplicationBuilder builder =  new SpringApplicationBuilder(MainApp.class);
-		builder.initializers(new MainAppContextInitializer());
-		builder.run(args);
+        SpringApplicationBuilder builder =  new SpringApplicationBuilder(MainApp.class);
+        builder.initializers(new MainAppContextInitializer());
+        // Add a handler for failures during application startup to provide a clearer message
+        builder.listeners(new ApplicationFailureHandler());
+        builder.run(args);
 	}
 
     @Bean
@@ -71,6 +83,27 @@ public class MainApp {
         firewall.setAllowUrlEncodedPeriod(true);
         return firewall;
     }
+
+    @Bean
+    static PropertySourcesPlaceholderConfigurer dirConfigurer() throws IOException {
+
+        Path dir = Paths.get("config/application.properties.d");
+        
+        Resource[] resources = Files.list(dir)
+            .filter(p -> p.toString().endsWith(".properties"))
+            .sorted()
+            .map(p -> new FileSystemResource(p.toFile()))
+            .toArray(Resource[]::new);
+
+        PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+        configurer.setLocations(resources);
+        configurer.setIgnoreResourceNotFound(true);
+
+
+        return configurer;
+    }
+
+
 
 
 }
