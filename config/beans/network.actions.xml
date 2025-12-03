@@ -120,12 +120,12 @@
 		<property name="executeIndexing" value="false" />
 	</bean>    
     
-	<bean id="networkIndexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexWorker"
+	<bean id="networkIndexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexLegacyWorker"
 		scope="prototype">
 		<property name="executeDeletion" value="false" />
 	</bean>
 
-	<bean id="networkUnindexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexWorker"
+	<bean id="networkUnindexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexLegacyWorker"
 		scope="prototype">
 		<property name="executeDeletion" value="true" />
 	</bean>
