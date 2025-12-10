@@ -20,59 +20,66 @@
 
 package org.lareferencia.backend.app;
 
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
-import org.springframework.core.io.Resource;
-
-
-
 
 @SpringBootApplication
 
-@EntityScan( basePackages= { "org.lareferencia.core.domain", 
-							 "org.lareferencia.core.entity.domain" } )
+@EntityScan(basePackages = { "org.lareferencia.core.domain",
+        "org.lareferencia.core.entity.domain" })
 
-@EnableJpaRepositories( basePackages={ 
-							"org.lareferencia.core.repository.jpa", 
-							"org.lareferencia.core.entity.repositories.jpa" } )
+@EnableJpaRepositories(basePackages = {
+        "org.lareferencia.core.repository.jpa",
+        "org.lareferencia.core.entity.repositories.jpa" })
 
-@EnableAutoConfiguration( exclude = { org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class })
+@EnableAutoConfiguration(exclude = {
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+        ElasticsearchDataAutoConfiguration.class })
 
 @Configuration
-@ComponentScan(basePackages =  {"org.lareferencia.backend", "org.lareferencia.core" })
-@ImportResource({"classpath*:application-context.xml"})
+@ComponentScan(basePackages = { "org.lareferencia.backend", "org.lareferencia.core" })
+@ImportResource({ "classpath*:application-context.xml" })
 public class MainApp {
 
-	public static void main(String[] args) {
+    private static final String PROPERTIES_DIR = "config/application.properties.d";
+
+    public static void main(String[] args) {
 
         System.setProperty("spring.shell.interactive.enabled", "false");
         System.setProperty("spring.shell.script.enabled", "false");
 
-		
-        SpringApplicationBuilder builder =  new SpringApplicationBuilder(MainApp.class);
+        SpringApplicationBuilder builder = new SpringApplicationBuilder(MainApp.class);
         builder.initializers(new MainAppContextInitializer());
-        // Add a handler for failures during application startup to provide a clearer message
         builder.listeners(new ApplicationFailureHandler());
+
+        // Load properties from directory
+        builder.listeners(new PropertiesDirectoryListener());
+
         builder.run(args);
-	}
+    }
 
     @Bean
     public HttpFirewall looseHttpFirewall() {
@@ -84,26 +91,45 @@ public class MainApp {
         return firewall;
     }
 
-    @Bean
-    static PropertySourcesPlaceholderConfigurer dirConfigurer() throws IOException {
+    /**
+     * Listener that loads properties from
+     * config/application.properties.d/*.properties
+     */
+    private static class PropertiesDirectoryListener
+            implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
-        Path dir = Paths.get("config/application.properties.d");
-        
-        Resource[] resources = Files.list(dir)
-            .filter(p -> p.toString().endsWith(".properties"))
-            .sorted()
-            .map(p -> new FileSystemResource(p.toFile()))
-            .toArray(Resource[]::new);
+        @Override
+        public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
+            Path dir = Paths.get(PROPERTIES_DIR);
 
-        PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
-        configurer.setLocations(resources);
-        configurer.setIgnoreResourceNotFound(true);
+            if (!Files.exists(dir) || !Files.isDirectory(dir)) {
+                System.out.println("[PropertiesLoader] Directory not found: " + PROPERTIES_DIR);
+                return;
+            }
 
+            try (Stream<Path> stream = Files.list(dir)) {
+                ConfigurableEnvironment env = event.getEnvironment();
 
-        return configurer;
+                List<Path> propertyFiles = stream
+                        .filter(p -> p.toString().endsWith(".properties"))
+                        .sorted()
+                        .collect(Collectors.toList());
+
+                for (Path file : propertyFiles) {
+                    try {
+                        ResourcePropertySource source = new ResourcePropertySource(
+                                "custom-" + file.getFileName().toString(),
+                                new FileSystemResource(file.toFile()));
+                        env.getPropertySources().addLast(source);
+                        System.out.println("[PropertiesLoader] Loaded: " + file.getFileName());
+                    } catch (IOException e) {
+                        System.err.println("[PropertiesLoader] Failed to load: " + file + " - " + e.getMessage());
+                    }
+                }
+
+            } catch (IOException e) {
+                System.err.println("[PropertiesLoader] Error listing directory: " + e.getMessage());
+            }
+        }
     }
-
-
-
-
 }
