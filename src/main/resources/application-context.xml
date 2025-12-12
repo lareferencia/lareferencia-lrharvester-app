@@ -63,8 +63,15 @@
         </property>
     </bean>
 	
+	<bean id="metadataStore" 
+	      class="#{ '${metadata.store.type:FS}' == 'H2' ? 'org.lareferencia.core.metadata.MetadataStorePerNetworkH2Impl' : 
+	               ('${metadata.store.type:FS}' == 'SQLITE' ? 'org.lareferencia.core.metadata.MetadataStorePerNetworkSQLiteImpl' : 
+	               'org.lareferencia.core.metadata.MetadataStoreFSImpl') }" 
+	      scope="singleton">
+	</bean>
+	
 
-	<bean id="metadataStore" class="org.lareferencia.core.metadata.MetadataStoreFSImpl" scope="singleton"></bean>
+
     <bean id="snapshotStore" class="org.lareferencia.core.metadata.SnapshotStoreSQLImpl" scope="singleton"></bean>
 	<bean id="hashingHelper" class="org.lareferencia.core.util.hashing.XXHash64Hashing" scope="singleton"></bean>
 
