@@ -55,7 +55,7 @@ public class ValidationSchemaController {
         if (localeParam != null) {
             effectiveLocale = Locale.forLanguageTag(localeParam);
         }
-        return schemaService.getAllRuleSchemas(effectiveLocale);
+        return schemaService.getAllValidatorSchemas(effectiveLocale);
     }
 
     /**
