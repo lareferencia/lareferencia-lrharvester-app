@@ -1,4 +1,3 @@
-
 /*
  *   Copyright (c) 2013-2022. LA Referencia / Red CLARA and others
  *
@@ -23,10 +22,17 @@ package org.lareferencia.backend.app;
 
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -37,10 +43,51 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 /**
  * Spring Security 6 configuration (Spring Boot 3.x compatible)
  * Migrated from WebSecurityConfigurerAdapter (deprecated in Spring Security 5.7, removed in 6.0)
+ * 
+ * Features:
+ * - File-based user authentication (config/users.properties)
+ * - Dual authentication: Form Login (browser) + HTTP Basic (API)
+ * - BCrypt password encoding
+ * - Automatic user reload on login attempt
  */
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
+	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+
+	private final FileBasedUserDetailsService userDetailsService;
+
+	public WebSecurityConfig(FileBasedUserDetailsService userDetailsService) {
+		this.userDetailsService = userDetailsService;
+		logger.info("WebSecurityConfig instantiated with FileBasedUserDetailsService (users loaded: {})", 
+		            userDetailsService.getUserCount());
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		provider.setUserDetailsService(userDetailsService);
+		provider.setPasswordEncoder(passwordEncoder);
+		// Hide user not found exceptions (returns BadCredentials instead)
+		provider.setHideUserNotFoundExceptions(true);
+		logger.info("DaoAuthenticationProvider configured with FileBasedUserDetailsService");
+		return provider;
+	}
+
+	/**
+	 * Create AuthenticationManager that uses ONLY our DaoAuthenticationProvider.
+	 * This prevents Spring from adding default InMemoryUserDetailsManager.
+	 */
+	@Bean
+	public AuthenticationManager authenticationManager(DaoAuthenticationProvider authenticationProvider) {
+		return new ProviderManager(authenticationProvider);
+	}
 
 	@Bean
 	public HttpFirewall httpFirewall() {
@@ -54,21 +101,42 @@ public class WebSecurityConfig {
 
 	/**
 	 * Main security filter chain configuration
-	 * Replaces the old configure(HttpSecurity http) method
+	 * Supports both Form Login (for browsers) and HTTP Basic (for APIs)
 	 */
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
 		http
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+			// Use ONLY our authentication manager
+			.authenticationManager(authenticationManager)
 			.authorizeHttpRequests(authz -> authz
-				// Solo estos endpoints requieren autenticación
-				.requestMatchers("/rest/**").authenticated()
-				.requestMatchers("/private/**").authenticated()
+				// Login page and its resources must be public
+				.requestMatchers("/login", "/login.html").permitAll()
 				
-				// Todo lo demás es público
-				.anyRequest().permitAll()
+				// Static resources needed for login page (CSS, JS if any)
+				.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+				
+				// All other requests require ADMIN role (including index.html, REST, etc.)
+				.anyRequest().hasRole("ADMIN")
 			)
-			.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Backend"))
+			// Form Login for browser access
+			.formLogin(form -> form
+				.loginPage("/login.html")
+				.loginProcessingUrl("/login")
+				.defaultSuccessUrl("/", true)
+				.failureUrl("/login.html?error=true")
+				.permitAll()
+			)
+			// HTTP Basic for API/CLI access
+			.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Platform"))
+			// Logout configuration
+			.logout(logout -> logout
+				.logoutUrl("/logout")
+				.logoutSuccessUrl("/login.html?logout=true")
+				.invalidateHttpSession(true)
+				.deleteCookies("JSESSIONID")
+				.permitAll()
+			)
 			.csrf(csrf -> csrf.disable())
 			.sessionManagement(session -> session.maximumSessions(1));
 		

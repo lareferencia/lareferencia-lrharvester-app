@@ -32,6 +32,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.ApplicationListener;
@@ -55,8 +56,10 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
         "org.lareferencia.core.repository.jpa",
         "org.lareferencia.core.entity.repositories.jpa" })
 
+// Exclude UserDetailsServiceAutoConfiguration to prevent Spring from creating a default user
+// (We provide our own FileBasedUserDetailsService in WebSecurityConfig)
 @EnableAutoConfiguration(exclude = {
-        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class,
         ElasticsearchDataAutoConfiguration.class })
 
 @Configuration
