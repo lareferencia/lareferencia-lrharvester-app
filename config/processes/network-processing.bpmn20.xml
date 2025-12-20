@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             targetNamespace="http://lareferencia.org/flowable"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
+                                 http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+  <process id="networkProcessing" name="Network Processing Pipeline" isExecutable="true">
+    <documentation>Complete network processing: harvesting → validation → indexing</documentation>
+    
+    <startEvent id="start" name="Start"/>
+    
+    <!-- Harvesting -->
+    <serviceTask id="harvestingTask" 
+                 name="Harvesting"
+                 flowable:async="true"
+                 flowable:delegateExpression="${workerDelegateFactory.create('harvestingWorkerFlowable')}"/>
+    
+    <!-- Validation -->
+    <serviceTask id="validationTask" 
+                 name="Validation"
+                 flowable:delegateExpression="${workerDelegateFactory.create('validationWorkerFlowable')}"/>
+    
+    <!-- Frontend Indexing -->
+    <serviceTask id="indexingTask" 
+                 name="Frontend Indexing"
+                 flowable:delegateExpression="${workerDelegateFactory.create('indexerWorkerFlowable')}"/>
+    
+    <endEvent id="end" name="End"/>
+    
+    <!-- Flow -->
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="harvestingTask"/>
+    <sequenceFlow id="flow2" sourceRef="harvestingTask" targetRef="validationTask"/>
+    <sequenceFlow id="flow3" sourceRef="validationTask" targetRef="indexingTask"/>
+    <sequenceFlow id="flow4" sourceRef="indexingTask" targetRef="end"/>
+  </process>
+
+</definitions>

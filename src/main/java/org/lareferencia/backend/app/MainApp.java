@@ -23,10 +23,11 @@ package org.lareferencia.backend.app;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.lareferencia.core.util.ConfigPathResolver;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -56,7 +57,8 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
         "org.lareferencia.core.repository.jpa",
         "org.lareferencia.core.entity.repositories.jpa" })
 
-// Exclude UserDetailsServiceAutoConfiguration to prevent Spring from creating a default user
+// Exclude UserDetailsServiceAutoConfiguration to prevent Spring from creating a
+// default user
 // (We provide our own FileBasedUserDetailsService in WebSecurityConfig)
 @EnableAutoConfiguration(exclude = {
         UserDetailsServiceAutoConfiguration.class,
@@ -67,9 +69,10 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @ImportResource({ "classpath*:application-context.xml" })
 public class MainApp {
 
-    private static final String PROPERTIES_DIR = "config/application.properties.d";
-
     public static void main(String[] args) {
+        // Export config directory as system property for XML context files
+        // Must be set BEFORE Spring starts to be available for ${app.config.dir} in XML
+        System.setProperty(ConfigPathResolver.CONFIG_DIR_PROPERTY, ConfigPathResolver.getConfigDir());
 
         System.setProperty("spring.shell.interactive.enabled", "false");
         System.setProperty("spring.shell.script.enabled", "false");
@@ -96,17 +99,17 @@ public class MainApp {
 
     /**
      * Listener that loads properties from
-     * config/application.properties.d/*.properties
+     * ${app.config.dir}/application.properties.d/*.properties
      */
     private static class PropertiesDirectoryListener
             implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
         @Override
         public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
-            Path dir = Paths.get(PROPERTIES_DIR);
+            Path dir = ConfigPathResolver.resolvePath("application.properties.d");
 
             if (!Files.exists(dir) || !Files.isDirectory(dir)) {
-                System.out.println("[PropertiesLoader] Directory not found: " + PROPERTIES_DIR);
+                System.out.println("[PropertiesLoader] Directory not found: " + dir);
                 return;
             }
 

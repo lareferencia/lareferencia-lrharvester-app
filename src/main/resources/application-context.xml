@@ -40,9 +40,9 @@
 	<context:component-scan base-package="org.lareferencia.backend" />
 	<context:component-scan base-package="org.lareferencia.core" />
 	
-	<import resource="file:config/beans/mdformats.xml"/>
-	<import resource="file:config/beans/${actions.beans.filename}"/>
-	<import resource="file:config/beans/fingerprint.xml"/>
+	<import resource="file:${app.config.dir}/beans/mdformats.xml"/>
+	<import resource="file:${app.config.dir}/beans/${actions.beans.filename}"/>
+	<import resource="file:${app.config.dir}/beans/fingerprint.xml"/>
 
 	<task:scheduler id="taskScheduler" pool-size="${scheduler.pool.size}" />
 	<task:executor id="taskExecutor" pool-size="${taskexecutor.pool.size}" />
@@ -75,7 +75,7 @@
     <bean id="snapshotStore" class="org.lareferencia.core.metadata.SnapshotStoreSQLImpl" scope="singleton"></bean>
 	<bean id="hashingHelper" class="org.lareferencia.core.util.hashing.XXHash64Hashing" scope="singleton"></bean>
 
-	<import resource="file:config/custom-context.xml"/>
+	<import resource="file:${app.config.dir}/custom-context.xml"/>
 	
 	
 </beans>

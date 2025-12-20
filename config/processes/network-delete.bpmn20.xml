@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             targetNamespace="http://lareferencia.org/flowable"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
+                                 http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+  <process id="networkDelete" name="Network Delete" isExecutable="true">
+    <documentation>Delete entire network (unindex + delete data)</documentation>
+    
+    <startEvent id="start" name="Start"/>
+    
+    <!-- Unindex from XOAI -->
+    <serviceTask id="xoaiDeleteTask" 
+                 name="XOAI Delete"
+                 flowable:delegateExpression="${workerDelegateFactory.create('xoaiDeleteWorker')}"/>
+    
+    <!-- Unindex from Frontend -->
+    <serviceTask id="frontendDeleteTask" 
+                 name="Frontend Delete"
+                 flowable:delegateExpression="${workerDelegateFactory.create('frontendDeleteWorker')}"/>
+    
+    <!-- Clean and Delete Network -->
+    <serviceTask id="deleteTask" 
+                 name="Delete Network"
+                 flowable:delegateExpression="${workerDelegateFactory.create('networkDeleteWorker')}"/>
+    
+    <endEvent id="end" name="End"/>
+    
+    <!-- Flow -->
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="xoaiDeleteTask"/>
+    <sequenceFlow id="flow2" sourceRef="xoaiDeleteTask" targetRef="frontendDeleteTask"/>
+    <sequenceFlow id="flow3" sourceRef="frontendDeleteTask" targetRef="deleteTask"/>
+    <sequenceFlow id="flow4" sourceRef="deleteTask" targetRef="end"/>
+  </process>
+
+</definitions>

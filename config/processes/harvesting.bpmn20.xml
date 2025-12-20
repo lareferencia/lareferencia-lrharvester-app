@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             targetNamespace="http://lareferencia.org/flowable"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
+                                 http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+
+  <process id="harvesting" name="Harvesting" isExecutable="true">
+    <documentation>OAI-PMH Harvesting process for a network</documentation>
+    
+    <startEvent id="start" name="Start"/>
+    
+    <serviceTask id="harvestingTask" 
+                 name="Harvesting"
+                 flowable:async="true"
+                 flowable:delegateExpression="${workerDelegateFactory.create('harvestingWorkerFlowable')}"/>
+    
+    <endEvent id="end" name="End"/>
+    
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="harvestingTask"/>
+    <sequenceFlow id="flow2" sourceRef="harvestingTask" targetRef="end"/>
+  </process>
+
+</definitions>
