@@ -674,10 +674,9 @@ public class BackendController {
 
 			String runningContextID = NetworkRunningContext.buildID(network);
 
-			ninfo.running = networkActionManager.getTaskManager().getRunningTasksByRunningContextID(runningContextID);
-			ninfo.queued = networkActionManager.getTaskManager().getQueuedTasksByRunningContextID(runningContextID);
-			ninfo.scheduled = networkActionManager.getTaskManager()
-					.getScheduledTasksByRunningContextID(runningContextID);
+			ninfo.running = networkActionManager.getRunningTasksByRunningContextID(runningContextID);
+			ninfo.queued = networkActionManager.getQueuedTasksByRunningContextID(runningContextID);
+			ninfo.scheduled = networkActionManager.getScheduledTasksByRunningContextID(runningContextID);
 
 			NetworkSnapshot lstSnapshot = networkSnapshotRepository.findLastByNetworkID(network.getId());
 			if (lstSnapshot != null) {
