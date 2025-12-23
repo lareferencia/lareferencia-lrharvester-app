@@ -44,12 +44,18 @@
 	<import resource="file:${app.config.dir}/beans/${actions.beans.filename}"/>
 	<import resource="file:${app.config.dir}/beans/fingerprint.xml"/>
 
-	<task:scheduler id="taskScheduler" pool-size="${scheduler.pool.size}" />
+	<!-- TaskScheduler is now defined in:
+	     - TaskManagerConfig.java for legacy mode (workflow.engine=legacy)
+	     - SchedulerConfig.java for flowable mode (workflow.engine=flowable)
+	-->
+	<!-- <task:scheduler id="taskScheduler" pool-size="${scheduler.pool.size}" /> -->
 	<task:executor id="taskExecutor" pool-size="${taskexecutor.pool.size}" />
 
-	<task:annotation-driven executor="taskExecutor" scheduler="taskScheduler" />
-		
-	<bean id="taskManager" class="org.lareferencia.core.task.TaskManager" scope="singleton" />
+	<!-- task:annotation-driven is no longer needed - @Scheduled annotations work automatically with conditional taskScheduler bean -->
+	
+	<!-- TaskManager bean is now defined in TaskManagerConfig.java (conditional on workflow.engine=legacy) -->
+
+
 
     <bean id="dateHelper" class="org.lareferencia.core.util.date.DateHelper">
         <property name="dateTimeFormatters">

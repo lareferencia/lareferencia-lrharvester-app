@@ -47,6 +47,7 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 
@@ -56,6 +57,8 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @EnableJpaRepositories(basePackages = {
         "org.lareferencia.core.repository.jpa",
         "org.lareferencia.core.entity.repositories.jpa" })
+
+@EnableTransactionManagement
 
 // Exclude UserDetailsServiceAutoConfiguration to prevent Spring from creating a
 // default user
