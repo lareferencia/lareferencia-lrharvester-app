@@ -6,8 +6,8 @@
              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
                                  http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
 
-  <process id="networkDelete" name="Network Delete" isExecutable="true">
-    <documentation>Delete entire network (unindex + delete data)</documentation>
+  <process id="networkDelete" name="Network Delete" flowable:order="70" isExecutable="true">
+    <documentation>Delete entire network (unindex + delete data) (v2)</documentation>
     
     <startEvent id="start" name="Start"/>
     

@@ -6,8 +6,8 @@
              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
                                  http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
 
-  <process id="frontendIndexing" name="Frontend Indexing" isExecutable="true">
-    <documentation>Index validated records to frontend Solr</documentation>
+  <process id="frontendIndexing" name="Frontend Indexing" flowable:order="40" isExecutable="true">
+    <documentation>Index validated records to frontend Solr (v2)</documentation>
     
     <startEvent id="start" name="Start"/>
     

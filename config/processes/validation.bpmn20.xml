@@ -6,8 +6,8 @@
              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
                                  http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
 
-  <process id="validation" name="Validation" isExecutable="true">
-    <documentation>Validation and transformation process for a network</documentation>
+  <process id="validation" name="Validation" flowable:order="30" isExecutable="true">
+    <documentation>Validation and transformation process for a network (v2)</documentation>
     
     <startEvent id="start" name="Start"/>
     
