@@ -42,7 +42,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Spring Security 6 configuration (Spring Boot 3.x compatible)
- * Migrated from WebSecurityConfigurerAdapter (deprecated in Spring Security 5.7, removed in 6.0)
+ * Migrated from WebSecurityConfigurerAdapter (deprecated in Spring Security
+ * 5.7, removed in 6.0)
  * 
  * Features:
  * - File-based user authentication (config/users.properties)
@@ -60,8 +61,8 @@ public class WebSecurityConfig {
 
 	public WebSecurityConfig(FileBasedUserDetailsService userDetailsService) {
 		this.userDetailsService = userDetailsService;
-		logger.info("WebSecurityConfig instantiated with FileBasedUserDetailsService (users loaded: {})", 
-		            userDetailsService.getUserCount());
+		logger.info("WebSecurityConfig instantiated with FileBasedUserDetailsService (users loaded: {})",
+				userDetailsService.getUserCount());
 	}
 
 	@Bean
@@ -104,74 +105,75 @@ public class WebSecurityConfig {
 	 * Supports both Form Login (for browsers) and HTTP Basic (for APIs)
 	 */
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
+			throws Exception {
 		http
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-			// Use ONLY our authentication manager
-			.authenticationManager(authenticationManager)
-			.authorizeHttpRequests(authz -> authz
-				// Login page and its resources must be public
-				.requestMatchers("/login", "/login.html").permitAll()
-				
-				// Static resources needed for login page (CSS, JS if any)
-				.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-				
-				// All other requests require ADMIN role (including index.html, REST, etc.)
-				.anyRequest().hasRole("ADMIN")
-			)
-			// Form Login for browser access
-			.formLogin(form -> form
-				.loginPage("/login.html")
-				.loginProcessingUrl("/login")
-				.defaultSuccessUrl("/", true)
-				.failureUrl("/login.html?error=true")
-				.permitAll()
-			)
-			// HTTP Basic for API/CLI access
-			.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Platform"))
-			// Logout configuration
-			.logout(logout -> logout
-				.logoutUrl("/logout")
-				.logoutSuccessUrl("/login.html?logout=true")
-				.invalidateHttpSession(true)
-				.deleteCookies("JSESSIONID")
-				.permitAll()
-			)
-			.csrf(csrf -> csrf.disable())
-			.sessionManagement(session -> session.maximumSessions(1));
-		
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				// Use ONLY our authentication manager
+				.authenticationManager(authenticationManager)
+				.authorizeHttpRequests(authz -> authz
+						// Login page and its resources must be public
+						.requestMatchers("/login", "/login.html").permitAll()
+
+						// Static resources needed for login page (CSS, JS if any)
+						.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+						.requestMatchers("/fonts/**", "/libs/**", "/modules/**", "/schemas/**", "/services/**",
+								"/hal-browser/**")
+						.permitAll()
+
+						// All other requests require ADMIN role (including index.html, REST, etc.)
+						.anyRequest().hasRole("ADMIN"))
+				// Form Login for browser access
+				.formLogin(form -> form
+						.loginPage("/login.html")
+						.loginProcessingUrl("/login")
+						.defaultSuccessUrl("/", true)
+						.failureUrl("/login.html?error=true")
+						.permitAll())
+				// HTTP Basic for API/CLI access
+				.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Platform"))
+				// Logout configuration
+				.logout(logout -> logout
+						.logoutUrl("/logout")
+						.logoutSuccessUrl("/login.html?logout=true")
+						.invalidateHttpSession(true)
+						.deleteCookies("JSESSIONID")
+						.permitAll())
+				.csrf(csrf -> csrf.disable())
+				.sessionManagement(session -> session.maximumSessions(1))
+				.exceptionHandling(exceptions -> exceptions
+						.authenticationEntryPoint(new AjaxAwareAuthenticationEntryPoint("/login.html")));
+
 		return http.build();
 	}
 
 	/**
-	 * CORS configuration to allow credentials (HTTP Basic Auth) in cross-origin requests
+	 * CORS configuration to allow credentials (HTTP Basic Auth) in cross-origin
+	 * requests
 	 */
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		
+
 		// Allow requests from any origin (adjust in production for specific origins)
 		configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-		
+
 		// Allow common HTTP methods
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-		
+
 		// Allow common headers including Authorization for HTTP Basic Auth
 		configuration.setAllowedHeaders(Arrays.asList("*"));
-		
+
 		// CRITICAL: Allow credentials (cookies, authorization headers, etc.)
 		configuration.setAllowCredentials(true);
-		
+
 		// How long the response from a pre-flight request can be cached
 		configuration.setMaxAge(3600L);
-		
+
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
-		
+
 		return source;
 	}
-	
+
 }
-
-
-
