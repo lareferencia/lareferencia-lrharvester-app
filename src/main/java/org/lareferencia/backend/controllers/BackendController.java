@@ -35,7 +35,7 @@ import org.lareferencia.core.domain.Network;
 import org.lareferencia.core.domain.NetworkSnapshot;
 import org.lareferencia.core.domain.SnapshotIndexStatus;
 import org.lareferencia.core.domain.SnapshotStatus;
-import org.lareferencia.core.repository.parquet.RecordValidation;
+import org.lareferencia.core.repository.validation.RecordValidation;
 import org.lareferencia.core.repository.jpa.NetworkRepository;
 import org.lareferencia.core.repository.jpa.NetworkSnapshotRepository;
 import org.lareferencia.core.repository.jpa.OAIBitstreamRepository;
