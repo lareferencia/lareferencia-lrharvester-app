@@ -78,7 +78,7 @@ spring.security.user.password=admin
 # 4. STORAGE
 # ==============================================================================
 
-# Base directory for Parquet data storage
+# Base directory for data storage
 # This directory will contain OAI records catalog and validation statistics
 # Default: /tmp/data/
 store.basepath=/tmp/data/

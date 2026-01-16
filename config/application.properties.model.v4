@@ -73,10 +73,10 @@ thesis.solr.url=http://localhost:8983/solr/biblio
 xoai.solr.url=http://localhost:8983/solr/oai
 
 
-## Parquet storage configuration
+## Storage configuration
 store.basepath=/tmp/data/parquet
 
-## Parquet general configuration
+## Storage general configuration
 parquet.compression=SNAPPY
 parquet.page.size=1048576
 parquet.enable.dictionary=true
@@ -87,7 +87,7 @@ parquet.catalog.records-per-file=100000
 ## Validation statistics configuration
 parquet.validation.records-per-file=100000
 
-# Logging configuration for Apache Parquet and Hadoop
+# Logging configuration for storage and Hadoop
 logging.level.org.apache.parquet.hadoop.InternalParquetRecordReader=WARN
 logging.level.org.apache.hadoop.io.compress.CodecPool=WARN
 logging.level.org.apache.parquet=WARN
