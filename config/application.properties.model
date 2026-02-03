@@ -101,6 +101,12 @@ instname.prefix=instname:
 
 ############################ RCAAP ##################################
 
+# Solr core per entity
+publication.solr.url=http://localhost:8983/solr/publication
+person.solr.url=http://localhost:8983/solr/person
+#service.solr.url=http://localhost:8983/solr/service
+service.solr.url=http://localhost:8983/solr/biblio
+
 # Historic Stats config
 historic.solr.server=http://localhost:8983/solr/
 historic.solr.core=historic
@@ -109,11 +115,11 @@ network.solr.server=http://localhost:8983/solr/
 network.solr.core=network
 
 # projects indexer config
-project.solr.server=http://localhost:8983/solr
-project.solr.core=projects
+projects.solr.server=http://localhost:8983/solr
+projects.solr.core=projects
 
 #project
-project.file.path = /etc/lrharvester/project/projects.xlsx
+projects.file.path = /etc/lrharvester/project/projects.xlsx
 
 #historic
 historic.access.field=dc.rights.access.*

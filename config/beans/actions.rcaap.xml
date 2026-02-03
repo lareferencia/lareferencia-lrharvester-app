@@ -70,6 +70,8 @@
                  -->                
   				<ref bean="rcaapIndexingNetworkAction"/>
   				<ref bean="rcaapDeleteAction"/>
+
+				<ref bean="rcaapEntitiesIndexingNetworkAction" />
   				
 				<!-- XOAI Actions -->
 				<ref bean="rcaapXoaiIndexingNetworkAction" />
