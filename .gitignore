@@ -33,3 +33,6 @@ config/third-party-context.xml
 pom.xml.versionsBackup
 spring-shell.log
 config/application.properties.old
+
+# Docker local override
+config/application.properties.d/99-docker.properties
