@@ -44,6 +44,7 @@
 	<import resource="validation.actions.xml" />
 	
 	<import resource="index.frontend.actions.xml" /> <!-- OTHER THAN RCAPP -->
+	<!--import resource="index.frontend.semantic.xml" /--> <!-- SEMANTIC SEARCH INDEXING -->
 	<!--import resource="index.thesis.actions.xml" /--> <!-- IBICT ONLY -->
 	
 	<import resource="xoai.actions.xml" />
@@ -74,6 +75,10 @@
 				<!-- Indexing Actions --> 
 				<ref bean="frontendIndexingNetworkAction" />
 				<ref bean="frontendDeleteAction" />
+				
+				<!-- Semantic Indexing Actions -->
+				<!--ref bean="semanticIndexingNetworkAction" /-->
+				<!--ref bean="semanticDeleteAction" /-->
 				
 				<!--ref bean="thesisIndexingNetworkAction" /-->
 				<!--ref bean="thesisDeleteAction" /-->
