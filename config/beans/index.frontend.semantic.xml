@@ -53,7 +53,7 @@
 	<!-- ACTIONS -->		
 	<bean id="semanticIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="SEMANTIC_INDEXING_ACTION"/>
-    	<property name="description" value="Index Frontend with Semantic Vectors"></property>
+    	<property name="description" value="Index Semantic Search"></property>
     	<property name="incremental" value="true"/>
     	<property name="runOnSchedule" value="false"/>
     	<property name="workers">
@@ -86,28 +86,23 @@
     <!-- WORKERS -->
 	<bean id="semanticIndexerWorker" class="org.lareferencia.core.worker.indexing.SemanticIndexerWorker"
 		scope="prototype">
-		<constructor-arg>
-			<value>${frontend.solr.url}</value>
-		</constructor-arg>
-		
+
 		<property name="serialLaneId" value="1"/>
 		<property name="targetSchemaName" value="vufind4"/>
 		
 		<property name="solrNetworkIDField" value="network_acronym_str"/>
-		<property name="solrRecordIDField" value="id"/>
-		
+
 		<property name="pageSize" value="100"/>
 		
 		<property name="executeDeletion" value="true" />
 		<property name="executeIndexing" value="true" />
 		
-		<property name="indexDeletedRecords" value="false" />
 		<property name="indexNetworkAttributes" value="true" />
 		
 		<!-- Semantic Indexing Configuration -->
 		<property name="embeddingApiUrl" value="${embedding.api.url}" />
 		<property name="sourceFieldForEmbedding" value="dc.title.*" />
-		<property name="vectorFieldName" value="semantic_vector" />
+		<property name="vectorFieldName" value="vector" />
 		<property name="embeddingApiTimeoutSeconds" value="30" />
 		<property name="skipOnEmbeddingFailure" value="true" />
 

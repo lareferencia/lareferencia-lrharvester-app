@@ -53,7 +53,8 @@
 	<!--import resource="network.actions.xml" /-->
 	<!--import resource="project.actions.xml" /-->
 	<!--import resource="lr.entity.actions.xml" /-->
-	
+	<import resource="index.frontend.semantic.xml" />
+
 	<!-- Append bean references inside networkActionManager actions list -->
 	<bean id="networkActionManager" class="org.lareferencia.core.task.NetworkActionkManager"
 		scope="singleton">
@@ -77,7 +78,7 @@
 				<ref bean="frontendDeleteAction" />
 				
 				<!-- Semantic Indexing Actions -->
-				<!--ref bean="semanticIndexingNetworkAction" /-->
+				<ref bean="semanticIndexingNetworkAction" />
 				<!--ref bean="semanticDeleteAction" /-->
 				
 				<!--ref bean="thesisIndexingNetworkAction" /-->
