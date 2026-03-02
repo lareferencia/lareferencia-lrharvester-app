@@ -1037,15 +1037,33 @@
 	</xsl:template>
 
 	<!-- oaire.version -->
-    <xsl:template match="doc:element[@name='version']" mode="oaire">
+	<xsl:template match="doc:element[@name='version']" mode="oaire">
 		<!-- count(index-of($status_list, normalize-space()))&gt;0 ]|doc:metadata/doc:element[@name='dc']/doc:element[@name='type']/doc:element/doc:element/doc:field[@name='value' and count(index-of($status_list, normalize-space()))&gt;0])-->
 		<xsl:call-template name="field">
 			<xsl:with-param name="name"
 				select="'status_str'" />
 			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
 		</xsl:call-template>
-    </xsl:template>
+	</xsl:template>
 
+
+	<!-- oaire.fundingReference awardNumber -->
+	<xsl:template match="doc:element[@name='fundingReferences']" mode="oaire">
+		<xsl:apply-templates select="*" mode="oaire"/> 
+	</xsl:template>
+
+	<xsl:template match="doc:element[@name='fundingReference']" mode="oaire">
+		<xsl:apply-templates select="*" mode="oaire"/> 
+	</xsl:template>
+
+	<xsl:template match="doc:element[@name='awardNumber']" mode="oaire">
+		<xsl:call-template name="funding">
+			<xsl:with-param name="value" select="normalize-space(doc:field[@name='value']/text())" />
+		</xsl:call-template>
+		<xsl:call-template name="funding">
+			<xsl:with-param name="value" select="normalize-space(doc:field[@name='awardURI']/text())" />
+		</xsl:call-template>
+	</xsl:template>
 
 	<!-- dc.identifier -->
     <xsl:template match="doc:element[@name='identifier']" mode="datacite">

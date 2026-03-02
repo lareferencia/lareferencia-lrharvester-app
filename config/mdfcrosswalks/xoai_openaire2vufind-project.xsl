@@ -131,6 +131,7 @@
 			</xsl:call-template>
 			<xsl:apply-templates select="*" mode="Funding"/>
 			<xsl:apply-templates select="doc:element" mode="Award"/>
+			<xsl:apply-templates select="*" mode="Funder"/>
 
     </xsl:template>
 
@@ -175,17 +176,34 @@
     </xsl:template>
 
 
-    <xsl:template match="doc:element[@name='awardTitle']" mode="Award">
-        <xsl:call-template name="field">
-            <xsl:with-param name="name" select="'title'"/>
-            <xsl:with-param name="node" select="."/>
-        </xsl:call-template>
-        <xsl:call-template name="field">
-            <xsl:with-param name="name" select="'ResearchProject.award.name_str_mv'"/>
-            <xsl:with-param name="node" select="."/>
-        </xsl:call-template>
-    </xsl:template>
+	<xsl:template match="doc:element[@name='awardTitle']" mode="Award">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'title'"/>
+			<xsl:with-param name="node" select="."/>
+		</xsl:call-template>
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'ResearchProject.award.name_str_mv'"/>
+			<xsl:with-param name="node" select="."/>
+		</xsl:call-template>
+	</xsl:template>
 
+	<!-- funder -->
+	<xsl:template match="doc:element[@name='funderName']" mode="Funder">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'MonetaryGrant.funder.name_str_mv'"/>
+			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value'])"/>
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template match="doc:element[@name='funderIdentifier']" mode="Funder">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'MonetaryGrant.funder.identifier_str_mv'"/>
+			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value'])"/>
+		</xsl:call-template>
+		<xsl:call-template name="organization">
+				<xsl:with-param name="value" select="normalize-space(doc:field[@name='value'])" />
+			</xsl:call-template>
+	</xsl:template>
 
 	<!-- global settings template -->
 	<xsl:template name="settings">
@@ -310,9 +328,23 @@
 		</xsl:if>
 	</xsl:template>
 
+	<!-- organization template -->
+	<xsl:template name="organization">
+		<xsl:param name="value" />
+		<xsl:if test="$value">
+			<xsl:element name="field">
+				<xsl:attribute name="name">
+					<xsl:text>organization_str_mv</xsl:text>
+				</xsl:attribute>
+				<xsl:value-of select="$value" />
+			</xsl:element>
+		</xsl:if>
+	</xsl:template>
+
 	<xsl:template match="text() | @*" mode="identifier"/>
 	<xsl:template match="text() | @*" mode="semanticId"/>
 	<xsl:template match="*" mode="Funding"/>
+	<xsl:template match="*" mode="Funder"/>
 	<xsl:template match="*" mode="Award"/>
 	<xsl:template match="*" mode="openaire"/>
 	<xsl:template match="*" mode="datacite"/>
