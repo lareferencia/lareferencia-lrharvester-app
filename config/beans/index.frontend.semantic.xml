@@ -103,6 +103,7 @@
 		<property name="embeddingApiUrl" value="${embedding.api.url}" />
 		<property name="sourceFieldForEmbedding" value="dc.title.*,dc.description.*" />
 		<property name="vectorFieldName" value="vector" />
+		<property name="useMultiValuedVector" value="false" />
 		<property name="embeddingApiTimeoutSeconds" value="30" />
 		<property name="skipOnEmbeddingFailure" value="true" />
 
