@@ -42,6 +42,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas', f
                                     "issn",
                                     "issn_l",
                                     "repository_id",
+                                    "ark_naan",
                             ]
                           },
                         ]
@@ -68,6 +69,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas', f
                                   issn:{ type: "string", default: "", title: "ISSN"},
                                   issn_l:{ type: "string", default: "", title: "ISSN-L"},
                                   repository_id:{ type: "string", default: "", title: "Repository ID"},
+                                  ark_naan:{ type: "string", default: "", title: "NAAN for ARK", description: "NAAN identifier that this repository will use to reserve ARKs in dARK"},
                               }
                           } /* end schema */
   }, /** end of profile */

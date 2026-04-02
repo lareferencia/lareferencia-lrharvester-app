@@ -103,6 +103,11 @@
 					<artifactId>lareferencia-entity-lib</artifactId>
 					<version>5.0.0-beta</version>
 				</dependency>
+				<dependency>
+					<groupId>org.lareferencia</groupId>
+					<artifactId>lareferencia-dark-lib</artifactId>
+					<version>5.0.0-beta</version>
+				</dependency>
 			</dependencies>
 			<build>
                 <plugins>

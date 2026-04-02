@@ -186,6 +186,12 @@
                     <constructor-arg type="String"
                         value="${config.dir.path}/mdfcrosswalks/oai_datacite42xoai_openaire.xsl"/>
                 </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="oai_cerif_openaire"/>
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/oai_cerif_openaire2xoai_openaire.xsl"/>
+                </bean>
             </list>
         </property>
     </bean>

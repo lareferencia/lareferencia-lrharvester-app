@@ -36,25 +36,41 @@
 
 
 	<!-- Actions -->
-	<bean id="darkNetworkAction" class="org.lareferencia.core.task.NetworkAction">
-		<property name="name" value="DARK_ACTION" />
-		<property name="description" value="Dark PIDS"></property>
-		<property name="incremental" value="true" />
+	<bean id="darkStageNetworkAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="DARK_STAGE_ACTION" />
+		<property name="description" value="dARK stage"></property>
+		<property name="incremental" value="false" />
 		<property name="runOnSchedule" value="true" />
 		<property name="allwaysRunOnSchedule" value="true" />
 		<property name="workers">
 			<list>
-				<value>darkWorker</value>
+				<value>darkStageWorker</value>
+			</list>
+		</property>
+
+	</bean>
+
+	<bean id="darkReconcileNetworkAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="DARK_RECONCILE_ACTION" />
+		<property name="description" value="dARK reconcile"></property>
+		<property name="incremental" value="false" />
+		<property name="runOnSchedule" value="true" />
+		<property name="allwaysRunOnSchedule" value="true" />
+		<property name="workers">
+			<list>
+				<value>darkReconcileWorker</value>
 			</list>
 		</property>
 
 	</bean>
 
 
-	<!-- Harvesting workers -->
-	<bean id="darkWorker" class="org.lareferencia.contrib.dark.DarkWorker" scope="prototype">
+	<bean id="darkStageWorker" class="org.lareferencia.contrib.dark.worker.DarkStageWorker" scope="prototype">
 		<property name="serialLaneId" value="4"/>
 	</bean>
 
+	<bean id="darkReconcileWorker" class="org.lareferencia.contrib.dark.worker.DarkReconcileWorker" scope="prototype">
+		<property name="serialLaneId" value="5"/>
+	</bean>
 
 </beans>

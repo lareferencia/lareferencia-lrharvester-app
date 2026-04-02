@@ -38,7 +38,7 @@
 	<!-- Include all actions beans here -->
 	<import resource="harvesting.actions.en.xml" />
 
-	<!-- import resource="dark.actions.en.xml" /-->
+	<!--import resource="dark.actions.xml" /-->
 
 	<import resource="cleaning.actions.en.xml" />
 	<import resource="validation.actions.en.xml" />
@@ -67,7 +67,8 @@
 				<ref bean="validationNetworkAction" />
 
 				<!-- DARK Actions -->
-				<!--ref bean="darkNetworkAction" /-->
+				<!--ref bean="darkStageNetworkAction" /-->
+				<!--ref bean="darkReconcileNetworkAction" /-->
 				
 				<!--ref bean="entityExtractionAction" /-->
 				<!--ref bean="entityIndexingAction" /-->
