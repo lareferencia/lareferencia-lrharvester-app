@@ -101,9 +101,9 @@
 		
 		<!-- Semantic Indexing Configuration -->
 		<property name="embeddingApiUrl" value="${embedding.api.url}" />
-		<property name="sourceFieldForEmbedding" value="dc.title.*,dc.description.*" />
-		<property name="vectorFieldName" value="vector" />
-		<property name="useMultiValuedVector" value="false" />
+		<property name="sourceFieldForEmbedding" value="dc.title.*,dc.description.*,dc.subject.*" />
+		<property name="vectorFieldName" value="vector_multivalued" />
+		<property name="useMultiValuedVector" value="true" />
 		<property name="embeddingApiTimeoutSeconds" value="30" />
 		<property name="skipOnEmbeddingFailure" value="true" />
 
