@@ -663,7 +663,7 @@
 
     <!-- oaire.rights -->
     <xsl:template match="datacite:rightsList" mode="license">
-        <xsl:variable name="creativecommons" select="'creativecommons.org/licenses'"/>
+        <xsl:variable name="creativecommons" select="'creativecommons.org'"/>
         <xsl:for-each select="./datacite:rights">
             <xsl:if test="contains(@rightsURI, $creativecommons)">
                 <xsl:apply-templates select="." mode="license"/>
