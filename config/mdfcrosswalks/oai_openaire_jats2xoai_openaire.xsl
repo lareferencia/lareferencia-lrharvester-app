@@ -21,7 +21,8 @@
 
 <xsl:stylesheet xmlns:oai="http://www.openarchives.org/OAI/2.0/"
     xmlns:jats="https://jats.nlm.nih.gov/publishing/1.1/"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.lyncode.com/xoai"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+    xmlns="http://www.lyncode.com/xoai"
     xmlns:datacite="http://datacite.org/schema/kernel-4" xmlns:dc="http://purl.org/dc/elements/1.1/"
     xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oaire="http://namespace.openaire.eu/schema/oaire/"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
@@ -45,28 +46,38 @@
             <xsl:attribute name="name">
                <xsl:text>dc</xsl:text>
             </xsl:attribute>
-            <xsl:if test="jats:article[@xml:lang] | article[@xml:lang]">
+            <xsl:if test="jats:article[@xml:lang] | oai:article[@xml:lang] | article[@xml:lang]">
                 <xsl:apply-templates select="jats:article" mode="language"/>
+                <xsl:apply-templates select="oai:article" mode="language"/>
                 <xsl:apply-templates select="article" mode="language"/>
             </xsl:if>
-            <xsl:if test="jats:article/jats:front/jats:journal-meta/jats:publisher | article/front/journal-meta/publisher">
+            <xsl:if test="jats:article/jats:front/jats:journal-meta/jats:publisher | oai:article/oai:front/oai:journal-meta/oai:publisher | article/front/journal-meta/publisher">
                 <xsl:for-each select="jats:article/jats:front/jats:journal-meta/jats:publisher">
+                    <xsl:apply-templates select="."/>
+                </xsl:for-each>
+                <xsl:for-each select="oai:article/oai:front/oai:journal-meta/oai:publisher">
                     <xsl:apply-templates select="."/>
                 </xsl:for-each>
                 <xsl:for-each select="article/front/journal-meta/publisher">
                     <xsl:apply-templates select="."/>
                 </xsl:for-each>
             </xsl:if>
-            <xsl:if test="jats:article/jats:front/jats:article-meta/jats:abstract | article/front/article-meta/abstract">
+            <xsl:if test="jats:article/jats:front/jats:article-meta/jats:abstract | oai:article/oai:front/oai:article-meta/oai:abstract | article/front/article-meta/abstract">
                 <xsl:for-each select="jats:article/jats:front/jats:article-meta/jats:abstract">
+                    <xsl:apply-templates select="."/>
+                </xsl:for-each>
+                <xsl:for-each select="oai:article/oai:front/oai:article-meta/oai:abstract">
                     <xsl:apply-templates select="."/>
                 </xsl:for-each>
                 <xsl:for-each select="article/front/article-meta/abstract">
                     <xsl:apply-templates select="."/>
                 </xsl:for-each>
             </xsl:if>
-            <xsl:if test="jats:article/jats:front/jats:article-meta/jats:trans-abstract | article/front/article-meta/trans-abstract">
+            <xsl:if test="jats:article/jats:front/jats:article-meta/jats:trans-abstract | oai:article/oai:front/oai:article-meta/oai:trans-abstract | article/front/article-meta/trans-abstract">
                 <xsl:for-each select="jats:article/jats:front/jats:article-meta/jats:trans-abstract">
+                    <xsl:apply-templates select="."/>
+                </xsl:for-each>
+                <xsl:for-each select="oai:article/oai:front/oai:article-meta/oai:trans-abstract">
                     <xsl:apply-templates select="."/>
                 </xsl:for-each>
                 <xsl:for-each select="article/front/article-meta/trans-abstract">
@@ -92,7 +103,7 @@
     </xsl:template>
 
 	<!-- dc.language -->
-    <xsl:template match="jats:article | article" mode="language">
+    <xsl:template match="jats:article | oai:article | article" mode="language">
         <xsl:element name="element">
             <xsl:attribute name="name">
 				 <xsl:text>language</xsl:text>
@@ -104,17 +115,18 @@
         </xsl:element>
     </xsl:template>
 	<!-- dc.publisher -->
-    <xsl:template match="jats:publisher | publisher">
+    <xsl:template match="jats:publisher | oai:publisher | publisher">
         <xsl:element name="element">
             <xsl:attribute name="name">
 				 <xsl:text>publisher</xsl:text>
 			  </xsl:attribute>
             <xsl:apply-templates select="jats:publisher-name/text()" mode="field"/>
+            <xsl:apply-templates select="oai:publisher-name/text()" mode="field"/>
             <xsl:apply-templates select="publisher-name/text()" mode="field"/>
         </xsl:element>
     </xsl:template>
 	<!-- dc.description -->
-    <xsl:template match="jats:abstract | abstract">
+    <xsl:template match="jats:abstract | oai:abstract | abstract">
         <xsl:element name="element">
             <xsl:attribute name="name">
 		 <xsl:text>description</xsl:text>
@@ -126,7 +138,7 @@
             <xsl:apply-templates select="$value" mode="field"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="jats:trans-abstract | trans-abstract">
+    <xsl:template match="jats:trans-abstract | oai:trans-abstract | trans-abstract">
         <xsl:element name="element">
             <xsl:attribute name="name">
 		 <xsl:text>description</xsl:text>
@@ -173,52 +185,77 @@
                <xsl:text>datacite</xsl:text>
             </xsl:attribute>
             <xsl:apply-templates select="jats:article/jats:front/jats:article-meta/jats:title-group"/>
+            <xsl:apply-templates select="oai:article/oai:front/oai:article-meta/oai:title-group"/>
             <xsl:apply-templates select="article/front/article-meta/title-group"/>
+
             <xsl:apply-templates
                 select="jats:article/jats:front/jats:article-meta/jats:contrib-group[@content-type='author']"/>
+            <xsl:apply-templates
+                select="oai:article/oai:front/oai:article-meta/oai:contrib-group[@content-type='author']"/>
             <xsl:apply-templates
                 select="article/front/article-meta/contrib-group[@content-type='author']"/>
             <xsl:apply-templates select="*/datacite:contributors"/>
             <xsl:apply-templates select="*/datacite:alternateIdentifiers"/>
+
             <xsl:apply-templates select="jats:article/jats:front/jats:journal-meta" mode="relatedIds"/>
+            <xsl:apply-templates select="oai:article/oai:front/oai:journal-meta" mode="relatedIds"/>
             <xsl:apply-templates select="article/front/journal-meta" mode="relatedIds"/>
+
             <xsl:apply-templates select="jats:article/jats:front/jats:article-meta" mode="dates"/>
+            <xsl:apply-templates select="oai:article/oai:front/oai:article-meta" mode="dates"/>
             <xsl:apply-templates select="article/front/article-meta" mode="dates"/>
+
             <xsl:apply-templates
                 select="jats:article/jats:front/jats:article-meta/jats:article-id[@pub-id-type='doi']"/>
             <xsl:apply-templates
+                select="oai:article/oai:front/oai:article-meta/oai:article-id[@pub-id-type='doi']"/>
+            <xsl:apply-templates
                 select="article/front/article-meta/article-id[@pub-id-type='doi']"/>
+
 			<!-- if we dont have a DOI -->
-            <xsl:if test="not(jats:article/jats:front/jats:article-meta/jats:article-id[@pub-id-type='doi'])">
+            <xsl:if test="not(jats:article/jats:front/jats:article-meta/jats:article-id[@pub-id-type='doi'] | 
+			oai:article/oai:front/oai:article-meta/oai:article-id[@pub-id-type='doi'] |
+			article/front/article-meta/article-id[@pub-id-type='doi'])">
                 <xsl:apply-templates
                     select="jats:article/jats:front/jats:article-meta/jats:self-uri[not(@content-type)]" mode="identifier"/>
-            </xsl:if>
-            <xsl:if test="not(article/front/article-meta/article-id[@pub-id-type='doi'])">
-				<xsl:apply-templates
+                <xsl:apply-templates
+                    select="oai:article/oai:front/oai:article-meta/oai:self-uri[not(@content-type)]" mode="identifier"/>
+                <xsl:apply-templates
                     select="article/front/article-meta/self-uri[not(@content-type)]" mode="identifier"/>
             </xsl:if>
+
             <xsl:apply-templates
                 select="jats:article/jats:front/jats:article-meta/jats:custom-meta-group/jats:custom-meta[@specific-use='access-right']"/>
             <xsl:apply-templates
+                select="oai:article/oai:front/oai:article-meta/oai:custom-meta-group/oai:custom-meta[@specific-use='access-right']"/>
+            <xsl:apply-templates
                 select="article/front/article-meta/custom-meta-group/custom-meta[@specific-use='access-right']"/>
+
             <xsl:apply-templates
                 select="jats:article/jats:front/jats:article-meta/jats:article-categories/jats:subj-group"/>
             <xsl:apply-templates
+                select="oai:article/oai:front/oai:article-meta/oai:article-categories/oai:subj-group"/>
+            <xsl:apply-templates
                 select="article/front/article-meta/article-categories/subj-group"/>
+
             <xsl:apply-templates select="*/datacite:sizes"/>
             <xsl:apply-templates select="*/datacite:geoLocations"/>
         </xsl:element>
     </xsl:template>
 
 	<!-- datacite.titles -->
-    <xsl:template match="jats:title-group | title-group">
+    <xsl:template match="jats:title-group | oai:title-group | title-group">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>titles</xsl:text>
          </xsl:attribute>
             <xsl:apply-templates select="./jats:article-title"/>
+            <xsl:apply-templates select="./oai:article-title"/>
             <xsl:apply-templates select="./article-title"/>
             <xsl:for-each select="./jats:trans-title-group">
+                <xsl:apply-templates select="."/>
+            </xsl:for-each>
+            <xsl:for-each select="./oai:trans-title-group">
                 <xsl:apply-templates select="."/>
             </xsl:for-each>
             <xsl:for-each select="./trans-title-group">
@@ -227,7 +264,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.title -->
-    <xsl:template match="jats:article-title | article-title">
+    <xsl:template match="jats:article-title | oai:article-title | article-title">
         <xsl:element name="element">
             <xsl:attribute name="name">
                <xsl:text>title</xsl:text>
@@ -236,13 +273,14 @@
             <xsl:apply-templates select="./text()" mode="field"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="jats:trans-title-group | trans-title-group">
+    <xsl:template match="jats:trans-title-group | oai:trans-title-group | trans-title-group">
         <xsl:element name="element">
             <xsl:attribute name="name">
                <xsl:text>title</xsl:text>
             </xsl:attribute>
             <xsl:apply-templates select="./@*"/>
             <xsl:apply-templates select="jats:trans-title/text()" mode="field"/>
+            <xsl:apply-templates select="oai:trans-title/text()" mode="field"/>
             <xsl:apply-templates select="trans-title/text()" mode="field"/>
             <xsl:call-template name="field">
                 <xsl:with-param name="name" select="'titleType'"/>
@@ -251,7 +289,7 @@
         </xsl:element>
     </xsl:template>	
 	<!-- datacite.creators -->
-    <xsl:template match="jats:contrib-group[@content-type='author'] | contrib-group[@content-type='author']">
+    <xsl:template match="jats:contrib-group[@content-type='author'] | oai:contrib-group[@content-type='author'] | contrib-group[@content-type='author']">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>creators</xsl:text>
@@ -260,7 +298,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.creator -->
-    <xsl:template match="jats:contrib-group[@content-type='author']/jats:contrib | contrib-group[@content-type='author']/contrib">
+    <xsl:template match="jats:contrib-group[@content-type='author']/jats:contrib | oai:contrib-group[@content-type='author']/oai:contrib | contrib-group[@content-type='author']/contrib">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>creator</xsl:text>
@@ -269,7 +307,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.contributors -->
-    <xsl:template match="jats:contrib-group[not(@content-type='author')] | contrib-group[not(@content-type='author')]">
+    <xsl:template match="jats:contrib-group[not(@content-type='author')] | oai:contrib-group[not(@content-type='author')] | contrib-group[not(@content-type='author')]">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>contributors</xsl:text>
@@ -278,7 +316,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.creatorName -->
-    <xsl:template match="jats:contrib-group[@content-type='author']/jats:contrib/jats:name | contrib-group[@content-type='author']/contrib/name">
+    <xsl:template match="jats:contrib-group[@content-type='author']/jats:contrib/jats:name | oai:contrib-group[@content-type='author']/oai:contrib/oai:name | contrib-group[@content-type='author']/contrib/name">
         <xsl:element name="element">
             <xsl:attribute name="name">
                <xsl:text>creatorName</xsl:text>
@@ -307,7 +345,7 @@
         <xsl:apply-templates select="*"/>
     </xsl:template>		
 	<!-- datacite.contributor -->
-    <xsl:template match="jats:contrib-group[not(@content-type='author')]/jats:contrib | contrib-group[not(@content-type='author')]/contrib">
+    <xsl:template match="jats:contrib-group[not(@content-type='author')]/jats:contrib | oai:contrib-group[not(@content-type='author')]/oai:contrib | contrib-group[not(@content-type='author')]/contrib">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>contributor</xsl:text>
@@ -317,7 +355,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.contributorName -->
-    <xsl:template match="jats:contrib-group[not(@content-type='author')]/jats:contrib/jats:name | contrib-group[not(@content-type='author')]/contrib/name">
+    <xsl:template match="jats:contrib-group[not(@content-type='author')]/jats:contrib/jats:name | oai:contrib-group[not(@content-type='author')]/oai:contrib/oai:name | contrib-group[not(@content-type='author')]/contrib/name">
         <xsl:element name="element">
             <xsl:attribute name="name">
                <xsl:text>contributorName</xsl:text>
@@ -329,6 +367,16 @@
 						<xsl:value-of select="jats:surname/text()"/>
 						<xsl:text>, </xsl:text>
 						<xsl:value-of select="jats:given-names/text()"/>
+					</xsl:with-param>
+				</xsl:call-template>
+			</xsl:if>
+			<xsl:if test="oai:surname">
+				<xsl:call-template name="field">
+					<xsl:with-param name="name" select="'value'"/>
+					<xsl:with-param name="value">
+						<xsl:value-of select="oai:surname/text()"/>
+						<xsl:text>, </xsl:text>
+						<xsl:value-of select="oai:given-names/text()"/>
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:if>
@@ -345,7 +393,7 @@
         </xsl:element>
         <xsl:apply-templates select="*"/>
     </xsl:template>
-    <xsl:template match="jats:name/jats:given-names | name/given-names">
+    <xsl:template match="jats:name/jats:given-names | oai:name/oai:given-names | name/given-names">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>givenName</xsl:text>
@@ -353,7 +401,7 @@
             <xsl:apply-templates select="./text()" mode="field"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="jats:name/jats:surname | name/surname">
+    <xsl:template match="jats:name/jats:surname | oai:name/oai:surname | name/surname">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>familyName</xsl:text>
@@ -361,12 +409,13 @@
             <xsl:apply-templates select="./text()" mode="field"/>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="jats:xref[@ref-type='aff'] | xref[@ref-type='aff']">
+    <xsl:template match="jats:xref[@ref-type='aff'] | oai:xref[@ref-type='aff'] | xref[@ref-type='aff']">
         <xsl:variable name="value" select="@rid"/>
         <xsl:apply-templates select="//jats:aff[@id=$value]" mode="affiliation"/>
+        <xsl:apply-templates select="//oai:aff[@id=$value]" mode="affiliation"/>
 		<xsl:apply-templates select="//aff[@id=$value]" mode="affiliation"/>
     </xsl:template>
-    <xsl:template match="jats:aff/jats:institution | aff/institution" mode="affiliation">
+    <xsl:template match="jats:aff/jats:institution | oai:aff/oai:institution | aff/institution" mode="affiliation">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>affiliation</xsl:text>
@@ -385,7 +434,7 @@
 				mode="field" />
 		</xsl:element>
 	</xsl:template-->
-    <xsl:template match="jats:contrib-id[@contrib-id-type='orcid'] | contrib-id[@contrib-id-type='orcid']">
+    <xsl:template match="jats:contrib-id[@contrib-id-type='orcid'] | oai:contrib-id[@contrib-id-type='orcid'] | contrib-id[@contrib-id-type='orcid']">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>nameIdentifier</xsl:text>
@@ -426,12 +475,15 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.relatedIdentifiers -->
-    <xsl:template match="jats:journal-meta | journal-meta" mode="relatedIds">
+    <xsl:template match="jats:journal-meta | oai:journal-meta | journal-meta" mode="relatedIds">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>relatedIdentifiers</xsl:text>
          </xsl:attribute>
             <xsl:for-each select="./jats:issn">
+                <xsl:apply-templates select="."/>
+            </xsl:for-each>
+            <xsl:for-each select="./oai:issn">
                 <xsl:apply-templates select="."/>
             </xsl:for-each>
             <xsl:for-each select="./issn">
@@ -440,7 +492,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.relatedIdentifier -->
-    <xsl:template match="jats:issn | issn">
+    <xsl:template match="jats:issn | oai:issn | issn">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>relatedIdentifier</xsl:text>
@@ -454,17 +506,18 @@
         </xsl:element>
     </xsl:template>
 	<!-- datacite.dates -->
-    <xsl:template match="jats:article-meta | article-meta" mode="dates">
+    <xsl:template match="jats:article-meta | oai:article-meta | article-meta" mode="dates">
         <xsl:element name="element">
             <xsl:attribute name="name">
 				<xsl:text>dates</xsl:text>
 			 </xsl:attribute>
             <xsl:apply-templates select="jats:pub-date[@date-type='pub']"/>
+            <xsl:apply-templates select="oai:pub-date[@date-type='pub']"/>
             <xsl:apply-templates select="pub-date[@date-type='pub']"/>
         </xsl:element>
     </xsl:template>
 	<!-- datacite.date [issued] -->
-    <xsl:template match="jats:pub-date[@date-type='pub'] | pub-date[@date-type='pub']">
+    <xsl:template match="jats:pub-date[@date-type='pub'] | oai:pub-date[@date-type='pub'] | pub-date[@date-type='pub']">
         <xsl:element name="element">
             <xsl:attribute name="name">
 				<xsl:text>date</xsl:text>
@@ -498,6 +551,14 @@
 			<xsl:value-of select="concat($y,'-',$m,'-',$d)"/>
 		</xsl:if>
 
+		<xsl:if test="$date/oai:year">
+			<xsl:variable name="y" select="$date/oai:year/text()"/>
+			<xsl:variable name="m" select="$date/oai:month/text()"/>
+			<xsl:variable name="d" select="$date/oai:day/text()"/>
+
+			<xsl:value-of select="concat($y,'-',$m,'-',$d)"/>
+		</xsl:if>
+
 		<xsl:if test="$date/year">
 			<xsl:variable name="y" select="$date/year/text()"/>
 			<xsl:variable name="m" select="$date/month/text()"/>
@@ -508,7 +569,7 @@
     </xsl:template>
 	
 	<!-- datacite.identifier -->
-    <xsl:template match="jats:article-id[@pub-id-type='doi'] | article-id[@pub-id-type='doi']">
+    <xsl:template match="jats:article-id[@pub-id-type='doi'] | oai:article-id[@pub-id-type='doi'] | article-id[@pub-id-type='doi']">
         <xsl:variable name="doi" select="./text()"/>
         <xsl:variable name="doiPrefix" select="'https://doi.org/'"/>
 
@@ -531,7 +592,7 @@
         </xsl:element>
     </xsl:template>
 
-    <xsl:template match="jats:self-uri[not(@content-type)] | self-uri[not(@content-type)]" mode="identifier">
+    <xsl:template match="jats:self-uri[not(@content-type)] | oai:self-uri[not(@content-type)] | self-uri[not(@content-type)]" mode="identifier">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>identifier</xsl:text>
@@ -545,7 +606,7 @@
     </xsl:template>
 	
 	<!-- datacite.rights -->
-    <xsl:template match="jats:custom-meta[@specific-use='access-right'] | custom-meta[@specific-use='access-right']">
+    <xsl:template match="jats:custom-meta[@specific-use='access-right'] | oai:custom-meta[@specific-use='access-right'] | custom-meta[@specific-use='access-right']">
 		<xsl:if test="./jats:meta-value">
 			<xsl:element name="element">
 				<xsl:attribute name="name">
@@ -556,6 +617,18 @@
 					<xsl:with-param name="value" select="./jats:meta-value/text()"/>
 				</xsl:call-template>
 				<xsl:apply-templates select="./jats:meta-name/text()" mode="field"/>
+			</xsl:element>
+		</xsl:if>
+		<xsl:if test="./oai:meta-value">
+			<xsl:element name="element">
+				<xsl:attribute name="name">
+				<xsl:text>rights</xsl:text>
+			 </xsl:attribute>
+				<xsl:call-template name="field">
+					<xsl:with-param name="name" select="'rightsURI'"/>
+					<xsl:with-param name="value" select="./oai:meta-value/text()"/>
+				</xsl:call-template>
+				<xsl:apply-templates select="./oai:meta-name/text()" mode="field"/>
 			</xsl:element>
 		</xsl:if>
 		<xsl:if test="./meta-value">
@@ -572,7 +645,7 @@
 		</xsl:if>
     </xsl:template>
 	<!-- datacite.subjects -->
-    <xsl:template match="jats:article-categories/jats:subj-group | article-categories/subj-group">
+    <xsl:template match="jats:article-categories/jats:subj-group | oai:article-categories/oai:subj-group | article-categories/subj-group">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>subjects</xsl:text>
@@ -580,12 +653,15 @@
             <xsl:for-each select="jats:subject">
                 <xsl:apply-templates select="."/>
             </xsl:for-each>
+            <xsl:for-each select="oai:subject">
+                <xsl:apply-templates select="."/>
+            </xsl:for-each>
             <xsl:for-each select="subject">
                 <xsl:apply-templates select="."/>
             </xsl:for-each>
         </xsl:element>
     </xsl:template>
-    <xsl:template match="jats:subject | subject">
+    <xsl:template match="jats:subject | oai:subject | subject">
         <xsl:element name="element">
             <xsl:attribute name="name">
 				<xsl:text>subject</xsl:text>
@@ -842,14 +918,21 @@
                <xsl:text>oaire</xsl:text>
             </xsl:attribute>
             <xsl:apply-templates select="*/oaire:fundingReferences"/>
+
             <xsl:apply-templates
                 select="jats:article/jats:front/jats:article-meta/jats:custom-meta-group/jats:custom-meta[@specific-use='resource-type']"/>
             <xsl:apply-templates
+                select="oai:article/oai:front/oai:article-meta/oai:custom-meta-group/oai:custom-meta[@specific-use='resource-type']"/>
+            <xsl:apply-templates
                 select="article/front/article-meta/custom-meta-group/custom-meta[@specific-use='resource-type']"/>
+
             <xsl:apply-templates
                 select="jats:article/jats:front/jats:article-meta/jats:permissions/jats:license"/>
             <xsl:apply-templates
+                select="oai:article/oai:front/oai:article-meta/oai:permissions/oai:license"/>
+            <xsl:apply-templates
                 select="article/front/article-meta/permissions/license"/>
+
 			<!-- TODO: discuss this added <files> element -->
             <xsl:element name="element">
                 <xsl:attribute name="name">
@@ -857,6 +940,8 @@
          </xsl:attribute>
                 <xsl:apply-templates
                     select="jats:article/jats:front/jats:article-meta/jats:self-uri[@content-type]"/>
+                <xsl:apply-templates
+                    select="oai:article/oai:front/oai:article-meta/oai:self-uri[@content-type]"/>
                 <xsl:apply-templates
                     select="article/front/article-meta/self-uri[@content-type]"/>
             </xsl:element>
@@ -868,15 +953,26 @@
                 <xsl:apply-templates
                     select="jats:article/jats:front/jats:journal-meta/jats:journal-title-group/jats:journal-title"/>
                 <xsl:apply-templates
+                    select="oai:article/oai:front/oai:journal-meta/oai:journal-title-group/oai:journal-title"/>
+                <xsl:apply-templates
                     select="article/front/journal-meta/journal-title-group/journal-title"/>
+
                 <xsl:apply-templates select="jats:article/jats:front/jats:article-meta/jats:volume"/>
+                <xsl:apply-templates select="oai:article/oai:front/oai:article-meta/oai:volume"/>
 				<xsl:apply-templates select="article/front/article-meta/volume"/>
+
                 <xsl:apply-templates select="jats:article/jats:front/jats:article-meta/jats:issue"/>
+                <xsl:apply-templates select="oai:article/oai:front/oai:article-meta/oai:issue"/>
 				<xsl:apply-templates select="article/front/article-meta/issue"/>
+
                 <xsl:apply-templates select="jats:article/jats:front/jats:article-meta/jats:fpage"/>
+                <xsl:apply-templates select="oai:article/oai:front/oai:article-meta/oai:fpage"/>
 				<xsl:apply-templates select="article/front/article-meta/fpage"/>
+
                 <xsl:apply-templates select="jats:article/jats:front/jats:article-meta/jats:lpage"/>
+                <xsl:apply-templates select="oai:article/oai:front/oai:article-meta/oai:lpage"/>
 				<xsl:apply-templates select="article/front/article-meta/lpage"/>
+
                 <xsl:apply-templates select="*/oaire:citationEdition"/>
                 <xsl:apply-templates select="*/oaire:citationConferencePlace"/>
                 <xsl:apply-templates select="*/oaire:citationConferenceDate"/>
@@ -885,7 +981,7 @@
     </xsl:template>
 
 	<!-- oaire.resourceType -->
-    <xsl:template match="jats:custom-meta[@specific-use='resource-type'] | custom-meta[@specific-use='resource-type']">
+    <xsl:template match="jats:custom-meta[@specific-use='resource-type'] | oai:custom-meta[@specific-use='resource-type'] | custom-meta[@specific-use='resource-type']">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>resourceType</xsl:text>
@@ -896,6 +992,13 @@
 					<xsl:with-param name="value" select="./jats:meta-value/text()"/>
 				</xsl:call-template>
 				<xsl:apply-templates select="./jats:meta-name/text()" mode="field"/>
+		 </xsl:if>
+		 <xsl:if test="./oai:meta-value">
+				<xsl:call-template name="field">
+					<xsl:with-param name="name" select="'uri'"/>
+					<xsl:with-param name="value" select="./oai:meta-value/text()"/>
+				</xsl:call-template>
+				<xsl:apply-templates select="./oai:meta-name/text()" mode="field"/>
 		 </xsl:if>
 		 <xsl:if test="./meta-value">
 				<xsl:call-template name="field">
@@ -968,7 +1071,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- oaire.licenseCondition -->
-    <xsl:template match="jats:license | license">
+    <xsl:template match="jats:license | oai:license | license">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>licenseCondition</xsl:text>
@@ -980,6 +1083,11 @@
 				<xsl:if test="../../jats:pub-date[@date-type='pub']">
 					<xsl:call-template name="generateDate">
 						<xsl:with-param name="date" select="../../jats:pub-date[@date-type='pub']"/>
+					</xsl:call-template>
+				</xsl:if>
+				<xsl:if test="../../oai:pub-date[@date-type='pub']">
+					<xsl:call-template name="generateDate">
+						<xsl:with-param name="date" select="../../oai:pub-date[@date-type='pub']"/>
 					</xsl:call-template>
 				</xsl:if>
 				<xsl:if test="../../pub-date[@date-type='pub']">
@@ -1005,7 +1113,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- oaire.file -->
-    <xsl:template match="jats:self-uri[@content-type] | self-uri[@content-type]">
+    <xsl:template match="jats:self-uri[@content-type] | oai:self-uri[@content-type] | self-uri[@content-type]">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>file</xsl:text>
@@ -1020,7 +1128,7 @@
     </xsl:template>	
 	
 	<!-- oaire.citationTitle -->
-    <xsl:template match="jats:journal-title | journal-title">
+    <xsl:template match="jats:journal-title | oai:journal-title | journal-title">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>citationTitle</xsl:text>
@@ -1029,7 +1137,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- oaire.citationVolume -->
-    <xsl:template match="jats:volume | volume">
+    <xsl:template match="jats:volume | oai:volume | volume">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>citationVolume</xsl:text>
@@ -1038,7 +1146,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- oaire.citationIssue -->
-    <xsl:template match="jats:issue | issue">
+    <xsl:template match="jats:issue | oai:issue | issue">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>citationIssue</xsl:text>
@@ -1047,7 +1155,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- oaire.citationStartPage -->
-    <xsl:template match="jats:fpage | fpage">
+    <xsl:template match="jats:fpage | oai:fpage | fpage">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>citationStartPage</xsl:text>
@@ -1056,7 +1164,7 @@
         </xsl:element>
     </xsl:template>
 	<!-- oaire.citationEndPage -->
-    <xsl:template match="jats:lpage | lpage">
+    <xsl:template match="jats:lpage | oai:lpage | lpage">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>citationEndPage</xsl:text>
