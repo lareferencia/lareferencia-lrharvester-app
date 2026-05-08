@@ -10,15 +10,15 @@ import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.lareferencia.backend.app.FileBasedUserDetailsService;
 import org.lareferencia.backend.app.MainApp;
-import org.lareferencia.core.api.semantic.EmbeddingResponse;
-import org.lareferencia.core.api.semantic.SemanticVectorAPI;
+import org.lareferencia.core.semantic.embedding.IEmbeddingService;
 import org.lareferencia.core.domain.NetworkSnapshot;
 import org.lareferencia.core.metadata.IMDFormatTransformer;
 import org.lareferencia.core.metadata.IMetadataStore;
@@ -40,7 +40,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.util.StreamUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -75,20 +74,15 @@ public class SemanticIndexerPipelineIntegrationTest extends BaseIntegrationTest 
     @Autowired
     private IMetadataStore metadataStore;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Value("classpath:sql/seed_validation.sql")
     private Resource seedValidationSql;
 
-    @Value("classpath:json/embedding_response.json")
-    private Resource embeddingResponseJson;
 
     @Value("classpath:xml/xoai_obi_wan.xml")
     private Resource obiWanXml;
 
     @MockitoBean
-    private SemanticVectorAPI semanticVectorAPI;
+    private IEmbeddingService embeddingService;
 
     @MockitoBean
     private FileBasedUserDetailsService fileBasedUserDetailsService;
@@ -123,12 +117,10 @@ public class SemanticIndexerPipelineIntegrationTest extends BaseIntegrationTest 
     }
 
     private void setupMocks() throws Exception {
-        // Carrega resposta JSON para o mock
-        EmbeddingResponse resp = objectMapper.readValue(
-            embeddingResponseJson.getInputStream(), 
-            EmbeddingResponse.class
-        );
-        when(semanticVectorAPI.generateEmbedding(any())).thenReturn(resp);
+        // Return a mock vector matching the configured embedding dimension
+        List<Float> mockVector = Collections.nCopies(768, 0.1f);
+        when(embeddingService.embed(any())).thenReturn(Optional.of(mockVector));
+        when(embeddingService.getEmbeddingDimension()).thenReturn(768);
 
         IMDFormatTransformer mockTrf = mock(IMDFormatTransformer.class);
         when(mockTrf.transformToString(any())).thenReturn("<doc><field name=\"id\">1</field></doc>");
@@ -147,7 +139,7 @@ public class SemanticIndexerPipelineIntegrationTest extends BaseIntegrationTest 
             .statusCode(200)
             .body("msg", is("DONE"));
 
-        // Verifica acionamento do worker
-        verify(semanticVectorAPI, timeout(15000)).generateEmbedding(any());
+        // Verifica acionamento do worker via IEmbeddingService
+        verify(embeddingService, timeout(15000)).embed(any());
     }
 }
