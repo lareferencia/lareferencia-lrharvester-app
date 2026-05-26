@@ -162,7 +162,8 @@ embedding.model.dimension=1024
 embedding.api.timeout.seconds=60
 # The maximum size of the segment, defined in tokens.
 embedding.max.segment.size.tokens=128
-# The maximum size of the overlap, defined in tokens. Only
+# The maximum overlap between adjacent generated chunks/segments, defined in tokens.
+# Must be less than or equal to embedding.max.segment.size.tokens.
 embedding.max.overlap.size.tokens=0
 # The maximum number of chunks to generate for a document. If the document is too large, it will be truncated to fit this limit.
 embedding.max.chunks.size=5
