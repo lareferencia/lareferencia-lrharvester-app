@@ -331,6 +331,16 @@
 					</xsl:with-param>
 				</xsl:call-template>
             </xsl:if>
+            <xsl:if test="oai:surname">
+				<xsl:call-template name="field">
+					<xsl:with-param name="name" select="'value'"/>
+					<xsl:with-param name="value">
+						<xsl:value-of select="oai:surname/text()"/>
+						<xsl:text>, </xsl:text>
+						<xsl:value-of select="oai:given-names/text()"/>
+					</xsl:with-param>
+				</xsl:call-template>
+            </xsl:if>
             <xsl:if test="surname">
 				<xsl:call-template name="field">
 					<xsl:with-param name="name" select="'value'"/>
