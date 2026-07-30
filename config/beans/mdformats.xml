@@ -87,6 +87,18 @@
                 </bean>
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="vufind5"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2vufind5.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String" value="vufind5_ibict"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai2vufind5_ibict.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai"/>
                     <constructor-arg type="String" value="entities-dc"/>
                     <constructor-arg type="String" value="${config.dir.path}/mdfcrosswalks/xoai2oaidc_entities.xsl"/>
                 </bean>
