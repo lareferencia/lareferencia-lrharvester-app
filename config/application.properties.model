@@ -157,7 +157,7 @@ workflow.lanes[2].max-queued=5
 
 # Embedding model configuration
 embedding.api.url=http://localhost:8989/api/v1/embeddings
-embedding.model.name=bge-m3-1024
+embedding.model.name=bge-m3
 embedding.model.dimension=1024
 embedding.api.timeout.seconds=60
 # The maximum size of the segment, defined in tokens.
@@ -171,6 +171,10 @@ embedding.max.chunks.size=5
 #embedding.api.key=
 #embedding.model.datatype=float
 embedding.title.standalone.indexing.min.words=5
+embedding.title.field=dc.title.*
+embedding.abstract.field=dc.description.*
+embedding.vector.field.name=vector_multivalued
+embedding.use.multivalued.vector=true
 
 
 # ==============================================================================
