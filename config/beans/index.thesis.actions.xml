@@ -37,7 +37,7 @@
 		
 	<!-- ACTIONS -->		
 	
-	<bean id="thesisIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="thesisIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="THESIS_INDEXING_ACTION"/>
     	<property name="description" value="Index Tesis"></property>
     	<property name="incremental" value="true"/>
@@ -49,11 +49,11 @@
     	</property>
     	<property name="properties">
         <list>
-        	<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+        	<bean class="org.lareferencia.core.task.NetworkProperty">
         		<property name="name" value="INDEX_THESIS" />
         		<property name="description" value="Indexar en Portal Tesis?" />
         	</bean>
-        	<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+        	<bean class="org.lareferencia.core.task.NetworkProperty">
         		<property name="name" value="INDEX_FULLTEXT" />
         		<property name="description" value="Indexa fulltext?" />
         	</bean>
@@ -61,7 +61,7 @@
         </property> 
     </bean>
     
-     <bean id="thesisDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+     <bean id="thesisDeleteAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="THESIS_DELETE_ACTION"/>
     	<property name="description" value="UnIndex Tesis"></property>
     	<property name="workers">
@@ -74,7 +74,7 @@
     
     <!-- WORKERS -->
 	
-	<bean id="thesisIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="thesisIndexerWorker" class="org.lareferencia.core.worker.indexing.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${thesis.solr.url}</value>
@@ -105,7 +105,7 @@
 		</property>
 	</bean>
 	
-	<bean id="thesisDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="thesisDeleteWorker" class="org.lareferencia.core.worker.indexing.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${thesis.solr.url}</value>

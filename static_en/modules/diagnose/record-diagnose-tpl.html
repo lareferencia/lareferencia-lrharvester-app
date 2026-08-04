@@ -28,7 +28,7 @@ p { margin: 0px;}
 
 
 <div class="modal-header">
-	<h3 class="modal-title">Detalles de validación: {{record.identifier}}</h3>
+	<h3 class="modal-title">Validation details: {{record.identifier}}</h3>
 </div>
 <div class="modal-body">
 	
@@ -37,26 +37,26 @@ p { margin: 0px;}
 	
 	<div class="row">
 		<div class="col-xs-12">
-			<h3><span class="label label-{{ record.isValid | successOrDanger }}">registro {{record.isValid ? 'válido' : 'inválido' }} </span></h3>
+			<h3><span class="label label-{{ record.isValid | successOrDanger }}">Record {{record.isValid ? 'valid' : 'invalid' }} </span></h3>
 		
 	
 		<!-- TABSET -->
  		<uib-tabset active="activeJustified" justified="true">
  		
-    	<uib-tab index="0" heading="Validación">
+    	<uib-tab index="0" heading="Validation">
     	
     	
-    		<h4>Resultado de evaluación de reglas para este registro</h4>
+    		<h4>Rule evaluation result for this record</h4>
     	
     	
 			<div ng-repeat="ruleID in record.validRulesID">
 				<div class="alert alert-success">
 					<div class="row">
 						<div class="col-lg-8">
-							<b>Nombre: </b>{{rulesMap[ruleID].name}}
+							<b>Name: </b>{{rulesMap[ruleID].name}}
 						</div>
 						<div class="col-lg-4">
-							<b>Mandatoria: </b>{{rulesMap[ruleID].mandatory}}
+							<b>Mandatory: </b>{{rulesMap[ruleID].mandatory}}
 						</div><div class="col-lg-4">
 							
 					</div>
@@ -67,7 +67,7 @@ p { margin: 0px;}
 						
 						</div>
 						<div class="col-lg-12">
-							<b>Cuantificador: </b>{{rulesMap[ruleID].quantifier}}
+							<b>Quantifier: </b>{{rulesMap[ruleID].quantifier}}
 						</div>
 					</div>					
 					<div class="row">
@@ -88,10 +88,10 @@ p { margin: 0px;}
 					
 					<div class="row">
 						<div class="col-lg-8">
-							<b>Nombre: </b>{{rulesMap[ruleID].name}}
+							<b>Name: </b>{{rulesMap[ruleID].name}}
 						</div>
 						<div class="col-lg-4">
-							<b>Mandatoria: </b>{{rulesMap[ruleID].mandatory}}
+							<b>Mandatory: </b>{{rulesMap[ruleID].mandatory}}
 						</div><div class="col-lg-4">
 							
 					</div>
@@ -102,7 +102,7 @@ p { margin: 0px;}
 						
 						</div>
 						<div class="col-lg-12">
-							<b>Cuantificador: </b>{{rulesMap[ruleID].quantifier}}
+							<b>Quatifier: </b>{{rulesMap[ruleID].quantifier}}
 						</div>
 					</div>					
 					
@@ -124,7 +124,7 @@ p { margin: 0px;}
 		</uib-tab>
 
 
-    	<uib-tab index="1" heading="XML del registro transformado">
+    	<uib-tab index="1" heading="Transformed record XML">
     	
     		<div hljs hljs-source="recordMetadata"></div>
     	</uib-tab>
@@ -138,5 +138,5 @@ p { margin: 0px;}
 	</div>
 </div>
 <div class="modal-footer">
-	<button class="btn btn-warning" type="button" ng-click="cancel()">Cerrar</button>
+	<button class="btn btn-warning" type="button" ng-click="cancel()">Close</button>
 </div>

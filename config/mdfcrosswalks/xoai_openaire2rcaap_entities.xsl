@@ -735,8 +735,8 @@
             <xsl:with-param name="value">
                 <xsl:value-of
                     select="//doc:element[@name='datacite']/doc:element[@name='identifier']/doc:field[@name='value']/text()"/>
-                <xsl:text>#</xsl:text>
-                <xsl:value-of select="translate(normalize-space(text()), $nameFrom, $nameTo)"/>
+                <xsl:text>#__creator__</xsl:text>
+                <xsl:value-of select="translate(translate(normalize-space(text()), $nameFrom, $nameTo), $uppercase, $smallcase)"/>
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template>
@@ -746,8 +746,8 @@
             <xsl:with-param name="value">
                 <xsl:value-of
                     select="//doc:element[@name='datacite']/doc:element[@name='identifier']/doc:field[@name='value']/text()"/>
-                <xsl:text>#</xsl:text>
-                <xsl:value-of select="translate(normalize-space(text()), $nameFrom, $nameTo)"/>
+                <xsl:text>#__contributor__</xsl:text>
+                <xsl:value-of select="translate(translate(normalize-space(text()), $nameFrom, $nameTo), $uppercase, $smallcase)"/>
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template> 
@@ -763,7 +763,7 @@
                 <xsl:attribute name="ref">
                     <xsl:value-of select="concat('Affiliation',position())"/>
                 </xsl:attribute>
-                <xsl:apply-templates select="doc:element[@name='affiliation']" mode="semanticId"/>
+                <xsl:apply-templates select="doc:element[@name='affiliation']" mode="orgSemanticId"/>
                 <xsl:apply-templates select="doc:element[@name='affiliation']" mode="affiliation"/>
             </xsl:element>
         </xsl:if>
@@ -778,14 +778,14 @@
     </xsl:template>
 
     <!-- affiliation - semanticId -->
-    <xsl:template match="doc:element[@name='affiliation']" mode="semanticId">
+    <xsl:template match="doc:element[@name='affiliation']" mode="orgSemanticId">
         <xsl:call-template name="semanticIdentifier">
             <xsl:with-param name="value">
                 <xsl:value-of
                     select="//doc:element[@name='datacite']/doc:element[@name='identifier']/doc:field[@name='value']/text()"/>
-                <xsl:text>#_affiliation__</xsl:text>
+                <xsl:text>#__affiliation__</xsl:text>
                 <xsl:value-of
-                    select="translate(normalize-space(doc:field[@name='value']/text()), $nameFrom, $nameTo)"/>
+                    select="translate(translate(normalize-space(doc:field[@name='value']/text()), $nameFrom, $nameTo), $uppercase, $smallcase)"/>
             </xsl:with-param>
         </xsl:call-template>
     </xsl:template> 

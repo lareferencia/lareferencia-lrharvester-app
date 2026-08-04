@@ -26,7 +26,7 @@
     <Console name="Console">
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
     </Console>
-    <File name="File" fileName="/var/log/tomcat8/lrharvester.log">
+    <File name="File" fileName="${sys:logging.file.name:-/var/log/tomcat8/lrharvester.log}">
       <PatternLayout>
         <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
       </PatternLayout>

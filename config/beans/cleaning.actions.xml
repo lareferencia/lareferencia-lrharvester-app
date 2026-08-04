@@ -36,7 +36,7 @@
 
 
 
-	<bean id="networkCleanNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="networkCleanNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="NETWORK_CLEAN_ACTION" />
 		<property name="description" value="Limpiar snapshots"></property>
 		<property name="runOnSchedule" value="true" />
@@ -47,7 +47,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="CLEAN_NETWORK" />
 					<property name="description" value="Limpiar Snapshots antiguos?" />
 				</bean>
@@ -55,7 +55,7 @@
 		</property>
 	</bean>
 
-	<bean id="networkDeleteNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="networkDeleteNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="NETWORK_DELETE_ACTION" />
 		<property name="description" value="Eliminar network (!)"></property>
 		<property name="workers">
@@ -65,12 +65,12 @@
 		</property>
 	</bean>
 
-	<bean id="networkCleanWorker" class="org.lareferencia.backend.taskmanager.NetworkCleanWorker"
+	<bean id="networkCleanWorker" class="org.lareferencia.core.worker.management.NetworkCleanWorker"
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="false"></property>
 	</bean>
 
-	<bean id="networkDeleteWorker" class="org.lareferencia.backend.taskmanager.NetworkCleanWorker"
+	<bean id="networkDeleteWorker" class="org.lareferencia.core.worker.management.NetworkCleanWorker"
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="true"></property>
 	</bean>
