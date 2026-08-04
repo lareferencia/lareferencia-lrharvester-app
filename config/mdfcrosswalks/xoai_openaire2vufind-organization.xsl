@@ -63,9 +63,13 @@
 	
 	<xsl:param name="networkAcronym" />
 	<xsl:param name="networkName" />
+	<xsl:param name="networkPublished" />
 	<xsl:param name="institutionName" />
 	<xsl:param name="institutionAcronym" />
-	
+
+	<xsl:variable name="urn_repo_prefix">urn:repositoryAcronym:</xsl:variable>
+	<xsl:variable name="urn_org_prefix">urn:organizationAcronym:</xsl:variable>
+	<xsl:variable name="facet_delimiter">{{{_:::_}}}</xsl:variable>
 
 	<xsl:param name="fingerprint" />
 	<xsl:param name="identifier" />
@@ -91,7 +95,7 @@
 
 	<xsl:template match="doc:element[@name='creators']" mode="datacite">
 		<xsl:for-each select="doc:element[@name='creator']">
-			<xsl:if test="doc:element[@name='creatorName']/doc:field[@name='nameType' and text()='Organizational']">
+			<xsl:if test="doc:element[@name='creatorName']/doc:field and doc:element[@name='creatorName']/doc:field[@name='nameType' and text()='Organizational']">
 				<xsl:element name="doc">
 					<xsl:call-template name="identifier">
 						<xsl:with-param name="node" select="."/>
@@ -100,6 +104,7 @@
 					<xsl:apply-templates
 							select="."
 							mode="datacite"/>
+					<xsl:apply-templates select="//doc:element[@name='datacite']/doc:element[@name='identifier']" mode="datacite"/>
 				</xsl:element>
 			</xsl:if>
 		</xsl:for-each>
@@ -114,6 +119,12 @@
 			<xsl:call-template name="field">
 				<xsl:with-param name="name"
 					select="'title'" />
+				<xsl:with-param name="node" select="substring(normalize-space(doc:element[@name='creatorName']/doc:field[@name='value']),1,$maxStringLength)" />
+			</xsl:call-template>
+
+			<xsl:call-template name="field">
+				<xsl:with-param name="name"
+					select="'title_sort'" />
 				<xsl:with-param name="node" select="substring(normalize-space(doc:element[@name='creatorName']/doc:field[@name='value']),1,$maxStringLength)" />
 			</xsl:call-template>
 
@@ -150,6 +161,13 @@
 
 		<xsl:call-template name="field">
 			<xsl:with-param name="name"
+				select="'title_sort'" />
+			<xsl:with-param name="node" select="substring(normalize-space(doc:element[@name='creatorName']/doc:field[@name='value']),1,$maxStringLength)" />
+		</xsl:call-template>
+
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
 				select="'datacite.creators.creator.creatorName.fl_str_mv'" />
 			<xsl:with-param name="node" select="substring(normalize-space(doc:element[@name='creatorName']/doc:field[@name='value']),1,$maxStringLength)" />
 		</xsl:call-template>
@@ -169,7 +187,7 @@
 
 	<xsl:template match="doc:element[@name='contributors']" mode="datacite">
 		<xsl:for-each select="doc:element[@name='contributor']">
-			<xsl:if test="(./doc:field[@name='contributorType' and text()!='HostingInstitution']) 
+			<xsl:if test="doc:element[@name='contributorName']/doc:field and (./doc:field[@name='contributorType' and text()!='HostingInstitution']) 
 								and (doc:element[@name='contributorName']/doc:field[@name='nameType' and text()='Organizational'])">
 				<xsl:element name="doc">
 					<xsl:call-template name="identifier">
@@ -179,6 +197,7 @@
 					<xsl:apply-templates
 							select="."
 							mode="datacite"/>
+					<xsl:apply-templates select="//doc:element[@name='datacite']/doc:element[@name='identifier']" mode="datacite"/>
 				</xsl:element>
 			</xsl:if>
 		</xsl:for-each>
@@ -193,6 +212,12 @@
 		<xsl:call-template name="field">
 			<xsl:with-param name="name"
 				select="'title'" />
+			<xsl:with-param name="node" select="substring(normalize-space(doc:element[@name='contributorName']/doc:field[@name='value']),1,$maxStringLength)" />
+		</xsl:call-template>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'title_sort'" />
 			<xsl:with-param name="node" select="substring(normalize-space(doc:element[@name='contributorName']/doc:field[@name='value']),1,$maxStringLength)" />
 		</xsl:call-template>
 
@@ -287,7 +312,7 @@
 				select="'id'" />
 			<xsl:with-param name="node">
                 <xsl:value-of
-                    select="translate(translate(normalize-space(//doc:element[@name='datacite']/doc:element[@name='identifier']/doc:field[@name='value']/text()), $nameFrom, $nameTo), $uppercase, $smallcase)"/>
+                    select="translate(translate(normalize-space($fingerprint), $nameFrom, $nameTo), $uppercase, $smallcase)"/>
 
 			<xsl:choose>
 				<xsl:when test="$node/@name = 'creator'">
@@ -303,6 +328,14 @@
 
     </xsl:template>
 
+	<!-- source -->
+	<xsl:template match="doc:element[@name='datacite']/doc:element[@name='identifier']" mode="datacite">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'source_str'" />
+			<xsl:with-param name="node" select="doc:field[@name='value']" />
+		</xsl:call-template>
+	</xsl:template>
 
 
 	<!-- global settings template -->
@@ -336,6 +369,13 @@
 			<xsl:with-param name="node" select="$networkName" />
 		</xsl:call-template>
 
+		<!-- consider the record is always dirty -->
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'dirty'" />
+			<xsl:with-param name="node" select="'1'" />
+		</xsl:call-template>
+		<!-- control visibility -->
+		<xsl:call-template name="ServiceVisibility" />
 
 		<xsl:call-template name="field">
 			<xsl:with-param name="name"
@@ -351,12 +391,24 @@
 
 		<xsl:call-template name="field">
 			<xsl:with-param name="name"
+				select="'repo_facet_str'" />
+			<xsl:with-param name="node" select="concat(concat($urn_repo_prefix,lower-case($networkAcronym)),$facet_delimiter,normalize-space($networkName))" />
+		</xsl:call-template>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
 				select="'instacron_str'" />
 			<xsl:with-param name="node" select="normalize-space($institutionAcronym)" />
 		</xsl:call-template>
 
 		<xsl:call-template name="organization">
-			<xsl:with-param name="value" select="concat('urn:organizationAcronym:',lower-case($institutionAcronym))" />
+			<xsl:with-param name="value" select="concat($urn_org_prefix,lower-case($institutionAcronym))" />
+		</xsl:call-template>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'organization_id_str'" />
+			<xsl:with-param name="node" select="concat($urn_org_prefix,lower-case($institutionAcronym))" />
 		</xsl:call-template>
 
 		<xsl:call-template name="field">
@@ -454,11 +506,25 @@
 		</xsl:if>
 	</xsl:template>
 
+
+	<xsl:template name="ServiceVisibility">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'visible'" />
+			<xsl:with-param name="node">
+				<xsl:choose>
+					<xsl:when test="lower-case($networkPublished)='true'">
+						<xsl:text>1</xsl:text>
+					</xsl:when>
+					<xsl:otherwise><xsl:text>0</xsl:text></xsl:otherwise>
+				</xsl:choose>
+			</xsl:with-param>
+		</xsl:call-template>
+	</xsl:template>
+
 	<xsl:template match="node()" mode="Person"/>
 	<xsl:template match="doc:element[@name='titles']" mode="datacite"/>
 	<xsl:template match="doc:element[@name='relatedIdentifiers']" mode="datacite"/>
 	<xsl:template match="doc:element[@name='dates']" mode="datacite"/>
-	<xsl:template match="doc:element[@name='identifier']" mode="datacite"/>
 	<xsl:template match="doc:element[@name='rights']" mode="datacite"/>
 	<xsl:template match="doc:element[@name='subjects']" mode="datacite"/>
 	<xsl:template match="doc:element[@name='sizes']" mode="datacite"/>

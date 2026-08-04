@@ -1,4 +1,7 @@
+
+
 ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
+
 spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
 spring.datasource.username=lrharvester
 spring.datasource.password=lrharvester
@@ -104,7 +107,7 @@ instname.prefix=instname:
 # Solr core per entity
 publication.solr.url=http://localhost:8983/solr/publication
 person.solr.url=http://localhost:8983/solr/person
-#service.solr.url=http://localhost:8983/solr/service
+organization.solr.url=http://localhost:8983/solr/organization
 service.solr.url=http://localhost:8983/solr/biblio
 
 # Historic Stats config

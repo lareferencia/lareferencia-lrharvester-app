@@ -42,14 +42,18 @@
 
 	<!--  Aquí se definen los prefijos utilizados para detectar contenidos con trato diferencial -->
 	<xsl:variable name="driver_prefix">info:eu-repo/semantics/</xsl:variable>
+	<xsl:variable name="urn_repo_prefix">urn:repositoryAcronym:</xsl:variable>
+	<xsl:variable name="urn_org_prefix">urn:organizationAcronym:</xsl:variable>
 	<xsl:variable name="reponame_prefix">reponame:</xsl:variable>
 	<xsl:variable name="instname_prefix">instname:</xsl:variable>
 	<xsl:variable name="instacron_prefix">instacron:</xsl:variable>
+	<xsl:variable name="facet_delimiter">{{{_:::_}}}</xsl:variable>
 
 	<xsl:variable name="maxStringLength" select="number(30000)"/>
 	
 	<xsl:param name="networkAcronym" />
 	<xsl:param name="networkName" />
+	<xsl:param name="networkPublished" />
 	<xsl:param name="institutionName" />
 	<xsl:param name="institutionAcronym" />
 	
@@ -68,7 +72,7 @@
 	<xsl:strip-space elements="*"/>
 
 	<xsl:template match="/">
-		<doc>
+		<xsl:element name="doc">
 
 			 <!-- ID es parámetro -->
 			<xsl:call-template name="field">
@@ -101,17 +105,29 @@
 			<xsl:call-template name="field">
 				<xsl:with-param name="name"
 					select="'repository_id_str'" />
-				<xsl:with-param name="node" select="concat('urn:repositoryAcronym:',lower-case($networkAcronym))" />
+				<xsl:with-param name="node" select="concat($urn_repo_prefix,lower-case($networkAcronym))" />
 			</xsl:call-template>
 
-			<xsl:call-template name="service">
-				<xsl:with-param name="value" select="concat('urn:repositoryAcronym:',lower-case($networkAcronym))" />
+			<xsl:call-template name="field">
+				<xsl:with-param name="name"
+					select="'repo_facet_str'" />
+				<xsl:with-param name="node" select="concat(concat($urn_repo_prefix,lower-case($networkAcronym)),$facet_delimiter,normalize-space($networkName))" />
+			</xsl:call-template>
+
+			<xsl:call-template name="field">
+				<xsl:with-param name="name"
+					select="'inst_facet_str'" />
+				<xsl:with-param name="node" select="concat(concat($urn_org_prefix,lower-case($institutionAcronym)),$facet_delimiter,normalize-space($institutionName))" />
 			</xsl:call-template>
 
 			<xsl:call-template name="field">
 				<xsl:with-param name="name"
 					select="'reponame_str'" />
 				<xsl:with-param name="node" select="normalize-space($networkName)" />
+			</xsl:call-template>
+
+			<xsl:call-template name="service">
+				<xsl:with-param name="value" select="concat($urn_repo_prefix,lower-case($networkAcronym))" />
 			</xsl:call-template>
 
 			<xsl:call-template name="field">
@@ -121,7 +137,7 @@
 			</xsl:call-template>
 
 			<xsl:call-template name="organization">
-				<xsl:with-param name="value" select="concat('urn:organizationAcronym:',lower-case($institutionAcronym))" />
+				<xsl:with-param name="value" select="concat($urn_org_prefix,lower-case($institutionAcronym))" />
 			</xsl:call-template>
 
 			<xsl:call-template name="field">
@@ -164,12 +180,37 @@
             <xsl:apply-templates select="/doc:metadata/doc:element[@name='oaire']"/>
             <xsl:apply-templates select="/doc:metadata/doc:element[@name='dcterms']"/>
 
-		</doc>
+
+			<!-- consider the publication record is always clean -->
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'dirty'" />
+				<xsl:with-param name="node" select="'0'" />
+			</xsl:call-template>
+			<!-- FUTURE IMPLEMENTATIONS can review this STATUS -->
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'status'" />
+				<xsl:with-param name="node" select="'SINGLETON'" />
+			</xsl:call-template>
+			<!-- control visibility -->
+			<xsl:call-template name="ServiceVisibility" />
+
+		</xsl:element>
 	</xsl:template>
 
 
 	<xsl:template match="/doc:metadata/doc:element[@name='datacite']">
 		<xsl:apply-templates select="*" mode="datacite"/>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'creators_json_txt'" />
+			<xsl:with-param name="node">
+				<xsl:call-template name="jsonfieldset">
+					<xsl:with-param name="node" select="doc:element[@name='creators']" />
+				</xsl:call-template>
+			</xsl:with-param>
+		</xsl:call-template>
+
 	</xsl:template>
 
 	<!-- datacite.titles.title -->
@@ -384,6 +425,78 @@
 
 
 <!-- Person -->
+
+       <xsl:template match="doc:element[@name='creators']" mode="jsonfield">
+               <xsl:text>[</xsl:text>
+               <xsl:apply-templates select="doc:element[@name='creator']" mode="jsonfield"/>
+               <xsl:text>]</xsl:text>
+       </xsl:template>
+
+       <xsl:template match="doc:element[@name='creator']" mode="jsonfield">
+               <xsl:text>{</xsl:text>
+               <xsl:apply-templates select="doc:element[@name='creatorName']" mode="jsonfield"/>
+               <xsl:apply-templates select="doc:element[@name='nameIdentifier']" mode="jsonfield"/>
+               <xsl:text>},</xsl:text>
+       </xsl:template>
+
+
+       <xsl:template match="doc:element[@name='creator']/doc:element[@name='creatorName']" mode="jsonfield">
+               <xsl:call-template name="jsonfield">
+                       <xsl:with-param name="name"
+                               select="'Person.name'" />
+                       <xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+               </xsl:call-template>
+               <xsl:text>,</xsl:text>
+        </xsl:template>
+
+
+    <xsl:template
+        match="doc:element[@name='nameIdentifier' and ./doc:field/@name='schemeURI' and ./doc:field/text()='http://orcid.org']"
+        mode="jsonfield">
+               <xsl:call-template name="jsonfield">
+                       <xsl:with-param name="name"
+                               select="'Person.identifier.orcid'" />
+                       <xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+               </xsl:call-template>
+               <xsl:text>,</xsl:text>
+    </xsl:template>
+
+
+    <xsl:template
+        match="doc:element[@name='nameIdentifier' and ./doc:field/@name='schemeURI' and ./doc:field/text()='https://www.ciencia-id.pt']"
+        mode="jsonfield">
+               <xsl:call-template name="jsonfield">
+                       <xsl:with-param name="name"
+                               select="'Person.identifier.cienciaID'" />
+                       <xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+               </xsl:call-template>
+               <xsl:text>,</xsl:text>
+    </xsl:template>
+
+
+    <xsl:template
+        match="doc:element[@name='nameIdentifier' and ./doc:field/@name='schemeURI' and ./doc:field/text()='https://www.researcherid.com']"
+        mode="jsonfield">
+               <xsl:call-template name="jsonfield">
+                       <xsl:with-param name="name"
+                               select="'Person.identifier.researcherID'" />
+                       <xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+               </xsl:call-template>
+               <xsl:text>,</xsl:text>
+    </xsl:template>
+
+    <xsl:template
+        match="doc:element[@name='nameIdentifier' and ./doc:field/@name='schemeURI' and ./doc:field/text()='https://www.scopus.com']"
+        mode="jsonfield">
+               <xsl:call-template name="jsonfield">
+                       <xsl:with-param name="name"
+                               select="'Person.identifier.scopusAuthorID'" />
+                       <xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+               </xsl:call-template>
+               <xsl:text>,</xsl:text>
+    </xsl:template>
+
+
     <xsl:template
         match="doc:element[@name='creatorName']/doc:field[(not(@name='nameType')) or (@name='nameType' and text()!='Organizational')]"
         mode="person">
@@ -464,6 +577,11 @@
 			<xsl:call-template name="field">
 				<xsl:with-param name="name"
 					select="'topic'" />
+				<xsl:with-param name="node" select="substring(normalize-space(doc:field[@name='value']/text()),1,$maxStringLength)" />
+			</xsl:call-template>
+			<xsl:call-template name="field">
+				<xsl:with-param name="name"
+					select="'topic_facet'" />
 				<xsl:with-param name="node" select="substring(normalize-space(doc:field[@name='value']/text()),1,$maxStringLength)" />
 			</xsl:call-template>
 		</xsl:if>
@@ -1056,7 +1174,77 @@
 		<xsl:apply-templates select="*" mode="oaire"/> 
 	</xsl:template>
 
+	<!-- Grant.fundedItem -->
+
+
+
+
+
+	<xsl:template match="doc:element[@name='funderName']" mode="oaire">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'funding.funder.name_str_mv'" />
+			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value'][1]/text())" />
+		</xsl:call-template>
+	</xsl:template>
+
+	<xsl:template match="doc:element[@name='funderIdentifier']" mode="oaire">
+
+		<xsl:variable name="funder_acronym">
+			<xsl:apply-templates select="doc:field[@name='value']" mode="funderId"/>
+		</xsl:variable>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'funding.funder.alternateName_str_mv'" />
+			<xsl:with-param name="node" select="normalize-space($funder_acronym)"/>
+		</xsl:call-template>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'funding.funder.identifier_str_mv'" />
+			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+		</xsl:call-template>
+
+		<!-- facet for funder -->
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'funder_facet_str_mv'" />
+			<xsl:with-param name="node" select="concat(normalize-space($funder_acronym),$facet_delimiter,normalize-space(../doc:element[@name='funderName'][1]/doc:field[@name='value']))" />
+		</xsl:call-template>
+	</xsl:template>
+
+
+	<xsl:template match="doc:element[@name='funderIdentifier']/doc:field[@name='value']"
+		mode="funderId">
+		<xsl:choose>
+			<xsl:when test="text()='http://doi.org/10.13039/501100001871'">
+				<xsl:text>FCT</xsl:text>
+			</xsl:when>
+			<xsl:when test="text()='http://doi.org/10.13039/100010269'">
+				<xsl:text>WT</xsl:text>
+			</xsl:when>
+			<xsl:when test="text()='http://doi.org/10.13039/501100008530'">
+				<xsl:text>EC</xsl:text>
+			</xsl:when>
+		<xsl:otherwise><xsl:text>other</xsl:text></xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template match="doc:element[@name='fundingStream']" mode="oaire">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'funding.name_str_mv'" />
+			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+		</xsl:call-template>
+	</xsl:template>
+
 	<xsl:template match="doc:element[@name='awardNumber']" mode="oaire">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'funding.identifier_str_mv'" />
+			<xsl:with-param name="node" select="normalize-space(doc:field[@name='value']/text())" />
+		</xsl:call-template>
 		<xsl:call-template name="funding">
 			<xsl:with-param name="value" select="normalize-space(doc:field[@name='value']/text())" />
 		</xsl:call-template>
@@ -1147,6 +1335,32 @@
 		</xsl:if>
 	</xsl:template>
 
+	<!-- authors json field template -->
+	<xsl:template name="jsonfieldset">
+		<xsl:param name="node" />
+		
+		<xsl:variable name="filterJson">
+			<xsl:apply-templates select="$node" mode="jsonfield"/>
+		</xsl:variable>
+
+		<xsl:value-of select="replace(replace($filterJson, ',\}', '}'), ',\]', ']')"/>
+
+	</xsl:template>
+
+	<!-- json field template -->
+	<xsl:template name="jsonfield">
+		<xsl:param name="name" />
+		<xsl:param name="node" />
+		<xsl:if test="$node">
+			<xsl:text>\"</xsl:text>
+			<xsl:value-of select="$name" />
+			<xsl:text>\":</xsl:text>
+			<xsl:text>\"</xsl:text>
+			<xsl:value-of select="$node" />
+			<xsl:text>\"</xsl:text>
+		</xsl:if>
+	</xsl:template>
+
 	<!-- semantic identifier template -->
 	<xsl:template name="semanticIdentifier">
 		<xsl:param name="value" />
@@ -1199,6 +1413,20 @@
 		</xsl:if>
 	</xsl:template>
 
+	<xsl:template name="ServiceVisibility">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'visible'" />
+			<xsl:with-param name="node">
+				<xsl:choose>
+					<xsl:when test="lower-case($networkPublished)='true'">
+						<xsl:text>1</xsl:text>
+					</xsl:when>
+					<xsl:otherwise><xsl:text>0</xsl:text></xsl:otherwise>
+				</xsl:choose>
+			</xsl:with-param>
+		</xsl:call-template>
+	</xsl:template>
+
 	<!-- funding template -->
 	<xsl:template name="funding">
 		<xsl:param name="value" />
@@ -1219,6 +1447,7 @@
     <xsl:template match="text() | @*" mode="organization"/>
     <xsl:template match="text() | @*" mode="service"/>
     <xsl:template match="text() | @*" mode="funding"/>
+    <xsl:template match="*" mode="jsonfield"/>
     <xsl:template match="text()|@*"/>
 
 </xsl:stylesheet>

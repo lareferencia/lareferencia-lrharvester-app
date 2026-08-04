@@ -33,6 +33,10 @@
 	<xsl:param name="timestamp" />
 	<xsl:param name="networkName" />
 	<xsl:param name="networkAcronym" />
+	<xsl:param name="networkPublished" />
+	<xsl:variable name="urn_repo_prefix">urn:repositoryAcronym:</xsl:variable>
+	<xsl:variable name="urn_org_prefix">urn:organizationAcronym:</xsl:variable>
+	<xsl:variable name="facet_delimiter">{{{_:::_}}}</xsl:variable>
 
 	<xsl:param name="name" />
 	<xsl:param name="institutionName" />
@@ -46,14 +50,6 @@
         select="'________________aeiouaeiouyaeiouanoaeiouyaaodo0AEIOUAEIOUYAEIOUANOAEIOUYAAOCD0'"/>
 
 	<xsl:template match="/">
-			<!-- general provenance - for all entities -->
-			<xsl:apply-templates select="/attributes"
-				mode="OrganizationAttributes" />
-	</xsl:template>
-
-
-	<!-- Entity: Organization -->
-	<xsl:template match="/attributes" mode="OrganizationAttributes">
 		<xsl:element name="doc">
 			<xsl:call-template name="identifier">
 				<xsl:with-param name="node" select="$networkAcronym"/>
@@ -61,14 +57,52 @@
 			</xsl:call-template>
 			<xsl:call-template name="semanticIdentifier">
 				<xsl:with-param name="value"
-					select="$identifier" />
+					select="concat($urn_org_prefix,lower-case($institutionAcronym))" />
+			</xsl:call-template>
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'organization_id_str'" />
+				<xsl:with-param name="node" select="concat($urn_org_prefix,lower-case($institutionAcronym))" />
 			</xsl:call-template>
 			<xsl:call-template name="field">
 				<xsl:with-param name="name" select="'institution'" />
 				<xsl:with-param name="node" select="$institutionName" />
 			</xsl:call-template>
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'network_acronym_str'" />
+				<xsl:with-param name="node" select="$networkAcronym" />
+			</xsl:call-template>
+
+			<xsl:call-template name="field">
+				<xsl:with-param name="name"
+					select="'repo_facet_str'" />
+				<xsl:with-param name="node" select="concat(concat($urn_repo_prefix,lower-case($networkAcronym)),$facet_delimiter,normalize-space($networkName))" />
+			</xsl:call-template>
 
 			<xsl:call-template name="ServiceAcronym" />
+			<!-- general provenance - for all entities -->
+			<xsl:apply-templates select="/attributes"
+				mode="OrganizationAttributes" />
+
+			<!-- consider the network as the source -->
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'source_str'" />
+				<xsl:with-param name="node" select="$identifier" />
+			</xsl:call-template>
+
+			<!-- consider the record is always dirty -->
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'dirty'" />
+				<xsl:with-param name="node" select="'1'" />
+			</xsl:call-template>
+			<xsl:call-template name="ServiceVisibility" />
+		</xsl:element>
+
+	</xsl:template>
+
+
+	<!-- Entity: Organization -->
+	<xsl:template match="/attributes" mode="OrganizationAttributes">
+
 			
 			<xsl:apply-templates select="*"
 				mode="identifier" />
@@ -80,9 +114,6 @@
 				mode="organization_field" />
 			<xsl:apply-templates select="."
 				mode="organization_contactPoint_field" />
-
-		</xsl:element>
-
 	</xsl:template>
 
     <xsl:template name="identifier">
@@ -106,10 +137,23 @@
 		<xsl:call-template name="field">
 			<xsl:with-param name="name"
 				select="'service_str_mv'" />
-			<xsl:with-param name="node" select="concat('urn:repositoryAcronym:',lower-case($networkAcronym))" />
+			<xsl:with-param name="node" select="concat($urn_repo_prefix,lower-case($networkAcronym))" />
 		</xsl:call-template>
 	</xsl:template>
 
+	<xsl:template name="ServiceVisibility">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'visible'" />
+			<xsl:with-param name="node">
+				<xsl:choose>
+					<xsl:when test="lower-case($networkPublished)='true'">
+						<xsl:text>1</xsl:text>
+					</xsl:when>
+					<xsl:otherwise><xsl:text>0</xsl:text></xsl:otherwise>
+				</xsl:choose>
+			</xsl:with-param>
+		</xsl:call-template>
+	</xsl:template>
 
 	<xsl:template match="/attributes/country"
 		mode="organization_field">
@@ -132,6 +176,11 @@
 				select="'Organization.legalName_str_mv'" />
 			<xsl:with-param name="node" select="$institutionName" />
 		</xsl:call-template>
+		<xsl:call-template name="field">
+			<xsl:with-param name="name"
+				select="'title_sort'" />
+			<xsl:with-param name="node" select="$institutionName" />
+		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template name="institutionAcronym">
@@ -143,7 +192,7 @@
 		</xsl:call-template>
 
 		<xsl:call-template name="organization">
-			<xsl:with-param name="value" select="concat('urn:organizationAcronym:',lower-case($institutionAcronym))" />
+			<xsl:with-param name="value" select="concat($urn_org_prefix,lower-case($institutionAcronym))" />
 		</xsl:call-template>
 	</xsl:template>
 

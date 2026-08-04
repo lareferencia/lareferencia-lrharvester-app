@@ -74,7 +74,14 @@
 		<property name="description" value="Delete network (!)"></property>
 		<property name="workers">
 			<list>
-			    <value>xoaiDeleteWorker2</value>
+				<!-- delete all content -->
+				<value>projectNetworkDeleteWorker</value>
+				<value>organizationNetworkDeleteWorker</value>
+				<value>personNetworkDeleteWorker</value>
+				<value>publicationNetworkDeleteWorker</value>
+				<value>serviceNetworkDeleteWorker</value>
+				<!-- end -->
+				<value>xoaiDeleteWorker2</value>
 				<value>rcaapDeleteWorker2</value>
 				<value>networkUnindexWorker</value>
 				<value>networkCleanWorker2</value>
@@ -120,12 +127,12 @@
 		<property name="executeIndexing" value="false" />
 	</bean>    
     
-	<bean id="networkIndexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexWorker"
+	<bean id="networkIndexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexLegacyWorker"
 		scope="prototype">
 		<property name="executeDeletion" value="false" />
 	</bean>
 
-	<bean id="networkUnindexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexWorker"
+	<bean id="networkUnindexWorker" class="org.lareferencia.contrib.rcaap.backend.workers.NetworkIndexLegacyWorker"
 		scope="prototype">
 		<property name="executeDeletion" value="true" />
 	</bean>
@@ -161,4 +168,69 @@
 		<property name="solrRecordIDField" value="id"/>
 	</bean>
 
+	<!-- delete from cores -->
+	<bean id="publicationNetworkDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+		<constructor-arg>
+			<value>${publication.solr.url}</value>
+		</constructor-arg>
+
+		<property name="serialLaneId" value="100"/>
+
+		<property name="solrNetworkIDField" value="network_acronym_str"/>
+		<property name="solrRecordIDField" value="id"/>
+
+		<property name="executeDeletion" value="true"/>
+	</bean>
+
+	<bean id="personNetworkDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+		<constructor-arg>
+			<value>${person.solr.url}</value>
+		</constructor-arg>
+
+		<property name="serialLaneId" value="101"/>
+
+		<property name="solrNetworkIDField" value="network_acronym_str"/>
+		<property name="solrRecordIDField" value="id"/>
+
+		<property name="executeDeletion" value="true"/>
+	</bean>
+
+	<bean id="organizationNetworkDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+		<constructor-arg>
+			<value>${organization.solr.url}</value>
+		</constructor-arg>
+
+		<property name="serialLaneId" value="102"/>
+
+		<property name="solrNetworkIDField" value="network_acronym_str"/>
+		<property name="solrRecordIDField" value="id"/>
+
+		<property name="executeDeletion" value="true"/>
+	</bean>
+
+	<bean id="projectNetworkDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+		<constructor-arg>
+			<value>${project.solr.url}</value>
+		</constructor-arg>
+
+		<property name="serialLaneId" value="103"/>
+
+		<property name="solrNetworkIDField" value="network_acronym_str"/>
+		<property name="solrRecordIDField" value="id"/>
+
+		<property name="executeDeletion" value="true"/>
+	</bean>
+
+	<bean id="serviceNetworkDeleteWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker" scope="prototype">
+		<constructor-arg>
+			<value>${service.solr.url}</value>
+		</constructor-arg>
+
+		<property name="serialLaneId" value="103"/>
+
+		<property name="solrNetworkIDField" value="network_acronym_str"/>
+		<property name="solrRecordIDField" value="id"/>
+
+		<property name="executeDeletion" value="true"/>
+	</bean>
 </beans>

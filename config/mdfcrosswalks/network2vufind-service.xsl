@@ -33,6 +33,7 @@
 	<xsl:param name="timestamp" />
 	<xsl:param name="networkName" />
 	<xsl:param name="networkAcronym" />
+	<xsl:param name="networkPublished" />
 
 	<xsl:param name="name" />
 	<xsl:param name="institutionName" />
@@ -46,15 +47,9 @@
 		<xsl:value-of select="concat($img_path,$networkAcronym,'.jpg')" />
 	</xsl:variable>
 
+	<xsl:variable name="facet_delimiter">{{{_:::_}}}</xsl:variable>
+
 	<xsl:template match="/">
-			<!-- general provenance - for all entities -->
-			<xsl:apply-templates select="/attributes"
-				mode="Service" />
-	</xsl:template>
-
-
-	<!-- Entity: Service -->
-	<xsl:template match="/attributes" mode="Service">
 		<xsl:element name="doc">
 			<xsl:call-template name="field">
 				<xsl:with-param name="name" select="'id'" />
@@ -65,30 +60,55 @@
 				<xsl:with-param name="node" select="concat('urn:repositoryAcronym:',lower-case($networkAcronym))" />
 			</xsl:call-template>
 
+			<xsl:call-template name="ServiceAcronymSemanticId" />
+
 			<xsl:call-template name="field">
 				<xsl:with-param name="name" select="'logo_str'" />
 				<xsl:with-param name="node" select="$img_logo" />
 			</xsl:call-template>
-			
-			<xsl:call-template name="ServiceAcronymSemanticId" />
-			<xsl:apply-templates select="*"
-				mode="ServiceSemanticId" />
+
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'network_acronym_str'" />
+				<xsl:with-param name="node" select="$networkAcronym" />
+			</xsl:call-template>
+
+			<!-- general provenance - for all entities -->
+			<xsl:apply-templates select="/attributes"
+				mode="Service" />
+			<!-- consider the record is always clean -->
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'dirty'" />
+				<xsl:with-param name="node" select="'0'" />
+			</xsl:call-template>
+			<xsl:call-template name="field">
+				<xsl:with-param name="name" select="'status'" />
+				<xsl:with-param name="node" select="'SINGLETON'" />
+			</xsl:call-template>
 			<xsl:call-template name="ServiceName" />
 			<xsl:call-template name="ServiceAcronym" />
-			<xsl:apply-templates select="*"
-				mode="service_field" />
-			<xsl:apply-templates select="."
-				mode="service_periodical_field" />
-			<xsl:apply-templates select="."
-				mode="service_oaipmh_field" />
-			<xsl:apply-templates select="."
-				mode="service_repository_field" />
-
+			<xsl:call-template name="ServiceVisibility" />
 			<xsl:call-template name="institutionName"/>
 			<xsl:call-template name="institutionAcronym"/>
-			<xsl:apply-templates select="*"
-				mode="organization" />
 		</xsl:element>
+	</xsl:template>
+
+
+	<!-- Entity: Service -->
+	<xsl:template match="/attributes" mode="Service">
+
+		<xsl:apply-templates select="*"
+			mode="ServiceSemanticId" />
+		<xsl:apply-templates select="*"
+			mode="service_field" />
+		<xsl:apply-templates select="."
+			mode="service_periodical_field" />
+		<xsl:apply-templates select="."
+			mode="service_oaipmh_field" />
+		<xsl:apply-templates select="."
+			mode="service_repository_field" />
+
+		<xsl:apply-templates select="*"
+			mode="organization" />
 
 	</xsl:template>
 
@@ -120,9 +140,28 @@
 		</xsl:call-template>
 	</xsl:template>
 
+	<xsl:template name="ServiceVisibility">
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'visible'" />
+			<xsl:with-param name="node">
+				<xsl:choose>
+					<xsl:when test="lower-case($networkPublished)='true'">
+						<xsl:text>1</xsl:text>
+					</xsl:when>
+					<xsl:otherwise><xsl:text>0</xsl:text></xsl:otherwise>
+				</xsl:choose>
+			</xsl:with-param>
+		</xsl:call-template>
+	</xsl:template>
+
 	<xsl:template name="ServiceName">
 		<xsl:call-template name="field">
 			<xsl:with-param name="name" select="'title'" />
+			<xsl:with-param name="node" select="$networkName" />
+		</xsl:call-template>
+
+		<xsl:call-template name="field">
+			<xsl:with-param name="name" select="'title_sort'" />
 			<xsl:with-param name="node" select="$networkName" />
 		</xsl:call-template>
 	</xsl:template>
