@@ -191,6 +191,41 @@
                     <constructor-arg type="String"
                         value="${config.dir.path}/mdfcrosswalks/rcaap_entity2index.xsl"/>
                 </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="vufind-publication"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind-publication.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="vufind-person"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind-person.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="vufind-project"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind-project.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="vufind-organization"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind-organization.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="network-atributtes"/>
+                    <constructor-arg type="String" value="vufind-service"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/network2vufind-service.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="network-atributtes"/>
+                    <constructor-arg type="String" value="vufind-organization"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/network2vufind-organization.xsl"/>
                 <!-- Custom Bean for transforming from datacite to xoai_openaire -->
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="oai_datacite"/>
