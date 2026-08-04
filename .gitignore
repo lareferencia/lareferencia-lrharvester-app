@@ -29,3 +29,5 @@ HELP.md
 .vscode/
 config/application.properties
 harvester.jar
+config/third-party-context.xml
+pom.xml.versionsBackup

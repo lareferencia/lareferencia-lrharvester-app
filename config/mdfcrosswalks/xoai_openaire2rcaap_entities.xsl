@@ -31,7 +31,7 @@
         select="' ;,.:+?!\/*#@£$€àèìòùáéíóúýâêîôûãñõäëïöüÿåæœçðøÀÈÌÒÙÁÉÍÓÚÝÂÊÎÔÛÃÑÕÄËÏÖÜŸÅÆŒÇÐØ'"/>
     <xsl:param name="nameTo"
         select="'________________aeiouaeiouyaeiouanoaeiouyaaodo0AEIOUAEIOUYAEIOUANOAEIOUYAAOCD0'"/>
-	
+    
     
     <!-- params -->
     <xsl:param name="identifier"/>
@@ -77,7 +77,7 @@
                 <xsl:apply-templates
                     select="/doc:metadata/doc:element[@name='datacite']/doc:element[@name='contributors']/doc:element[@name='contributor']"
                     mode="entity"/>
-				<!-- if there isn't any hostingInstitution -->
+                <!-- if there isn't any hostingInstitution -->
                 <xsl:if
                     test="not(/doc:metadata/doc:element[@name='datacite']/doc:element[@name='contributors']/doc:element[@name='contributor']/doc:field[@name='contributorType' and text()='HostingInstitution'])">
                     <xsl:call-template name="repositoryService"/>
@@ -96,7 +96,7 @@
                 <xsl:apply-templates
                     select="/doc:metadata/doc:element[@name='datacite']/doc:element[@name='contributors']/doc:element[@name='contributor']"
                     mode="relation"/>
-				<!-- if there isn't any hostingInstitution -->
+                <!-- if there isn't any hostingInstitution -->
                 <xsl:if
                     test="not(/doc:metadata/doc:element[@name='datacite']/doc:element[@name='contributors']/doc:element[@name='contributor']/doc:field[@name='contributorType' and text()='HostingInstitution'])">
                     <xsl:call-template name="relationRepositoryService"/>
@@ -184,15 +184,55 @@
     </xsl:template>
 
     <!-- related identifier -->
-    <xsl:template match="doc:element[@name='relatedIdentifier']/doc:field[@name='relatedIdentifierType']">
-        <xsl:variable name="name">
-            <xsl:call-template name="fieldNameByIdentifierType">
-                <xsl:with-param name="idType" select="."/>
+    <xsl:template match="doc:element[@name='relatedIdentifier']">
+        <xsl:variable name="lc_type">
+            <xsl:call-template name="lowercase">
+                <xsl:with-param name="value" select="./doc:field[@name='relatedIdentifierType']"/>
             </xsl:call-template>
         </xsl:variable>
-        <xsl:call-template name="field">
+        <xsl:variable name="name">
+            <xsl:call-template name="fieldNameByRelatedIdentifierType">
+                <xsl:with-param name="identifier" select="."/>
+            </xsl:call-template>
+        </xsl:variable>
+        <!-- value will be something like: handle:https://hdl.handle.net/123/45 -->
+        <xsl:variable name="value">
+            <xsl:value-of select="$lc_type"/>
+            <xsl:text>:</xsl:text>
+            <xsl:value-of select="./doc:field[@name='value']/text()"/>
+        </xsl:variable>
+        <xsl:call-template name="field_value">
             <xsl:with-param name="name" select="$name"/>
-            <xsl:with-param name="node" select="../."/>
+            <xsl:with-param name="value" select="$value"/>
+            <xsl:with-param name="lang" select="''"/>
+        </xsl:call-template>
+    </xsl:template>
+
+    <!-- Alternate identifier Fields -->
+    <xsl:template match="doc:element[@name='datacite']/doc:element[@name='alternateIdentifiers']"
+        mode="Publication">
+        <xsl:for-each select="doc:element[@name='alternateIdentifier']">
+            <xsl:apply-templates select="."/>
+        </xsl:for-each>
+    </xsl:template>
+
+    <!-- alternate identifier -->
+    <xsl:template match="doc:element[@name='alternateIdentifier']">
+        <xsl:variable name="lc_type">
+            <xsl:call-template name="lowercase">
+                <xsl:with-param name="value" select="./doc:field[@name='alternateIdentifierType']"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <!-- value will be something like: handle:https://hdl.handle.net/123/45 -->
+        <xsl:variable name="value">
+            <xsl:value-of select="$lc_type"/>
+            <xsl:text>:</xsl:text>
+            <xsl:value-of select="./doc:field[@name='value']/text()"/>
+        </xsl:variable>
+        <xsl:call-template name="field_value">
+            <xsl:with-param name="name" select="'CreativeWork.identifier'"/>
+            <xsl:with-param name="value" select="$value"/>
+            <xsl:with-param name="lang" select="''"/>
         </xsl:call-template>
     </xsl:template>
 
@@ -207,6 +247,30 @@
             <xsl:with-param name="name" select="$name"/>
             <xsl:with-param name="node" select="."/>
         </xsl:call-template>
+    </xsl:template>
+
+
+    <xsl:template name="fieldNameByRelatedIdentifierType">
+        <xsl:param name="identifier"/>
+        <xsl:variable name="lc_relationType">
+            <xsl:call-template name="lowercase">
+                <xsl:with-param name="value" select="$identifier/doc:field[@name='relationType']"/>
+            </xsl:call-template>
+        </xsl:variable>
+        <xsl:choose>
+            <xsl:when test="$lc_relationType='ispartof'">
+                <xsl:text>CreativeWork.isPartOf.identifier</xsl:text>
+            </xsl:when>
+            <xsl:when test="$lc_relationType='haspart'">
+                <xsl:text>CreativeWork.hasPart.identifier</xsl:text>
+            </xsl:when>
+            <xsl:when test="$lc_relationType='IsContinuedBy' or $lc_relationType='IsVersionOf' or $lc_relationType='IsNewVersionOf' or $lc_relationType='IsDerivedFrom'">
+                <xsl:text>CreativeWork.isBasedOn.identifier</xsl:text>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>CreativeWork.isPartOf.identifier</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template name="fieldNameByIdentifierType">
@@ -421,7 +485,7 @@
             <xsl:attribute name="name">
                 <xsl:text>CreativeWork.about</xsl:text>
             </xsl:attribute>
-			<xsl:apply-templates select="doc:field"/>
+            <xsl:apply-templates select="doc:field"/>
         </xsl:element>
     </xsl:template>
     <xsl:template match="doc:element[@name='subject']/doc:field[@name='value']">
@@ -658,7 +722,7 @@
     </xsl:template-->
 
     <xsl:template
-        match="doc:element[@name='contributorName']/doc:field[@name='nameType' and	text()='Organizational']"
+        match="doc:element[@name='contributorName']/doc:field[@name='nameType' and    text()='Organizational']"
         mode="serviceSemanticId">
         <xsl:call-template name="semanticIdentifier">
             <xsl:with-param name="value"
@@ -713,7 +777,7 @@
         </xsl:call-template>
     </xsl:template>
 
-	<!-- affiliation - semanticId -->
+    <!-- affiliation - semanticId -->
     <xsl:template match="doc:element[@name='affiliation']" mode="semanticId">
         <xsl:call-template name="semanticIdentifier">
             <xsl:with-param name="value">
@@ -789,7 +853,7 @@
 
         </xsl:element>
     </xsl:template>
-	
+    
     <!-- Static Service based on the params -->
     <xsl:template name="repositoryService">
         <xsl:element name="entity">
@@ -797,7 +861,7 @@
                 <xsl:text>Service</xsl:text>
             </xsl:attribute>
             <xsl:attribute name="ref">
-				<xsl:value-of select="concat('repositoryService_',$networkAcronym)"/>
+                <xsl:value-of select="concat('repositoryService_',$networkAcronym)"/>
             </xsl:attribute>
             <xsl:call-template name="semanticIdentifier">
                 <xsl:with-param name="value"
@@ -1162,7 +1226,7 @@
             </xsl:element>
         </xsl:element>
     </xsl:template>
-	
+    
     <!-- Static Service based on the params -->
     <xsl:template name="relationRepositoryService">
         <xsl:element name="relation">
@@ -1171,21 +1235,21 @@
             </xsl:attribute>
 
             <xsl:attribute name="fromEntityRef">
-            	<xsl:value-of select="$publicationName"/>
+                <xsl:value-of select="$publicationName"/>
             </xsl:attribute>
             
             <xsl:attribute name="toEntityRef">
-            	<xsl:value-of select="concat('repositoryService_',$networkAcronym)"/>
+                <xsl:value-of select="concat('repositoryService_',$networkAcronym)"/>
             </xsl:attribute>
-            	
-			<xsl:element name="attributes">
-			<xsl:call-template name="field_value">
+                
+            <xsl:element name="attributes">
+            <xsl:call-template name="field_value">
                 <xsl:with-param name="name" select="'CreativeWork.contributor.alternateName'"/>
                 <xsl:with-param name="value" select="$networkAcronym"/>
             </xsl:call-template>
-			</xsl:element>
-		</xsl:element>
-	</xsl:template>	
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>    
 
 
   <!-- Relation Person Affiliation -->
@@ -1213,7 +1277,7 @@
                 <xsl:text>Grant.fundedItem</xsl:text>
             </xsl:attribute>
             <xsl:attribute name="fromEntityRef">
-            	<xsl:value-of select="$publicationName"/>
+                <xsl:value-of select="$publicationName"/>
             </xsl:attribute>
             
             <xsl:attribute name="toEntityRef">

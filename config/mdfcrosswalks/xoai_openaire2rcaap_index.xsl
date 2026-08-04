@@ -392,7 +392,7 @@ identifier.sici
         <xsl:variable name="lc_alternateIdentifierType" select="translate(doc:field[@name='alternateIdentifierType']/text(), $uppercase, $smallcase)"/>
         <field>
             <xsl:attribute name="name">
-                <xsl:if test="not(doc:field[@name='alternateIdentifierType'])">
+                <xsl:if test="not(../doc:field[@name='alternateIdentifierType'])">
                     <xsl:text>identifier.other</xsl:text>
                 </xsl:if>
                 <xsl:choose>
@@ -401,7 +401,7 @@ identifier.sici
                             mode="datacite_alternateIdentifierType_tid"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:apply-templates select="doc:field[@name='alternateIdentifierType']"
+                        <xsl:apply-templates select="../doc:field[@name='alternateIdentifierType']"
                             mode="datacite_alternateIdentifierType"/>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -412,11 +412,12 @@ identifier.sici
                         <xsl:value-of select="substring(normalize-space(substring-after($lc_alternateIdentifier,$tid_prefix)),1,$max_string_size)"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:value-of select="substring(normalize-space(doc:field[@name='value']),1,$max_string_size)"/>
+                        <xsl:value-of select="substring(normalize-space(./text()),1,$max_string_size)"/>
                     </xsl:otherwise>
             </xsl:choose>
             
         </field>
+        </xsl:for-each>
     </xsl:template>
 
     <!-- TID -->

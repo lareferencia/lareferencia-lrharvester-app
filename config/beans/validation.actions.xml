@@ -42,6 +42,7 @@
 		<property name="description" value="Validación/Transf"></property>
 		<property name="incremental" value="true" />
 		<property name="runOnSchedule" value="true" />
+		<property name="allwaysRunOnSchedule" value="true" />
 		<property name="workers">
 			<list>
 				<value>validationWorker</value>
@@ -49,7 +50,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<!--bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
 					<property name="name" value="VALIDATE" />
 					<property name="description" value="Validar los registos?" />
 				</bean>
@@ -60,7 +61,7 @@
 				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
 					<property name="name" value="DIAGNOSE" />
 					<property name="description" value="Diagnosticar la validación?" />
-				</bean>
+				</bean-->
 				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
 					<property name="name" value="DETAILED_DIAGNOSE" />
 					<property name="description"
