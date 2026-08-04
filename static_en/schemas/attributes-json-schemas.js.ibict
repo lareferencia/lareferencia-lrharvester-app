@@ -31,6 +31,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
 	                      "source_url",
 	                      "oai_url",
 			      "repository_id",
+	                      "ark_naan",
 	                      "contact_email",
 	                      "content_type",
 			      "source_type",
@@ -75,6 +76,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
           
 /* opendoar_inicio */
           repository_id: { type: "string", default: "", title: "Identificador openDOAR do Repositório" },
+          ark_naan:{ type: "string", default: "", title: "NAAN para ARK", description: "Identificador NAAN que este repositório usará para reservar ARKs no dARK"},
 /* opendoar_fim */
 
 	  contact_email:{ type: "string", default: "",   title: "E-mail principal de contato*" },
@@ -154,6 +156,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
   	                      "telephone",
   	                      "source_url",
   	                      "oai_url",
+  	                      "ark_naan",
   	                      "contact_email",
   	                      "content_type",
   	                      "language",
@@ -201,6 +204,7 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas',  
             doi:{ type: "string", default: "", title: "Digital Object Identifier (DOI)" },
             issn:{ type: "string", default: "", title: "ISSN" },
             issn_l:{ type: "string", default: "", title: "ISSN-L" },
+            ark_naan:{ type: "string", default: "", title: "NAAN para ARK", description: "Identificador NAAN que este repositório usará para reservar ARKs no dARK" },
             
             /*mailing_list: {
           	  "title":"Emails de contato",

@@ -30,12 +30,12 @@
 	<name>LA Referencia LRHarvester APP</name>
 	<description>LA Referencia LRHarvester APP</description>
 
-	<version>4.1.0</version>
+	<version>5.0.0-rc</version>
 
 	<parent>
 		<groupId>org.lareferencia</groupId>
 		<artifactId>lareferencia-parent</artifactId>
-		<version>4.2.0</version>
+		<version>5.0.0-rc</version>
 	</parent>
 
 	<dependencies>
@@ -43,7 +43,18 @@
 		<dependency>
 			<groupId>org.lareferencia</groupId>
 			<artifactId>lareferencia-core-lib</artifactId>
-			<version>4.1.0</version>
+			<version>5.0.0-rc</version>
+			<exclusions>
+				<!-- Exclude conflicting logging implementations -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-slf4j2-impl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 
@@ -65,6 +76,41 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Testcontainers dependencies -->
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>solr</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- ADDED: Bean Validation (Hibernate Validator) for Spring Boot 3.x -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
@@ -84,7 +130,12 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.1.0</version>
+					<version>5.0.0-rc</version>
+				</dependency>
+				<dependency>
+					<groupId>org.lareferencia</groupId>
+					<artifactId>lareferencia-dark-lib</artifactId>
+					<version>5.0.0-rc</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -119,12 +170,12 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.1.0</version>
+					<version>5.0.0-rc</version>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-contrib-rcaap</artifactId>
-					<version>4.1.0</version>
+					<version>4.2.6</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -159,7 +210,12 @@
 				<dependency>
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
-					<version>4.1.0</version>
+					<version>5.0.0-rc</version>
+				</dependency>
+				<dependency>
+					<groupId>org.lareferencia</groupId>
+					<artifactId>lareferencia-dark-lib</artifactId>
+					<version>5.0.0-rc</version>
 				</dependency>
 			</dependencies>
 			<build>

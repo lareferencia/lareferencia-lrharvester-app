@@ -50,7 +50,7 @@
 	<import resource="entity.actions.xml" />
 	
 	<!-- Append bean references inside networkActionManager actions list -->
-	<bean id="networkActionManager" class="org.lareferencia.backend.taskmanager.NetworkActionkManager"
+	<bean id="networkActionManager" class="org.lareferencia.core.task.NetworkActionkManager"
 		scope="singleton">
 		<property name="actions">
 			<list>
