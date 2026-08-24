@@ -35,7 +35,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 
-	<bean id="uploadProjectNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="uploadProjectNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="UPLOAD_PROJECT_ACTION" />
 		<property name="description" value="Upload financiamento"></property>
 		<property name="workers">

@@ -213,4 +213,14 @@ angular.module('rest.url.helper', ['rest.url.rebase']).service('RestURLHelper', 
 	  this.recordMetadataURLByID = function (recordID) {		  
 		  return ReBaseURLHelper.rebaseURL('public/getRecordMetadataByID/' + recordID);	
 	  };
+
+	  this.recordMetadataURLByIdentifier = function (snapshotID, identifier) {
+		// Usar Base64 URL-safe encoding para evitar problemas con caracteres especiales
+		// Convertir el identifier a Base64
+		var base64Identifier = btoa(unescape(encodeURIComponent(identifier)));
+		// Hacer el Base64 URL-safe (reemplazar caracteres problemáticos)
+		base64Identifier = base64Identifier.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+		
+		return ReBaseURLHelper.rebaseURL('public/getRecordMetadataBySnapshotAndIdentifierEncoded/' + snapshotID + '/' + base64Identifier);	
+	  };
 }]);

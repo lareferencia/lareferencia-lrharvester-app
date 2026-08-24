@@ -22,8 +22,8 @@
 
 	<div class="row">
 		<div class="col-md-12">
-			<h4>Editando: {{rules_model.name}}</h4>
-			<p>Aquí puede agregar y editar las reglas.</p>
+			<h4>Editing: {{rules_model.name}}</h4>
+			<p>Here you can add and edit the rules.</p>
 			<form name="rulesForm" sf-schema="rules_schema" sf-form="rules_form" sf-model="rules_model" ng-submit="on_rules_submit(rulesForm)"></form>
 			
 		</div>
@@ -34,7 +34,7 @@
 	 		<div class="btn-group pull-right" uib-dropdown>
 				
 					<button type="button" class="btn btn-sm btn-primary" uib-dropdown-toggle>
-				    	Agregar una nueva regla
+				    	Add a new rule
 				    	<span class="glyphicon glyphicon-plus">
 				       
 				    </button>
@@ -49,9 +49,9 @@
 		<div class="col-xs-12">
 			<table ng-table="rulesTable" class="table table-bordered table-striped table-condensed">
 				<tr ng-repeat="vrule in $data | orderBy:['+runorder', 'getObjectID()']">
-					<td style="width: 20px;" ng-if="type == 'transformer'" td data-title="'Orden'" sortable="'runorder'">{{vrule.runorder}}</td>
-					<td style="width: 200px;" data-title="'Nombre'" sortable="'name'">{{vrule.name}}</td>
-					<td data-title="'Descripción'">{{vrule.description}}</td>
+					<td style="width: 20px;" ng-if="type == 'transformer'" td data-title="'Order'" sortable="'runorder'">{{vrule.runorder}}</td>
+					<td style="width: 200px;" data-title="'Name'" sortable="'name'">{{vrule.name}}</td>
+					<td data-title="'Description'">{{vrule.description}}</td>
 					<td style="width: 100px;">
 						<button class="btn btn-primary btn-sm"
 							ng-click="editRule(rules_model, vrule,  false)">

@@ -36,7 +36,7 @@
 		
 		
 	<!-- ACTIONS -->		
-	<bean id="frontendIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="frontendIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="FRONTEND_INDEXING_ACTION"/>
     	<property name="description" value="Index Frontend"></property>
     	<property name="incremental" value="true"/>
@@ -48,11 +48,11 @@
     	</property>
     	<property name="properties">
         <list>
-        	<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+        	<bean class="org.lareferencia.core.task.NetworkProperty">
         		<property name="name" value="INDEX_FRONTEND" />
         		<property name="description" value="Indexar en frontend?" />
         	</bean>
-        	<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+        	<bean class="org.lareferencia.core.task.NetworkProperty">
         		<property name="name" value="INDEX_FULLTEXT" />
         		<property name="description" value="Indexar texto completo?" />
         	</bean>
@@ -61,7 +61,7 @@
     </bean>
     
 		
-	<bean id="frontendDeleteAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="frontendDeleteAction" class="org.lareferencia.core.task.NetworkAction">
     	<property name="name" value="FRONTEND_DELETE_ACTION"/>
     	<property name="description" value="UnIndex Frontend"></property>
     	<property name="workers">
@@ -73,7 +73,7 @@
 		    
 		
     <!-- WORKERS -->
-	<bean id="frontendIndexerWorker" class="org.lareferencia.backend.workers.indexer.IndexerWorker"
+	<bean id="frontendIndexerWorker" class="org.lareferencia.core.worker.indexing.IndexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${frontend.solr.url}</value>
@@ -96,7 +96,7 @@
 	</bean>
 	
 
-	<bean id="frontendDeleteWorker" class="org.lareferencia.backend.workers.indexer.FullUnindexerWorker"
+	<bean id="frontendDeleteWorker" class="org.lareferencia.core.worker.indexing.FullUnindexerWorker"
 		scope="prototype">
 		<constructor-arg>
 			<value>${frontend.solr.url}</value>

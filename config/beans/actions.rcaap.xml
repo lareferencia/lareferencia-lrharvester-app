@@ -50,7 +50,7 @@
 	<import resource="entity.actions.xml" />
 	
 	<!-- Append bean references inside networkActionManager actions list -->
-	<bean id="networkActionManager" class="org.lareferencia.backend.taskmanager.NetworkActionkManager"
+	<bean id="networkActionManager" class="org.lareferencia.core.task.NetworkActionkManager"
 		scope="singleton">
 		<property name="actions">
 			<list>
@@ -61,16 +61,16 @@
 				<!-- Validation Actions -->
 				<ref bean="validationNetworkAction" />
 				
-				<ref bean="entityExtractionAction" />
-				<ref bean="entityIndexingAction" />
-				
 				<!-- PG: 2021-09-30 WIP -->
 				<!-- 
                 <ref bean="rcaapEntityIndexingSimpleAction" />
                  -->                
   				<ref bean="rcaapIndexingNetworkAction"/>
   				<ref bean="rcaapDeleteAction"/>
-  				
+
+				<ref bean="rcaapEntitiesIndexingNetworkAction" />
+				<ref bean="rcaapOASISEntitiesIndexingNetworkAction" />
+
 				<!-- XOAI Actions -->
 				<ref bean="rcaapXoaiIndexingNetworkAction" />
 				<ref bean="rcaapXoaiDeleteAction" />
@@ -82,10 +82,6 @@
 				<!-- Network Indexing Actions -->
 				<ref bean="networkIndexingNetworkAction" />
 				<ref bean="networkUnindexingNetworkAction" />
-                <ref bean="network2EntityNetworkAction" />
-				
-				<!-- Project Actions -->
-				<ref bean="uploadProjectNetworkAction"/>
 				
 				<!-- Cleaning Actions -->
 				<ref bean="networkCleanNetworkAction2" />

@@ -33,7 +33,7 @@
 		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-	<bean id="entityExtractionAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="entityExtractionAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="ENTITYRELATION_EXTRACTION_ACTION" />
 		<property name="description" value="Extract entities/relations"></property>
 		<property name="incremental" value="false" />
@@ -45,7 +45,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="EXTRACT_ENTITIES" />
 					<property name="description" value="Extract entities and relations?" />
 				</bean>
@@ -54,7 +54,7 @@
 	</bean>
 	
 
-	<bean id="entityIndexingAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="entityIndexingAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="ENTITYRELATION_INDEXING_ACTION" />
 		<property name="description" value="Index entities to Elastic"></property>
 		<property name="incremental" value="false" />
@@ -66,7 +66,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="INDEX_ENTITIES" />
 					<property name="description" value="Index entities?" />
 				</bean>

@@ -35,7 +35,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	
 	
-	<bean id="historicFullReIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="historicFullReIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="HISTORIC_FULL_REINDEXING_ACTION" />
 		<property name="description" value="Index histórico clean and full"></property>
 		<property name="runOnSchedule" value="true" />
@@ -46,7 +46,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="INDEX_FULL_REHISTORIC" />
 					<property name="description" value="Indexar histórico clean and full" />
 				</bean>
@@ -55,7 +55,7 @@
 	</bean>
 	
 	
-	<bean id="historicIndexingNetworkAction" class="org.lareferencia.backend.taskmanager.NetworkAction">
+	<bean id="historicIndexingNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="HISTORIC_INDEXING_ACTION" />
 		<property name="description" value="Index histórico"></property>
 		<property name="runOnSchedule" value="true" />
@@ -67,7 +67,7 @@
 		</property>
 		<property name="properties">
 			<list>
-				<bean class="org.lareferencia.backend.taskmanager.NetworkProperty">
+				<bean class="org.lareferencia.core.task.NetworkProperty">
 					<property name="name" value="INDEX_HISTORIC" />
 					<property name="description" value="Indexar histórico" />
 				</bean>
