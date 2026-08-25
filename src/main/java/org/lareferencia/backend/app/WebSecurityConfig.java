@@ -134,7 +134,7 @@ public class WebSecurityConfig {
 				.cors(cors -> cors.configurationSource(apiV5CorsConfigurationSource()))
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/v5/openapi", "/api/v5/docs/**").permitAll()
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/v5/openapi", "/api/v5/openapi/**", "/api/v5/docs", "/api/v5/docs/**", "/api/v5/swagger-ui/**").permitAll()
 						.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v5/**").hasAnyRole("VIEWER", "ADMIN")
 						.anyRequest().hasRole("ADMIN"))
 				.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint((request, response, exception) -> writeApiError(response, 401, "UNAUTHORIZED"))

@@ -140,6 +140,12 @@
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
 					<version>5.0.0-rc</version>
+					<exclusions>
+						<exclusion>
+							<groupId>io.springfox</groupId>
+							<artifactId>springfox-swagger2</artifactId>
+						</exclusion>
+					</exclusions>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
@@ -180,6 +186,12 @@
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
 					<version>5.0.0-rc</version>
+					<exclusions>
+						<exclusion>
+							<groupId>io.springfox</groupId>
+							<artifactId>springfox-swagger2</artifactId>
+						</exclusion>
+					</exclusions>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>
@@ -220,6 +232,12 @@
 					<groupId>org.lareferencia</groupId>
 					<artifactId>lareferencia-entity-lib</artifactId>
 					<version>5.0.0-rc</version>
+					<exclusions>
+						<exclusion>
+							<groupId>io.springfox</groupId>
+							<artifactId>springfox-swagger2</artifactId>
+						</exclusion>
+					</exclusions>
 				</dependency>
 				<dependency>
 					<groupId>org.lareferencia</groupId>

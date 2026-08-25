@@ -9,7 +9,7 @@ Usage:
         python3 add-user.py
 
     Command line mode:
-        python3 add-user.py <username> <password> [ROLE_ADMIN] [ROLE_USER] ...
+	    python3 add-user.py <username> <password> [ROLE_ADMIN] [ROLE_VIEWER] [ROLE_USER] ...
 
 Requirements:
     pip install bcrypt
@@ -17,7 +17,7 @@ Requirements:
 Examples:
     python3 add-user.py                           # Interactive mode
     python3 add-user.py admin mypassword ROLE_ADMIN
-    python3 add-user.py operator secret123 ROLE_ADMIN ROLE_USER
+    python3 add-user.py operator secret123 ROLE_ADMIN ROLE_VIEWER
 """
 
 import sys
@@ -78,7 +78,7 @@ def add_user(filepath: str, username: str, password: str, roles: list) -> bool:
         return False
     
     # Validate roles
-    valid_roles = ['ROLE_ADMIN', 'ROLE_USER']
+    valid_roles = ['ROLE_ADMIN', 'ROLE_VIEWER', 'ROLE_USER']
     for role in roles:
         if role not in valid_roles:
             print(f"Warning: '{role}' is not a standard role. Standard roles are: {valid_roles}")
@@ -117,7 +117,7 @@ def interactive_mode(filepath: str):
         return False
     
     # Get roles
-    print("\nAvailable roles: ROLE_ADMIN, ROLE_USER")
+    print("\nAvailable roles: ROLE_ADMIN, ROLE_VIEWER, ROLE_USER")
     roles_input = input("Roles (comma-separated, default: ROLE_ADMIN): ").strip()
     
     if not roles_input:
@@ -134,7 +134,7 @@ def cli_mode(filepath: str, args: list):
     """Run in command line mode with provided arguments."""
     if len(args) < 2:
         print("Error: Username and password are required")
-        print("Usage: python3 add-user.py <username> <password> [ROLE_ADMIN] [ROLE_USER] ...")
+        print("Usage: python3 add-user.py <username> <password> [ROLE_ADMIN] [ROLE_VIEWER] [ROLE_USER] ...")
         return False
     
     username = args[0]
