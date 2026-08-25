@@ -325,6 +325,23 @@
                 </xsl:if>
             </xsl:for-each>
 
+            <!-- Explicit source fields used by VuFind/Oasisbr displays and facets. -->
+            <xsl:for-each select="$sourceValues[starts-with(., $repositoryNamePrefix)]">
+                <xsl:if test="position() = 1">
+                    <field name="reponame_str">
+                        <xsl:value-of select="substring-after(., $repositoryNamePrefix)"/>
+                    </field>
+                </xsl:if>
+            </xsl:for-each>
+
+            <xsl:for-each select="$sourceValues[starts-with(., $institutionNamePrefix)]">
+                <xsl:if test="position() = 1">
+                    <field name="instname_str">
+                        <xsl:value-of select="substring-after(., $institutionNamePrefix)"/>
+                    </field>
+                </xsl:if>
+            </xsl:for-each>
+
             <xsl:for-each select="$bitstreamUrls">
                 <field name="bitstream_url_str_mv"><xsl:value-of select="."/></field>
             </xsl:for-each>
@@ -334,22 +351,6 @@
               not a generic mirror of the Dublin Core hierarchy.
             -->
             <xsl:if test="$ibictCompatibility">
-                <xsl:for-each select="$sourceValues[starts-with(., $repositoryNamePrefix)]">
-                    <xsl:if test="position() = 1">
-                        <field name="reponame_str">
-                            <xsl:value-of select="substring-after(., $repositoryNamePrefix)"/>
-                        </field>
-                    </xsl:if>
-                </xsl:for-each>
-
-                <xsl:for-each select="$sourceValues[starts-with(., $institutionNamePrefix)]">
-                    <xsl:if test="position() = 1">
-                        <field name="instname_str">
-                            <xsl:value-of select="substring-after(., $institutionNamePrefix)"/>
-                        </field>
-                    </xsl:if>
-                </xsl:for-each>
-
                 <xsl:for-each select="$dc/doc:element[@name='identifier']
                     /doc:element[@name='uri']//doc:field[@name='value']">
                     <xsl:if test="lrf:clean(.) != ''">
