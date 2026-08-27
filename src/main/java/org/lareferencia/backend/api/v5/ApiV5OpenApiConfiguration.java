@@ -15,6 +15,9 @@ public class ApiV5OpenApiConfiguration {
         return new OpenAPI().info(new Info().title("LA Referencia Harvester Management API").version("v5")
                 .description("Explicit administrative and operational API; legacy Data REST is not part of this contract."))
                 .addSecurityItem(new SecurityRequirement().addList("basicAuth"))
-                .schemaRequirement("basicAuth", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"));
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .schemaRequirement("basicAuth", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"))
+                .schemaRequirement("bearerAuth", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer")
+                        .bearerFormat("JWT"));
     }
 }

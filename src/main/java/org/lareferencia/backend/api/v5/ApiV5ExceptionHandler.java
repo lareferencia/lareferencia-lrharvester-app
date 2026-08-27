@@ -26,6 +26,14 @@ public class ApiV5ExceptionHandler {
         return ResponseEntity.unprocessableEntity().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON).body(problem);
     }
 
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    ResponseEntity<ProblemDetail> constraintViolation(jakarta.validation.ConstraintViolationException exception) {
+        ProblemDetail problem = problem(HttpStatus.UNPROCESSABLE_ENTITY, "VALIDATION_ERROR", "Request validation failed");
+        problem.setProperty("violations", exception.getConstraintViolations().stream()
+                .map(error -> java.util.Map.of("field", error.getPropertyPath().toString(), "message", error.getMessage())).toList());
+        return ResponseEntity.unprocessableEntity().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON).body(problem);
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ProblemDetail> unexpected(Exception exception) {
         return ResponseEntity.internalServerError().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)

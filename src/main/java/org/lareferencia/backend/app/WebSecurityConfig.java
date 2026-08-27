@@ -39,6 +39,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.config.Customizer;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.firewall.HttpFirewall;
@@ -138,7 +141,11 @@ public class WebSecurityConfig {
 						.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v5/**").hasAnyRole("VIEWER", "ADMIN")
 						.anyRequest().hasRole("ADMIN"))
 				.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint((request, response, exception) -> writeApiError(response, 401, "UNAUTHORIZED"))
-						.accessDeniedHandler((request, response, exception) -> writeApiError(response, 403, "FORBIDDEN")));
+						.accessDeniedHandler((request, response, exception) -> {
+							Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+							boolean anonymous = authentication == null || authentication instanceof AnonymousAuthenticationToken;
+							writeApiError(response, anonymous ? 401 : 403, anonymous ? "UNAUTHORIZED" : "FORBIDDEN");
+						}));
 		if (basic) http.httpBasic(Customizer.withDefaults());
 		if (oidc) http.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(apiV5JwtConverter())));
 		return http.build();

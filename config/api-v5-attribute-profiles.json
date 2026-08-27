@@ -1,0 +1,71 @@
+[
+  {
+    "typeId": "lareferencia-repository",
+    "name": "LA Referencia Repository Profile",
+    "className": "org.lareferencia.backend.network.LAReferenciaNetworkAttributes",
+    "version": "1",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@class": { "type": "string", "const": "org.lareferencia.backend.network.LAReferenciaNetworkAttributes" },
+        "institution_type": { "type": "string", "title": "Institution type" },
+        "institution_url": { "type": "string", "format": "uri", "title": "Institution URL" },
+        "repository_type": { "type": "string", "title": "Repository type" },
+        "repository_url": { "type": "string", "format": "uri", "title": "Repository URL" },
+        "oai_url": { "type": "string", "format": "uri", "title": "OAI URL" },
+        "lastname_firstname_responsible": { "type": "string", "title": "Responsible person" },
+        "responsible_charge": { "type": "string", "title": "Responsible role" },
+        "contact_email": { "type": "string", "format": "email", "title": "Contact email" },
+        "country": { "type": "string", "title": "Country" },
+        "city": { "type": "string", "title": "City" },
+        "phone": { "type": "string", "title": "Phone" },
+        "software": { "type": "string", "title": "Software" },
+        "journal_title": { "type": "string", "title": "Journal title" },
+        "doi": { "type": "string", "title": "DOI" },
+        "issn": { "type": "string", "title": "ISSN" },
+        "issn_l": { "type": "string", "title": "ISSN-L" },
+        "repository_id": { "type": "string", "title": "Repository identifier" },
+        "ark_naan": { "type": "string", "title": "ARK NAAN" }
+      },
+      "required": ["@class"]
+    },
+    "uiSchema": {
+      "ui:order": ["institution_type", "institution_url", "repository_type", "repository_url", "oai_url", "lastname_firstname_responsible", "responsible_charge", "contact_email", "country", "city", "phone", "software", "journal_title", "doi", "issn", "issn_l", "repository_id", "ark_naan", "@class"],
+      "@class": { "ui:widget": "hidden" }
+    }
+  },
+  {
+    "typeId": "ibict-repository",
+    "name": "IBICT Repository Profile",
+    "className": "org.lareferencia.backend.network.IbictRepositoryNetworkAttributes",
+    "version": "1",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@class": { "type": "string", "const": "org.lareferencia.backend.network.IbictRepositoryNetworkAttributes" }
+      },
+      "required": ["@class"]
+    },
+    "uiSchema": { "@class": { "ui:widget": "hidden" } }
+  },
+  {
+    "typeId": "rcaap-repository",
+    "name": "RCAAP Repository Profile",
+    "className": "org.lareferencia.backend.network.RCAAPNetworkAttributes",
+    "version": "1",
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "@class": { "type": "string", "const": "org.lareferencia.backend.network.RCAAPNetworkAttributes" }
+      },
+      "required": ["@class"]
+    },
+    "uiSchema": { "@class": { "ui:widget": "hidden" } }
+  }
+]

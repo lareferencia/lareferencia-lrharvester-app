@@ -3,13 +3,16 @@ package org.lareferencia.backend.api.v5;
 import static org.lareferencia.backend.api.v5.ApiV5Dtos.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 
 import org.lareferencia.core.domain.Network;
@@ -21,7 +24,9 @@ import org.lareferencia.core.domain.ValidatorRule;
 import org.lareferencia.core.repository.jpa.NetworkRepository;
 import org.lareferencia.core.repository.jpa.NetworkSnapshotRepository;
 import org.lareferencia.core.repository.jpa.TransformerRepository;
+import org.lareferencia.core.repository.jpa.TransformerRuleRepository;
 import org.lareferencia.core.repository.jpa.ValidatorRepository;
+import org.lareferencia.core.repository.jpa.ValidatorRuleRepository;
 import org.lareferencia.core.task.NetworkAction;
 import org.lareferencia.core.task.NetworkActionkManager;
 import org.lareferencia.core.task.NetworkProperty;
@@ -40,9 +45,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Service
@@ -51,25 +59,32 @@ public class ApiV5ManagementService {
     private final NetworkSnapshotRepository snapshots;
     private final ValidatorRepository validators;
     private final TransformerRepository transformers;
+    private final ValidatorRuleRepository validatorRules;
+    private final TransformerRuleRepository transformerRules;
     private final NetworkActionkManager actions;
     private final ValidatorRuleSchemaService ruleSchemas;
     private final RuleSerializer ruleSerializer;
     private final ObjectMapper objectMapper;
     private final MDFormatTransformerService metadataFormats;
+    private final ApiV5AttributeProfileService attributeProfiles;
 
     public ApiV5ManagementService(NetworkRepository networks, NetworkSnapshotRepository snapshots,
-            ValidatorRepository validators, TransformerRepository transformers, NetworkActionkManager actions,
+            ValidatorRepository validators, TransformerRepository transformers, ValidatorRuleRepository validatorRules,
+            TransformerRuleRepository transformerRules, NetworkActionkManager actions,
             ValidatorRuleSchemaService ruleSchemas, RuleSerializer ruleSerializer, ObjectMapper objectMapper,
-            MDFormatTransformerService metadataFormats) {
+            MDFormatTransformerService metadataFormats, ApiV5AttributeProfileService attributeProfiles) {
         this.networks = networks;
         this.snapshots = snapshots;
         this.validators = validators;
         this.transformers = transformers;
+        this.validatorRules = validatorRules;
+        this.transformerRules = transformerRules;
         this.actions = actions;
         this.ruleSchemas = ruleSchemas;
         this.ruleSerializer = ruleSerializer;
         this.objectMapper = objectMapper;
         this.metadataFormats = metadataFormats;
+        this.attributeProfiles = attributeProfiles;
     }
 
     public PageResponse<NetworkResponse> listNetworks(int page, int size) {
@@ -101,7 +116,14 @@ public class ApiV5ManagementService {
         boolean reschedule = !java.util.Objects.equals(network.getScheduleCronExpression(), request.scheduleCronExpression());
         apply(network, request);
         Network saved = networks.save(network);
-        if (reschedule) actions.rescheduleNetwork(saved);
+        if (reschedule) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    actions.rescheduleNetwork(saved);
+                }
+            });
+        }
         return networkResponse(saved);
     }
 
@@ -134,7 +156,7 @@ public class ApiV5ManagementService {
         Validator validator = new Validator();
         validator.setName(request.name());
         validator.setDescription(request.description());
-        replaceValidatorRules(validator, request.rules());
+        replaceValidatorRules(validator, request.rules(), true);
         return validatorResponse(validators.save(validator));
     }
 
@@ -143,7 +165,7 @@ public class ApiV5ManagementService {
         Validator validator = requireValidator(id);
         validator.setName(request.name());
         validator.setDescription(request.description());
-        replaceValidatorRules(validator, request.rules());
+        replaceValidatorRules(validator, request.rules(), false);
         return validatorResponse(validators.save(validator));
     }
 
@@ -165,7 +187,7 @@ public class ApiV5ManagementService {
     @Transactional
     public void deleteValidator(Long id) {
         Validator validator = requireValidator(id);
-        if (networks.findAll().stream().anyMatch(n -> same(n.getPrevalidator(), validator) || same(n.getValidator(), validator))) {
+        if (validatorUsage(id).used()) {
             throw conflict("VALIDATOR_IN_USE", "Validator is associated with a network");
         }
         validators.delete(validator);
@@ -182,14 +204,14 @@ public class ApiV5ManagementService {
     @Transactional
     public TransformerResponse createTransformer(TransformerRequest request) {
         Transformer transformer = new Transformer(); transformer.setName(request.name()); transformer.setDescription(request.description());
-        replaceTransformerRules(transformer, request.rules());
+        replaceTransformerRules(transformer, request.rules(), true);
         return transformerResponse(transformers.save(transformer));
     }
 
     @Transactional
     public TransformerResponse replaceTransformer(Long id, TransformerRequest request) {
         Transformer transformer = requireTransformer(id); transformer.setName(request.name()); transformer.setDescription(request.description());
-        replaceTransformerRules(transformer, request.rules());
+        replaceTransformerRules(transformer, request.rules(), false);
         return transformerResponse(transformers.save(transformer));
     }
 
@@ -207,26 +229,58 @@ public class ApiV5ManagementService {
     @Transactional
     public void deleteTransformer(Long id) {
         Transformer transformer = requireTransformer(id);
-        if (networks.findAll().stream().anyMatch(n -> same(n.getTransformer(), transformer) || same(n.getSecondaryTransformer(), transformer))) {
+        if (transformerUsage(id).used()) {
             throw conflict("TRANSFORMER_IN_USE", "Transformer is associated with a network");
         }
         transformers.delete(transformer);
     }
 
+    public UsageResponse validatorUsage(Long id) {
+        requireValidator(id);
+        List<UsageNetworkResponse> usage = new ArrayList<>();
+        for (Network network : networks.findAll()) {
+            List<String> relations = new ArrayList<>();
+            if (network.getPrevalidator() != null && id.equals(network.getPrevalidator().getId())) relations.add("prevalidator");
+            if (network.getValidator() != null && id.equals(network.getValidator().getId())) relations.add("validator");
+            if (!relations.isEmpty()) usage.add(new UsageNetworkResponse(network.getId(), network.getAcronym(), network.getName(), relations));
+        }
+        return new UsageResponse(!usage.isEmpty(), usage);
+    }
+
+    public UsageResponse transformerUsage(Long id) {
+        requireTransformer(id);
+        List<UsageNetworkResponse> usage = new ArrayList<>();
+        for (Network network : networks.findAll()) {
+            List<String> relations = new ArrayList<>();
+            if (network.getTransformer() != null && id.equals(network.getTransformer().getId())) relations.add("transformer");
+            if (network.getSecondaryTransformer() != null && id.equals(network.getSecondaryTransformer().getId())) relations.add("secondaryTransformer");
+            if (!relations.isEmpty()) usage.add(new UsageNetworkResponse(network.getId(), network.getAcronym(), network.getName(), relations));
+        }
+        return new UsageResponse(!usage.isEmpty(), usage);
+    }
+
+    public List<RuleResponse> validatorRules(Long id) { return requireValidator(id).getRules().stream().map(this::validatorRuleResponse).toList(); }
+    public List<RuleResponse> transformerRules(Long id) { return requireTransformer(id).getRules().stream().sorted(Comparator.comparing(TransformerRule::getRunorder)).map(this::transformerRuleResponse).toList(); }
+    public RuleResponse validatorRule(Long validatorId, Long ruleId) { return validatorRules(validatorId).stream().filter(rule -> ruleId.equals(rule.id())).findFirst().orElseThrow(() -> notFound("RULE_NOT_FOUND", "Rule was not found")); }
+    public RuleResponse transformerRule(Long transformerId, Long ruleId) { return transformerRules(transformerId).stream().filter(rule -> ruleId.equals(rule.id())).findFirst().orElseThrow(() -> notFound("RULE_NOT_FOUND", "Rule was not found")); }
+
     @Transactional
     public RuleResponse addValidatorRule(Long id, RuleRequest request) {
+        requireNewRule(request);
         Validator validator = requireValidator(id); ValidatorRule rule = validatorRule(request); validator.getRules().add(rule);
         validators.save(validator); return validatorRuleResponse(rule);
     }
 
     @Transactional
     public RuleResponse addTransformerRule(Long id, RuleRequest request) {
+        requireNewRule(request);
         Transformer transformer = requireTransformer(id); TransformerRule rule = transformerRule(request); transformer.getRules().add(rule);
         transformers.save(transformer); return transformerRuleResponse(rule);
     }
 
     @Transactional
     public RuleResponse updateValidatorRule(Long validatorId, Long ruleId, RuleRequest request) {
+        requireMatchingRuleId(ruleId, request);
         Validator validator = requireValidator(validatorId);
         ValidatorRule existing = validator.getRules().stream()
                 .filter(rule -> ruleId.equals(rule.getId())).findFirst().orElseThrow(() -> notFound("RULE_NOT_FOUND", "Rule was not found"));
@@ -238,6 +292,7 @@ public class ApiV5ManagementService {
 
     @Transactional
     public RuleResponse updateTransformerRule(Long transformerId, Long ruleId, RuleRequest request) {
+        requireMatchingRuleId(ruleId, request);
         Transformer transformer = requireTransformer(transformerId);
         TransformerRule existing = transformer.getRules().stream().filter(rule -> ruleId.equals(rule.getId())).findFirst()
                 .orElseThrow(() -> notFound("RULE_NOT_FOUND", "Rule was not found"));
@@ -249,15 +304,24 @@ public class ApiV5ManagementService {
     @Transactional
     public void deleteValidatorRule(Long validatorId, Long ruleId) {
         Validator validator = requireValidator(validatorId);
-        if (!validator.getRules().removeIf(rule -> ruleId.equals(rule.getId()))) throw notFound("RULE_NOT_FOUND", "Rule was not found");
-        validators.save(validator);
+        ValidatorRule rule = validator.getRules().stream().filter(item -> ruleId.equals(item.getId())).findFirst()
+                .orElseThrow(() -> notFound("RULE_NOT_FOUND", "Rule was not found"));
+        validator.getRules().remove(rule);
+        // Validator.rules has no orphanRemoval in the legacy mapping. Flush the
+        // association update before deleting the detached rule row.
+        validators.saveAndFlush(validator);
+        validatorRules.delete(rule);
     }
 
     @Transactional
     public void deleteTransformerRule(Long transformerId, Long ruleId) {
         Transformer transformer = requireTransformer(transformerId);
-        if (!transformer.getRules().removeIf(rule -> ruleId.equals(rule.getId()))) throw notFound("RULE_NOT_FOUND", "Rule was not found");
-        transformers.save(transformer);
+        TransformerRule rule = transformer.getRules().stream().filter(item -> ruleId.equals(item.getId())).findFirst()
+                .orElseThrow(() -> notFound("RULE_NOT_FOUND", "Rule was not found"));
+        transformer.getRules().remove(rule);
+        // Transformer.rules has no orphanRemoval in the legacy mapping.
+        transformers.saveAndFlush(transformer);
+        transformerRules.delete(rule);
     }
 
     @Transactional
@@ -296,6 +360,17 @@ public class ApiV5ManagementService {
                 .orElseThrow(() -> notFound("RULE_TYPE_NOT_FOUND", "Rule type was not found"));
     }
 
+    /**
+     * Runs the same schema/type resolution and serializer check as a write, but does
+     * not create a rule or otherwise mutate the aggregate.
+     */
+    public RuleConfigurationValidationResponse validateRuleConfiguration(String typeId,
+            RuleConfigurationValidationRequest request) {
+        RuleTypeResponse type = ruleType(typeId, Locale.ROOT);
+        serialize(type.kind(), type.className(), request.configuration());
+        return new RuleConfigurationValidationResponse(type.typeId(), type.className(), true);
+    }
+
     public CapabilityResponse capabilities() {
         List<ActionResponse> actionResponses = actions.getActions().stream().map(action -> new ActionResponse(action.getName(),
                 action.getDescription(), action.isIncremental(), action.getRunOnSchedule(), action.getAllwaysRunOnSchedule(),
@@ -303,6 +378,7 @@ public class ApiV5ManagementService {
         List<PropertyResponse> properties = actions.getProperties().stream().map(p -> new PropertyResponse(p.getName(), p.getDescription())).toList();
         String engine = actions.listRunning().stream().map(RunningProcessInfo::getEngineType).filter(java.util.Objects::nonNull).findFirst().orElse("configured");
         return new CapabilityResponse(engine, actionResponses, properties, metadataFormats.getSourceMetadataFormats(),
+                List.of("xoai", "xoai_openaire"),
                 List.of(CommandType.RUN_ACTION.name(), CommandType.RUN_ENABLED_ACTIONS.name(), CommandType.CANCEL_ALL.name(), CommandType.RESCHEDULE.name()));
     }
 
@@ -340,9 +416,9 @@ public class ApiV5ManagementService {
         String id = UUID.randomUUID().toString(); List<CommandReceipt> children = new ArrayList<>();
         for (Long networkId : request.networkIds()) {
             try { children.add(command(networkId, request.command())); }
-            catch (ApiV5Exception exception) { children.add(new CommandReceipt(UUID.randomUUID().toString(), networkId, request.command().type(), "REJECTED", LocalDateTime.now(), "/api/v5/networks/" + networkId + "/runtime", exception.getMessage())); }
+            catch (ApiV5Exception exception) { children.add(new CommandReceipt(UUID.randomUUID().toString(), networkId, request.command().type(), "REJECTED", OffsetDateTime.now(ZoneOffset.UTC), "/api/v5/networks/" + networkId + "/runtime", exception.getMessage())); }
         }
-        return new BatchCommandReceipt(id, LocalDateTime.now(), children);
+        return new BatchCommandReceipt(id, OffsetDateTime.now(ZoneOffset.UTC), children);
     }
 
     public PageResponse<SnapshotResponse> networkSnapshots(Long id, int page, int size) {
@@ -369,14 +445,94 @@ public class ApiV5ManagementService {
         network.setInstitutionAcronym(request.institutionAcronym()); network.setPublished(Boolean.TRUE.equals(request.published()));
         network.setOriginURL(request.originUrl()); network.setMetadataPrefix(defaultValue(request.metadataPrefix(), "oai_dc"));
         network.setMetadataStoreSchema(defaultValue(request.metadataStoreSchema(), "xoai")); network.setSets(request.sets() == null ? new ArrayList<>() : new ArrayList<>(request.sets()));
+        attributeProfiles.validateReference(request.attributes());
         network.setAttributes(request.attributes() == null ? new HashMap<>() : new HashMap<>(request.attributes()));
         network.setProperties(request.properties() == null ? new HashMap<>() : new HashMap<>(request.properties()));
         network.setScheduleCronExpression(blankToNull(request.scheduleCronExpression())); network.setPrevalidator(optionalValidator(request.prevalidatorId()));
         network.setValidator(optionalValidator(request.validatorId())); network.setTransformer(optionalTransformer(request.transformerId())); network.setSecondaryTransformer(optionalTransformer(request.secondaryTransformerId()));
     }
 
-    private void replaceValidatorRules(Validator validator, List<RuleRequest> requests) { validator.getRules().clear(); if (requests != null) requests.forEach(r -> validator.getRules().add(validatorRule(r))); }
-    private void replaceTransformerRules(Transformer transformer, List<RuleRequest> requests) { transformer.getRules().clear(); if (requests != null) requests.forEach(r -> transformer.getRules().add(transformerRule(r))); }
+    /** Reconciles a submitted aggregate without replacing existing rule identities. */
+    private void replaceValidatorRules(Validator validator, List<RuleRequest> requests, boolean creating) {
+        List<RuleRequest> source = requests == null ? List.of() : requests;
+        Map<Long, ValidatorRule> existing = validator.getRules().stream().filter(rule -> rule.getId() != null)
+                .collect(java.util.stream.Collectors.toMap(ValidatorRule::getId, rule -> rule));
+        Set<Long> retained = new HashSet<>(); List<ValidatorRule> desired = new ArrayList<>();
+        for (RuleRequest request : source) {
+            ValidatorRule target;
+            if (request.id() == null) target = validatorRule(request);
+            else {
+                if (creating) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ID_NOT_ALLOWED", "New validators cannot contain rule ids");
+                target = existing.get(request.id());
+                if (target == null) rejectForeignValidatorRule(request.id());
+                if (!retained.add(request.id())) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ID_DUPLICATED", "A rule id appears more than once");
+                copyValidatorRule(target, validatorRule(request));
+            }
+            desired.add(target);
+        }
+        List<ValidatorRule> removed = validator.getRules().stream()
+                .filter(rule -> rule.getId() != null && !retained.contains(rule.getId())).toList();
+        validator.setRules(desired);
+        if (!creating && !removed.isEmpty()) {
+            validators.saveAndFlush(validator);
+            validatorRules.deleteAll(removed);
+        }
+    }
+
+    /** Reconciles a submitted aggregate without replacing existing rule identities. */
+    private void replaceTransformerRules(Transformer transformer, List<RuleRequest> requests, boolean creating) {
+        List<RuleRequest> source = requests == null ? List.of() : requests;
+        Map<Long, TransformerRule> existing = transformer.getRules().stream().filter(rule -> rule.getId() != null)
+                .collect(java.util.stream.Collectors.toMap(TransformerRule::getId, rule -> rule));
+        Set<Long> retained = new HashSet<>(); List<TransformerRule> desired = new ArrayList<>();
+        for (RuleRequest request : source) {
+            TransformerRule target;
+            if (request.id() == null) target = transformerRule(request);
+            else {
+                if (creating) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ID_NOT_ALLOWED", "New transformers cannot contain rule ids");
+                target = existing.get(request.id());
+                if (target == null) rejectForeignTransformerRule(request.id());
+                if (!retained.add(request.id())) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ID_DUPLICATED", "A rule id appears more than once");
+                copyTransformerRule(target, transformerRule(request));
+            }
+            desired.add(target);
+        }
+        List<TransformerRule> removed = transformer.getRules().stream()
+                .filter(rule -> rule.getId() != null && !retained.contains(rule.getId())).toList();
+        transformer.setRules(desired);
+        if (!creating && !removed.isEmpty()) {
+            transformers.saveAndFlush(transformer);
+            transformerRules.deleteAll(removed);
+        }
+    }
+
+    private void copyValidatorRule(ValidatorRule target, ValidatorRule source) {
+        target.setName(source.getName()); target.setDescription(source.getDescription()); target.setMandatory(source.getMandatory());
+        target.setQuantifier(source.getQuantifier()); target.setJsonserialization(source.getJsonserialization());
+    }
+
+    private void copyTransformerRule(TransformerRule target, TransformerRule source) {
+        target.setName(source.getName()); target.setDescription(source.getDescription()); target.setRunorder(source.getRunorder());
+        target.setJsonserialization(source.getJsonserialization());
+    }
+
+    private void rejectForeignValidatorRule(Long ruleId) {
+        if (validatorRules.existsById(ruleId)) throw conflict("RULE_OWNERSHIP_CONFLICT", "Rule belongs to another validator");
+        throw notFound("RULE_NOT_FOUND", "Rule was not found");
+    }
+
+    private void rejectForeignTransformerRule(Long ruleId) {
+        if (transformerRules.existsById(ruleId)) throw conflict("RULE_OWNERSHIP_CONFLICT", "Rule belongs to another transformer");
+        throw notFound("RULE_NOT_FOUND", "Rule was not found");
+    }
+
+    private void requireNewRule(RuleRequest request) {
+        if (request.id() != null) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ID_NOT_ALLOWED", "New rules cannot contain an id");
+    }
+
+    private void requireMatchingRuleId(Long ruleId, RuleRequest request) {
+        if (request.id() != null && !ruleId.equals(request.id())) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ID_MISMATCH", "Body rule id must match the path");
+    }
 
     private ValidatorRule validatorRule(RuleRequest request) {
         String className = resolveClassName("validator", request); String serialized = serialize("validator", className, request.configuration());
@@ -413,7 +569,55 @@ public class ApiV5ManagementService {
     }
 
     private List<RuleSchemaDefinition> schemas(String kind) { return "validator".equals(kind) ? ruleSchemas.getAllValidatorSchemas(Locale.ROOT) : ruleSchemas.getAllTransformerSchemas(Locale.ROOT); }
-    private List<RuleTypeResponse> ruleTypes(String kind, List<RuleSchemaDefinition> definitions) { return definitions.stream().map(d -> new RuleTypeResponse(typeId(kind, d.getClassName()), kind, d.getClassName(), d.getName(), objectMapper.valueToTree(d.getSchema()))).sorted(Comparator.comparing(RuleTypeResponse::typeId)).toList(); }
+
+    /**
+     * Converts the legacy Angular Schema Form layout into portable RJSF hints.
+     * The original form structure is deliberately not part of the v5 contract.
+     */
+    private List<RuleTypeResponse> ruleTypes(String kind, List<RuleSchemaDefinition> definitions) {
+        return definitions.stream().map(definition -> ruleTypeResponse(kind, definition))
+                .sorted(Comparator.comparing(RuleTypeResponse::typeId)).toList();
+    }
+
+    private RuleTypeResponse ruleTypeResponse(String kind, RuleSchemaDefinition definition) {
+        ObjectNode uiSchema = objectMapper.createObjectNode();
+        List<String> order = new ArrayList<>();
+        String help = null;
+        if (definition.getForm() != null) {
+            for (Object item : definition.getForm()) {
+                if (item instanceof String key) {
+                    order.add(key);
+                    continue;
+                }
+                if (!(item instanceof Map<?, ?> map)) continue;
+                String type = stringValue(map.get("type"));
+                if ("help".equals(type)) {
+                    help = stringValue(map.get("helpvalue"));
+                    continue;
+                }
+                if ("submit".equals(type)) continue;
+                String key = stringValue(map.get("key"));
+                if (key == null || key.isBlank()) continue;
+                order.add(key);
+                String widget = rjsfWidget(stringValue(map.get("type")));
+                if (widget != null) uiSchema.putObject(key).put("ui:widget", widget);
+            }
+        }
+        if (!order.isEmpty()) {
+            ArrayNode uiOrder = uiSchema.putArray("ui:order");
+            order.forEach(uiOrder::add);
+        }
+        return new RuleTypeResponse(typeId(kind, definition.getClassName()), kind, definition.getClassName(),
+                definition.getName(), help, objectMapper.valueToTree(definition.getSchema()), uiSchema);
+    }
+
+    private static String rjsfWidget(String legacyType) {
+        return "textarea".equals(legacyType) ? "textarea" : null;
+    }
+
+    private static String stringValue(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
     private String typeId(String kind, String className) { return kind + "--" + className.substring(className.lastIndexOf('.') + 1).replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase(); }
 
     private NetworkResponse networkResponse(Network n) { return new NetworkResponse(n.getId(), Boolean.TRUE.equals(n.getPublished()), n.getAcronym(), n.getName(), n.getInstitutionName(), n.getInstitutionAcronym(), n.getOriginURL(), n.getMetadataPrefix(), n.getMetadataStoreSchema(), n.getSets(), n.getAttributes(), n.getProperties(), n.getScheduleCronExpression(), id(n.getPrevalidator()), id(n.getValidator()), id(n.getTransformer()), id(n.getSecondaryTransformer())); }
@@ -422,9 +626,9 @@ public class ApiV5ManagementService {
     private RuleResponse validatorRuleResponse(ValidatorRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), r.getMandatory(), r.getQuantifier() == null ? null : r.getQuantifier().name(), null, r.getJsonserialization(), "validator"); }
     private RuleResponse transformerRuleResponse(TransformerRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), null, null, r.getRunorder(), r.getJsonserialization(), "transformer"); }
     private RuleResponse ruleResponse(Long id, String name, String description, Boolean mandatory, String quantifier, Integer order, String json, String kind) { try { ObjectNode node = (ObjectNode) objectMapper.readTree(json); String className = node.remove("@class").asText(); return new RuleResponse(id, typeId(kind, className), className, name, description, mandatory, quantifier, order, node); } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.INTERNAL_SERVER_ERROR, "RULE_SERIALIZATION_INVALID", "Stored rule cannot be represented"); } }
-    private SnapshotResponse snapshotResponse(NetworkSnapshot s) { return new SnapshotResponse(s.getId(), s.getNetwork() == null ? null : s.getNetwork().getId(), s.getPreviousSnapshotId(), s.getStatus().name(), s.getIndexStatus().name(), s.getStartTime(), s.getLastIncrementalTime(), s.getEndTime(), s.getSize(), s.getValidSize(), s.getTransformedSize(), s.isDeleted()); }
-    private RuntimeProcessResponse runtimeResponse(RunningProcessInfo p) { return new RuntimeProcessResponse(p.getProcessId(), p.getNetworkAcronym(), p.getActionType(), p.getStatus(), p.getStartTime(), p.getIncremental(), p.getVariables(), p.getEngineType(), "legacy".equals(p.getEngineType()) ? "NETWORK" : "PROCESS"); }
-    private CommandReceipt receipt(Long id, CommandType type, String result, String message) { return new CommandReceipt(UUID.randomUUID().toString(), id, type, result, LocalDateTime.now(), "/api/v5/networks/" + id + "/runtime", message); }
+    private SnapshotResponse snapshotResponse(NetworkSnapshot s) { return new SnapshotResponse(s.getId(), s.getNetwork() == null ? null : s.getNetwork().getId(), s.getPreviousSnapshotId(), s.getStatus().name(), s.getIndexStatus().name(), ApiV5NetworkSummaryService.utc(s.getStartTime()), ApiV5NetworkSummaryService.utc(s.getLastIncrementalTime()), ApiV5NetworkSummaryService.utc(s.getEndTime()), s.getSize(), s.getValidSize(), s.getTransformedSize(), s.isDeleted()); }
+    private RuntimeProcessResponse runtimeResponse(RunningProcessInfo p) { return new RuntimeProcessResponse(p.getProcessId(), p.getNetworkAcronym(), p.getActionType(), p.getStatus(), ApiV5NetworkSummaryService.utc(p.getStartTime()), p.getIncremental(), p.getVariables(), p.getEngineType(), "legacy".equals(p.getEngineType()) ? "NETWORK" : "PROCESS"); }
+    private CommandReceipt receipt(Long id, CommandType type, String result, String message) { return new CommandReceipt(UUID.randomUUID().toString(), id, type, result, OffsetDateTime.now(ZoneOffset.UTC), "/api/v5/networks/" + id + "/runtime", message); }
     private Network requireNetwork(Long id) { return networks.findById(id).orElseThrow(() -> notFound("NETWORK_NOT_FOUND", "Network " + id + " was not found")); }
     private Validator requireValidator(Long id) { return validators.findById(id).orElseThrow(() -> notFound("VALIDATOR_NOT_FOUND", "Validator " + id + " was not found")); }
     private Transformer requireTransformer(Long id) { return transformers.findById(id).orElseThrow(() -> notFound("TRANSFORMER_NOT_FOUND", "Transformer " + id + " was not found")); }

@@ -8,6 +8,9 @@ import java.util.Locale;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,16 +29,40 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import jakarta.validation.Valid;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 
 @RestController
 @RequestMapping(path = "/api/v5", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ApiV5ManagementController {
     private final ApiV5ManagementService service;
     private final ObjectMapper objectMapper;
+    private final ApiV5NetworkSummaryService summaries;
+    private final ApiV5AttributeProfileService attributeProfiles;
+    private final Validator requestValidator;
+
+    @Value("${security.api-v5.auth-mode:file}")
+    private String authMode;
 
     public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper) {
+        this(service, objectMapper, null, null, null);
+    }
+
+    public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper,
+            ApiV5NetworkSummaryService summaries, ApiV5AttributeProfileService attributeProfiles) {
+        this(service, objectMapper, summaries, attributeProfiles, null);
+    }
+
+    @Autowired
+    public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper,
+            ApiV5NetworkSummaryService summaries, ApiV5AttributeProfileService attributeProfiles,
+            Validator requestValidator) {
         this.service = service;
         this.objectMapper = objectMapper;
+        this.summaries = summaries;
+        this.attributeProfiles = attributeProfiles;
+        this.requestValidator = requestValidator;
     }
 
     @GetMapping("/capabilities")
@@ -47,6 +74,35 @@ public class ApiV5ManagementController {
     public PageResponse<NetworkResponse> networks(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "25") int size) {
         return service.listNetworks(validPage(page), validSize(size));
     }
+
+    @GetMapping("/network-summaries")
+    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    public PageResponse<NetworkSummaryResponse> networkSummaries(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size, @RequestParam(defaultValue = "id,asc") String sort,
+            @RequestParam(required = false) String q, @RequestParam(required = false) String acronym,
+            @RequestParam(required = false) String name, @RequestParam(required = false) String institutionName,
+            @RequestParam(required = false) Boolean published, @RequestParam(required = false) String snapshotStatus,
+            @RequestParam(required = false) String indexStatus) {
+        return summaries.list(validPage(page), validSize(size), sort, q, acronym, name, institutionName, published,
+                snapshotStatus, indexStatus);
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    public CurrentUserResponse me(Authentication authentication) {
+        List<String> roles = authentication.getAuthorities().stream().map(authority -> authority.getAuthority())
+                .filter(authority -> authority.startsWith("ROLE_")).map(authority -> authority.substring(5))
+                .distinct().sorted().toList();
+        return new CurrentUserResponse(authentication.getName(), authentication.getName(), roles, authMode);
+    }
+
+    @GetMapping("/attribute-profiles")
+    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    public List<AttributeProfileResponse> attributeProfiles() { return attributeProfiles.list(); }
+
+    @GetMapping("/attribute-profiles/{typeId}")
+    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    public AttributeProfileResponse attributeProfile(@PathVariable String typeId) { return attributeProfiles.get(typeId); }
 
     @PostMapping(path = "/networks", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
@@ -67,7 +123,7 @@ public class ApiV5ManagementController {
     public NetworkResponse patchNetwork(@PathVariable Long id, @RequestBody JsonNode patch) {
         ObjectNode current = objectMapper.valueToTree(service.network(id));
         merge(current, patch);
-        return service.replaceNetwork(id, objectMapper.convertValue(current, NetworkRequest.class));
+        return service.replaceNetwork(id, patchedRequest(current, NetworkRequest.class));
     }
 
     @DeleteMapping("/networks/{id}")
@@ -112,8 +168,12 @@ public class ApiV5ManagementController {
 
     @GetMapping("/validators/{id}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public ValidatorResponse validator(@PathVariable Long id) { return service.validator(id); }
     @PutMapping(path = "/validators/{id}", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ValidatorResponse replaceValidator(@PathVariable Long id, @Valid @RequestBody ValidatorRequest request) { return service.replaceValidator(id, request); }
+    @PatchMapping(path = "/validators/{id}", consumes = { "application/merge-patch+json", MediaType.APPLICATION_JSON_VALUE }) @PreAuthorize("hasRole('ADMIN')") public ValidatorResponse patchValidator(@PathVariable Long id, @RequestBody JsonNode patch) { ObjectNode current = objectMapper.valueToTree(service.validator(id)); merge(current, patch); return service.replaceValidator(id, patchedRequest(current, ValidatorRequest.class)); }
     @PostMapping("/validators/{id}/clone") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ValidatorResponse> cloneValidator(@PathVariable Long id) { return ResponseEntity.status(HttpStatus.CREATED).body(service.cloneValidator(id)); }
     @DeleteMapping("/validators/{id}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> deleteValidator(@PathVariable Long id) { service.deleteValidator(id); return ResponseEntity.noContent().build(); }
+    @GetMapping("/validators/{id}/usage") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public UsageResponse validatorUsage(@PathVariable Long id) { return service.validatorUsage(id); }
+    @GetMapping("/validators/{id}/rules") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public List<RuleResponse> validatorRules(@PathVariable Long id) { return service.validatorRules(id); }
+    @GetMapping("/validators/{id}/rules/{ruleId}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public RuleResponse validatorRule(@PathVariable Long id, @PathVariable Long ruleId) { return service.validatorRule(id, ruleId); }
     @PostMapping(path = "/validators/{id}/rules", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<RuleResponse> addValidatorRule(@PathVariable Long id, @Valid @RequestBody RuleRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.addValidatorRule(id, request)); }
     @PutMapping(path = "/validators/{id}/rules/{ruleId}", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public RuleResponse updateValidatorRule(@PathVariable Long id, @PathVariable Long ruleId, @Valid @RequestBody RuleRequest request) { return service.updateValidatorRule(id, ruleId, request); }
     @DeleteMapping("/validators/{id}/rules/{ruleId}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> deleteValidatorRule(@PathVariable Long id, @PathVariable Long ruleId) { service.deleteValidatorRule(id, ruleId); return ResponseEntity.noContent().build(); }
@@ -123,8 +183,12 @@ public class ApiV5ManagementController {
     @PostMapping(path = "/transformers", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<TransformerResponse> createTransformer(@Valid @RequestBody TransformerRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.createTransformer(request)); }
     @GetMapping("/transformers/{id}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public TransformerResponse transformer(@PathVariable Long id) { return service.transformer(id); }
     @PutMapping(path = "/transformers/{id}", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public TransformerResponse replaceTransformer(@PathVariable Long id, @Valid @RequestBody TransformerRequest request) { return service.replaceTransformer(id, request); }
+    @PatchMapping(path = "/transformers/{id}", consumes = { "application/merge-patch+json", MediaType.APPLICATION_JSON_VALUE }) @PreAuthorize("hasRole('ADMIN')") public TransformerResponse patchTransformer(@PathVariable Long id, @RequestBody JsonNode patch) { ObjectNode current = objectMapper.valueToTree(service.transformer(id)); merge(current, patch); return service.replaceTransformer(id, patchedRequest(current, TransformerRequest.class)); }
     @PostMapping("/transformers/{id}/clone") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<TransformerResponse> cloneTransformer(@PathVariable Long id) { return ResponseEntity.status(HttpStatus.CREATED).body(service.cloneTransformer(id)); }
     @DeleteMapping("/transformers/{id}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> deleteTransformer(@PathVariable Long id) { service.deleteTransformer(id); return ResponseEntity.noContent().build(); }
+    @GetMapping("/transformers/{id}/usage") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public UsageResponse transformerUsage(@PathVariable Long id) { return service.transformerUsage(id); }
+    @GetMapping("/transformers/{id}/rules") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public List<RuleResponse> transformerRules(@PathVariable Long id) { return service.transformerRules(id); }
+    @GetMapping("/transformers/{id}/rules/{ruleId}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public RuleResponse transformerRule(@PathVariable Long id, @PathVariable Long ruleId) { return service.transformerRule(id, ruleId); }
     @PostMapping(path = "/transformers/{id}/rules", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<RuleResponse> addTransformerRule(@PathVariable Long id, @Valid @RequestBody RuleRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.addTransformerRule(id, request)); }
     @PutMapping(path = "/transformers/{id}/rules/{ruleId}", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public RuleResponse updateTransformerRule(@PathVariable Long id, @PathVariable Long ruleId, @Valid @RequestBody RuleRequest request) { return service.updateTransformerRule(id, ruleId, request); }
     @DeleteMapping("/transformers/{id}/rules/{ruleId}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> deleteTransformerRule(@PathVariable Long id, @PathVariable Long ruleId) { service.deleteTransformerRule(id, ruleId); return ResponseEntity.noContent().build(); }
@@ -132,10 +196,19 @@ public class ApiV5ManagementController {
 
     @GetMapping("/rule-types") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public List<RuleTypeResponse> ruleTypes(@RequestParam(required = false) String kind, @RequestParam(required = false) String locale) { return service.ruleTypes(kind, locale == null ? Locale.ROOT : Locale.forLanguageTag(locale)); }
     @GetMapping("/rule-types/{typeId}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public RuleTypeResponse ruleType(@PathVariable String typeId, @RequestParam(required = false) String locale) { return service.ruleType(typeId, locale == null ? Locale.ROOT : Locale.forLanguageTag(locale)); }
+    @PostMapping(path = "/rule-types/{typeId}/validate", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public RuleConfigurationValidationResponse validateRuleConfiguration(@PathVariable String typeId, @Valid @RequestBody RuleConfigurationValidationRequest request) { return service.validateRuleConfiguration(typeId, request); }
     @GetMapping("/snapshots/{id}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public SnapshotResponse snapshot(@PathVariable Long id) { return service.snapshot(id); }
     @GetMapping("/runtime/summary") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public RuntimeSummaryResponse runtime() { return service.runtime(); }
 
     private int validPage(int page) { if (page < 0) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "PAGE_INVALID", "page must be zero or greater"); return page; }
     private int validSize(int size) { if (size < 1 || size > 200) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "SIZE_INVALID", "size must be between 1 and 200"); return size; }
     private void merge(ObjectNode target, JsonNode patch) { if (!patch.isObject()) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "PATCH_INVALID", "Merge patch must be an object"); patch.fields().forEachRemaining(field -> { if (field.getValue().isNull()) target.putNull(field.getKey()); else target.set(field.getKey(), field.getValue()); }); }
+    private <T> T patchedRequest(ObjectNode source, Class<T> type) {
+        T request = objectMapper.convertValue(source, type);
+        if (requestValidator != null) {
+            java.util.Set<ConstraintViolation<T>> violations = requestValidator.validate(request);
+            if (!violations.isEmpty()) throw new ConstraintViolationException(violations);
+        }
+        return request;
+    }
 }
