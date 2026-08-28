@@ -28,6 +28,7 @@ import org.lareferencia.core.repository.jpa.TransformerRuleRepository;
 import org.lareferencia.core.repository.jpa.ValidatorRepository;
 import org.lareferencia.core.repository.jpa.ValidatorRuleRepository;
 import org.lareferencia.core.task.NetworkAction;
+import org.lareferencia.core.task.ApplicationActionPolicyException;
 import org.lareferencia.core.task.NetworkActionkManager;
 import org.lareferencia.core.task.NetworkProperty;
 import org.lareferencia.core.task.RunningProcessInfo;
@@ -372,11 +373,11 @@ public class ApiV5ManagementService {
     }
 
     public CapabilityResponse capabilities() {
-        List<ActionResponse> actionResponses = actions.getActions().stream().map(action -> new ActionResponse(action.getName(),
+        List<ActionResponse> actionResponses = actions.getEnabledActions().stream().map(action -> new ActionResponse(action.getName(),
                 action.getDescription(), action.isIncremental(), action.getRunOnSchedule(), action.getAllwaysRunOnSchedule(),
                 action.getDisplayOrder(), action.getWorkers(), action.getProperties().stream().map(NetworkProperty::getName).toList())).toList();
         List<PropertyResponse> properties = actions.getProperties().stream().map(p -> new PropertyResponse(p.getName(), p.getDescription())).toList();
-        String engine = actions.listRunning().stream().map(RunningProcessInfo::getEngineType).filter(java.util.Objects::nonNull).findFirst().orElse("configured");
+        String engine = actions.getEngineType();
         return new CapabilityResponse(engine, actionResponses, properties, metadataFormats.getSourceMetadataFormats(),
                 List.of("xoai", "xoai_openaire"),
                 List.of(CommandType.RUN_ACTION.name(), CommandType.RUN_ENABLED_ACTIONS.name(), CommandType.CANCEL_ALL.name(), CommandType.RESCHEDULE.name()));
@@ -408,7 +409,7 @@ public class ApiV5ManagementService {
                 case RESCHEDULE -> actions.rescheduleNetwork(network);
             }
             return receipt(id, request.type(), "ACCEPTED", "Command submitted to the configured workflow engine");
-        } catch (ApiV5Exception exception) { throw exception;
+        } catch (ApiV5Exception | ApplicationActionPolicyException exception) { throw exception;
         } catch (RuntimeException exception) { throw new ApiV5Exception(HttpStatus.CONFLICT, "COMMAND_REJECTED", exception.getMessage()); }
     }
 

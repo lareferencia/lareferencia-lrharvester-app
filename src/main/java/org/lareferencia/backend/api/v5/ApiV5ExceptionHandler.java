@@ -9,9 +9,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.lareferencia.core.task.ApplicationActionPolicyException;
 
 @RestControllerAdvice(basePackages = "org.lareferencia.backend.api.v5")
 public class ApiV5ExceptionHandler {
+    @ExceptionHandler(ApplicationActionPolicyException.class)
+    ResponseEntity<ProblemDetail> actionPolicy(ApplicationActionPolicyException exception) {
+        HttpStatus status = switch (exception.getCode()) {
+            case "ACTION_NOT_FOUND" -> HttpStatus.NOT_FOUND;
+            case "ACTION_CONFIGURATION_INVALID" -> HttpStatus.UNPROCESSABLE_ENTITY;
+            default -> HttpStatus.CONFLICT;
+        };
+        return ResponseEntity.status(status).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problem(status, exception.getCode(), exception.getMessage()));
+    }
     @ExceptionHandler(ApiV5Exception.class)
     ResponseEntity<ProblemDetail> apiException(ApiV5Exception exception) {
         return ResponseEntity.status(exception.getStatus()).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)

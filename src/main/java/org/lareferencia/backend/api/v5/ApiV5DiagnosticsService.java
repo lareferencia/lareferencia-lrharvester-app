@@ -57,6 +57,8 @@ public class ApiV5DiagnosticsService {
                             .thenComparing(DiagnosticFacetResponse::value)).toList();
             return new DiagnosticSummaryResponse(value(result.getSize()), value(result.getValidSize()),
                     value(result.getTransformedSize()), rules, facets);
+        } catch (ApiV5Exception exception) {
+            throw exception;
         } catch (Exception exception) {
             throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "DIAGNOSTIC_QUERY_FAILED", exception.getMessage());
         }
