@@ -59,6 +59,10 @@ public final class ApiV5Dtos {
     public record TransformerRequest(@NotBlank String name, String description, List<@Valid RuleRequest> rules) {
     }
 
+    /** Changes the configuration identity without reconciling its child rules. */
+    public record ConfigurationMetadataRequest(@NotBlank String name, String description) {
+    }
+
     public record RuleResponse(Long id, String typeId, String className, String name, String description,
             Boolean mandatory, String quantifier, Integer runOrder, JsonNode configuration) {
     }
@@ -170,7 +174,7 @@ public final class ApiV5Dtos {
     }
 
     public record ActionResponse(String name, String description, boolean incremental, Boolean runOnSchedule,
-            Boolean alwaysRunOnSchedule, Integer displayOrder, List<String> workers, List<String> properties) {
+            Boolean alwaysRunOnSchedule, Integer order, List<String> workers, List<String> properties) {
     }
 
     public record PropertyResponse(String name, String description) {

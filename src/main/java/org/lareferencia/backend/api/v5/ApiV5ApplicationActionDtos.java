@@ -12,12 +12,15 @@ public final class ApiV5ApplicationActionDtos {
     private ApiV5ApplicationActionDtos() { }
 
     public record ApplicationActionResponse(Long id, String engineType, String actionKey, String state,
-            boolean enabled, boolean available, JsonNode definition, JsonNode configuration, JsonNode schema,
+            int order, boolean enabled, boolean available, JsonNode definition, JsonNode configuration, JsonNode schema,
             JsonNode uiSchema, List<String> problems,
             @JsonFormat(shape = JsonFormat.Shape.STRING) OffsetDateTime lastSeenAt,
             @JsonFormat(shape = JsonFormat.Shape.STRING) OffsetDateTime updatedAt, String updatedBy) { }
 
     public record ApplicationActionRequest(@NotNull Boolean enabled, @NotNull JsonNode configuration) { }
+
+    public record ApplicationActionMoveRequest(@NotNull MoveDirection direction) { }
+    public enum MoveDirection { UP, DOWN }
 
     public record ApplicationActionUsageResponse(boolean used, int networkCount, int scheduleCount,
             List<ApiV5Dtos.UsageNetworkResponse> networks) { }

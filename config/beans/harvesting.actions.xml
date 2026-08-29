@@ -47,6 +47,23 @@
 				<value>harvestingWorker</value>
 			</list>
 		</property>
+		<!-- Runtime-safe overrides applied to a fresh harvestingWorker instance. -->
+		<property name="workerConfigurations">
+			<list>
+				<bean class="org.lareferencia.core.task.WorkerConfigurationDescriptor">
+					<property name="key" value="harvesting" />
+					<property name="beanName" value="harvestingWorker" />
+					<property name="properties"><list>
+						<bean class="org.lareferencia.core.task.WorkerConfigurationProperty">
+							<property name="name" value="fetchIdentifyParameters" />
+							<property name="description" value="Consultar parámetros Identify antes de cosechar" />
+							<property name="type" value="boolean" />
+							<property name="defaultValue" value="false" />
+						</bean>
+					</list></property>
+				</bean>
+			</list>
+		</property>
 		<property name="properties">
 			<list>
 				<!--bean class="org.lareferencia.core.task.NetworkProperty">

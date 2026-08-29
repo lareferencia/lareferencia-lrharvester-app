@@ -1,0 +1,8 @@
+{
+  "typeId": "lareferencia-repository",
+  "name": "LA Referencia Repository Profile",
+  "className": "org.lareferencia.backend.network.LAReferenciaNetworkAttributes",
+  "version": "1",
+  "schema": {"type":"object","additionalProperties":true,"properties":{"@class":{"type":"string","const":"org.lareferencia.backend.network.LAReferenciaNetworkAttributes"},"institution_type":{"type":"string","title":"Institution type"},"institution_url":{"type":"string","format":"uri","title":"Institution URL"},"repository_type":{"type":"string","title":"Repository type"},"repository_url":{"type":"string","format":"uri","title":"Repository URL"},"oai_url":{"type":"string","format":"uri","title":"OAI URL"},"contact_email":{"type":"string","format":"email","title":"Contact email"},"country":{"type":"string","title":"Country"},"city":{"type":"string","title":"City"},"phone":{"type":"string","title":"Phone"},"software":{"type":"string","title":"Software"},"repository_id":{"type":"string","title":"Repository identifier"}},"required":["@class"]},
+  "uiSchema": {"@class":{"ui:widget":"hidden"}}
+}

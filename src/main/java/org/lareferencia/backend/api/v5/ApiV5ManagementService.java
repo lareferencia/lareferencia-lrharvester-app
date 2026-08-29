@@ -29,6 +29,7 @@ import org.lareferencia.core.repository.jpa.ValidatorRepository;
 import org.lareferencia.core.repository.jpa.ValidatorRuleRepository;
 import org.lareferencia.core.task.NetworkAction;
 import org.lareferencia.core.task.ApplicationActionPolicyException;
+import org.lareferencia.core.task.ApplicationActionCatalogService;
 import org.lareferencia.core.task.NetworkActionkManager;
 import org.lareferencia.core.task.NetworkProperty;
 import org.lareferencia.core.task.RunningProcessInfo;
@@ -63,6 +64,7 @@ public class ApiV5ManagementService {
     private final ValidatorRuleRepository validatorRules;
     private final TransformerRuleRepository transformerRules;
     private final NetworkActionkManager actions;
+    private final ApplicationActionCatalogService actionCatalog;
     private final ValidatorRuleSchemaService ruleSchemas;
     private final RuleSerializer ruleSerializer;
     private final ObjectMapper objectMapper;
@@ -71,7 +73,7 @@ public class ApiV5ManagementService {
 
     public ApiV5ManagementService(NetworkRepository networks, NetworkSnapshotRepository snapshots,
             ValidatorRepository validators, TransformerRepository transformers, ValidatorRuleRepository validatorRules,
-            TransformerRuleRepository transformerRules, NetworkActionkManager actions,
+            TransformerRuleRepository transformerRules, NetworkActionkManager actions, ApplicationActionCatalogService actionCatalog,
             ValidatorRuleSchemaService ruleSchemas, RuleSerializer ruleSerializer, ObjectMapper objectMapper,
             MDFormatTransformerService metadataFormats, ApiV5AttributeProfileService attributeProfiles) {
         this.networks = networks;
@@ -81,6 +83,7 @@ public class ApiV5ManagementService {
         this.validatorRules = validatorRules;
         this.transformerRules = transformerRules;
         this.actions = actions;
+        this.actionCatalog = actionCatalog;
         this.ruleSchemas = ruleSchemas;
         this.ruleSerializer = ruleSerializer;
         this.objectMapper = objectMapper;
@@ -170,6 +173,15 @@ public class ApiV5ManagementService {
         return validatorResponse(validators.save(validator));
     }
 
+    /** Metadata is deliberately isolated from rule replacement for the v5 editor. */
+    @Transactional
+    public ValidatorResponse updateValidatorMetadata(Long id, ConfigurationMetadataRequest request) {
+        Validator validator = requireValidator(id);
+        validator.setName(request.name());
+        validator.setDescription(request.description());
+        return validatorResponse(validators.save(validator));
+    }
+
     @Transactional
     public ValidatorResponse cloneValidator(Long id) {
         Validator source = requireValidator(id);
@@ -213,6 +225,15 @@ public class ApiV5ManagementService {
     public TransformerResponse replaceTransformer(Long id, TransformerRequest request) {
         Transformer transformer = requireTransformer(id); transformer.setName(request.name()); transformer.setDescription(request.description());
         replaceTransformerRules(transformer, request.rules(), false);
+        return transformerResponse(transformers.save(transformer));
+    }
+
+    /** Metadata is deliberately isolated from rule replacement for the v5 editor. */
+    @Transactional
+    public TransformerResponse updateTransformerMetadata(Long id, ConfigurationMetadataRequest request) {
+        Transformer transformer = requireTransformer(id);
+        transformer.setName(request.name());
+        transformer.setDescription(request.description());
         return transformerResponse(transformers.save(transformer));
     }
 
@@ -373,9 +394,12 @@ public class ApiV5ManagementService {
     }
 
     public CapabilityResponse capabilities() {
+        var orderedCatalog = actionCatalog.list(actions.getEngineType()).stream()
+                .collect(java.util.stream.Collectors.toMap(org.lareferencia.core.domain.ApplicationAction::getActionKey,
+                        org.lareferencia.core.domain.ApplicationAction::getExecutionOrder));
         List<ActionResponse> actionResponses = actions.getEnabledActions().stream().map(action -> new ActionResponse(action.getName(),
                 action.getDescription(), action.isIncremental(), action.getRunOnSchedule(), action.getAllwaysRunOnSchedule(),
-                action.getDisplayOrder(), action.getWorkers(), action.getProperties().stream().map(NetworkProperty::getName).toList())).toList();
+                orderedCatalog.get(action.getName()), action.getWorkers(), action.getProperties().stream().map(NetworkProperty::getName).toList())).toList();
         List<PropertyResponse> properties = actions.getProperties().stream().map(p -> new PropertyResponse(p.getName(), p.getDescription())).toList();
         String engine = actions.getEngineType();
         return new CapabilityResponse(engine, actionResponses, properties, metadataFormats.getSourceMetadataFormats(),

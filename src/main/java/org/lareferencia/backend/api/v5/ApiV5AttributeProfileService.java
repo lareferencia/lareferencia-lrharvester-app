@@ -3,8 +3,12 @@ package org.lareferencia.backend.api.v5;
 import static org.lareferencia.backend.api.v5.ApiV5Dtos.AttributeProfileResponse;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +42,36 @@ public class ApiV5AttributeProfileService {
     @PostConstruct
     void load() {
         Resource resource = resourceLoader.getResource(location);
-        try (InputStream stream = resource.getInputStream()) {
-            profiles = List.copyOf(objectMapper.readValue(stream, new TypeReference<List<AttributeProfileResponse>>() {}));
+        try {
+            if (resource.isFile() && resource.getFile().isDirectory()) {
+                profiles = loadDirectory(resource.getFile().toPath());
+            } else {
+                try (InputStream stream = resource.getInputStream()) {
+                profiles = List.copyOf(objectMapper.readValue(stream, new TypeReference<List<AttributeProfileResponse>>() {}));
+                }
+            }
         } catch (Exception exception) {
             profiles = builtInProfiles();
             logger.warn("Cannot load API v5 attribute profiles from {}; using built-in compatibility profiles",
                     location);
         }
+    }
+
+    private List<AttributeProfileResponse> loadDirectory(Path directory) throws Exception {
+        List<AttributeProfileResponse> loaded = new ArrayList<>();
+        try (var files = Files.list(directory)) {
+            for (Path file : files.filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .sorted(Comparator.comparing(path -> path.getFileName().toString())).toList()) {
+                var node = objectMapper.readTree(file.toFile());
+                if (node.isArray()) {
+                    loaded.addAll(objectMapper.convertValue(node, new TypeReference<List<AttributeProfileResponse>>() {}));
+                } else if (node.isObject()) {
+                    loaded.add(objectMapper.treeToValue(node, AttributeProfileResponse.class));
+                }
+            }
+        }
+        if (loaded.isEmpty()) throw new IllegalStateException("No attribute profile JSON files found");
+        return List.copyOf(loaded);
     }
 
     public List<AttributeProfileResponse> list() { return profiles; }

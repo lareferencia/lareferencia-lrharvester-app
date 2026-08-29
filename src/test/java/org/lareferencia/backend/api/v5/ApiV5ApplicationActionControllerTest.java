@@ -58,7 +58,7 @@ class ApiV5ApplicationActionControllerTest {
         private ApplicationActionResponse response(boolean enabled) {
             var empty = mapper.createObjectNode();
             return new ApplicationActionResponse(1L, "legacy", "harvesting", enabled ? "ENABLED" : "DISABLED",
-                    enabled, true, empty, empty, empty, empty, List.of(), OffsetDateTime.now(), OffsetDateTime.now(), "test");
+                    0, enabled, true, empty, empty, empty, empty, List.of(), OffsetDateTime.now(), OffsetDateTime.now(), "test");
         }
     }
 }

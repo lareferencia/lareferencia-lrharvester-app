@@ -42,6 +42,13 @@ public class ApiV5ApplicationActionController {
         return service.replace(actionKey, request, authentication.getName());
     }
 
+    @PostMapping("/{actionKey}/move")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApplicationActionResponse move(@PathVariable String actionKey,
+            @Valid @RequestBody ApplicationActionMoveRequest request, Authentication authentication) {
+        return service.move(actionKey, request, authentication.getName());
+    }
+
     @GetMapping("/{actionKey}/usage")
     @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
     public ApplicationActionUsageResponse usage(@PathVariable String actionKey) { return service.usage(actionKey); }

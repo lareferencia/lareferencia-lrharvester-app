@@ -65,7 +65,7 @@ class ApiV5ManagementControllerTest {
     }
 
     private static final class StubManagementService extends ApiV5ManagementService {
-        StubManagementService() { super(null, null, null, null, null, null, null, null, null, new ObjectMapper(), null, null); }
+        StubManagementService() { super(null, null, null, null, null, null, null, null, null, null, new ObjectMapper(), null, null); }
         @Override
         public PageResponse<NetworkResponse> listNetworks(int page, int size) {
             return new PageResponse<>(List.of(), page, size, 0, 0);

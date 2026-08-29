@@ -42,6 +42,12 @@ public class ApiV5ApplicationActionService {
         return response(catalog.replace(manager.getEngineType(), actionKey, request.enabled(), request.configuration(), username));
     }
 
+    public ApplicationActionResponse move(String actionKey, ApplicationActionMoveRequest request, String username) {
+        var direction = request.direction() == MoveDirection.UP
+                ? ApplicationActionCatalogService.MoveDirection.UP : ApplicationActionCatalogService.MoveDirection.DOWN;
+        return response(catalog.move(manager.getEngineType(), actionKey, direction, username));
+    }
+
     public ApplicationActionRefreshResponse refresh(String username) {
         var result = manager.refreshActionCatalog(username);
         return new ApplicationActionRefreshResponse(result.engineType(), result.bootstrap(), result.created(),
@@ -83,7 +89,7 @@ public class ApiV5ApplicationActionService {
         ApplicationActionState state = catalog.state(row);
         List<String> problems = state == ApplicationActionState.INVALID_CONFIGURATION
                 ? List.of("Stored configuration no longer matches the discovered schema") : List.of();
-        return new ApplicationActionResponse(row.getId(), row.getEngineType(), row.getActionKey(), state.name(),
+        return new ApplicationActionResponse(row.getId(), row.getEngineType(), row.getActionKey(), state.name(), row.getExecutionOrder(),
                 row.isEnabled(), row.isAvailable(), row.getDefinition(), row.getConfiguration(),
                 row.getDefinition().path("schema"), row.getDefinition().path("uiSchema"), problems,
                 row.getLastSeenAt(), row.getUpdatedAt(), row.getUpdatedBy());

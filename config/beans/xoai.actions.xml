@@ -48,6 +48,13 @@
 				<value>xoaiIndexerWorker</value>
 			</list>
 		</property>
+		<property name="workerConfigurations"><list><bean class="org.lareferencia.core.task.WorkerConfigurationDescriptor">
+			<property name="key" value="xoaiIndexer" /><property name="beanName" value="xoaiIndexerWorker" />
+			<property name="properties"><list>
+				<bean class="org.lareferencia.core.task.WorkerConfigurationProperty"><property name="name" value="indexDeletedRecords" /><property name="description" value="Indexar registros eliminados" /><property name="type" value="boolean" /><property name="defaultValue" value="true" /></bean>
+				<bean class="org.lareferencia.core.task.WorkerConfigurationProperty"><property name="name" value="indexNetworkAttributes" /><property name="description" value="Indexar atributos de la fuente" /><property name="type" value="boolean" /><property name="defaultValue" value="false" /></bean>
+			</list></property>
+		</bean></list></property>
 		<property name="properties">
 			<list>
 				<bean class="org.lareferencia.core.task.NetworkProperty">

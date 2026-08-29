@@ -2,6 +2,7 @@ package org.lareferencia.backend.api.v5;
 
 import static org.lareferencia.backend.api.v5.ApiV5NetworkActionDtos.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.lareferencia.core.domain.Network;
@@ -28,7 +29,10 @@ public class ApiV5NetworkActionService {
 
     @Transactional(readOnly = true)
     public List<NetworkActionResponse> list(Long networkId) {
-        return configurations.list(network(networkId)).stream().map(this::response).toList();
+        return configurations.list(network(networkId)).stream()
+                .sorted(Comparator.comparingInt((NetworkActionConfiguration row) -> row.getApplicationAction().getExecutionOrder())
+                        .thenComparing(row -> row.getApplicationAction().getActionKey()))
+                .map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
@@ -47,7 +51,7 @@ public class ApiV5NetworkActionService {
 
     private NetworkActionResponse response(NetworkActionConfiguration row) {
         var app = row.getApplicationAction();
-        return new NetworkActionResponse(app.getActionKey(), catalog.state(app).name(), row.isEnabled(), row.isScheduleEnabled(),
+        return new NetworkActionResponse(app.getActionKey(), app.getExecutionOrder(), catalog.state(app).name(), row.isEnabled(), row.isScheduleEnabled(),
                 row.getConfiguration(), configurations.effectiveConfiguration(row), app.getDefinition().path("schema"),
                 app.getDefinition().path("uiSchema"), List.of(), row.getUpdatedAt(), row.getUpdatedBy());
     }
