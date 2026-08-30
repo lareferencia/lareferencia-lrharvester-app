@@ -83,6 +83,11 @@ public final class ApiV5Dtos {
     public record UsageResponse(boolean used, List<UsageNetworkResponse> networks) {
     }
 
+    public record MetadataCleanupPreviewResponse(Long networkId, List<Long> protectedSnapshotIds,
+            long oaiReferences, long validationReferences, long metadataEntriesScanned,
+            long orphanCandidates, double falsePositiveProbability) {
+    }
+
     public record ValidatorResponse(Long id, String name, String description, List<RuleResponse> rules) {
     }
 

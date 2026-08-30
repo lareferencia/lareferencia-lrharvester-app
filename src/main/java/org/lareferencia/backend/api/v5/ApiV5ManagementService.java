@@ -41,6 +41,9 @@ import org.lareferencia.core.worker.validation.RuleSerializer;
 import org.lareferencia.core.worker.validation.ValidatorRuleSchemaService;
 import org.lareferencia.core.worker.validation.QuantifierValues;
 import org.lareferencia.core.metadata.MDFormatTransformerService;
+import org.lareferencia.core.metadata.ISnapshotStore;
+import org.lareferencia.core.metadata.MetadataOrphanAnalysisService;
+import org.lareferencia.core.metadata.SnapshotMetadata;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -70,12 +73,15 @@ public class ApiV5ManagementService {
     private final ObjectMapper objectMapper;
     private final MDFormatTransformerService metadataFormats;
     private final ApiV5AttributeProfileService attributeProfiles;
+    private final ISnapshotStore snapshotStore;
+    private final MetadataOrphanAnalysisService metadataOrphans;
 
     public ApiV5ManagementService(NetworkRepository networks, NetworkSnapshotRepository snapshots,
             ValidatorRepository validators, TransformerRepository transformers, ValidatorRuleRepository validatorRules,
             TransformerRuleRepository transformerRules, NetworkActionkManager actions, ApplicationActionCatalogService actionCatalog,
             ValidatorRuleSchemaService ruleSchemas, RuleSerializer ruleSerializer, ObjectMapper objectMapper,
-            MDFormatTransformerService metadataFormats, ApiV5AttributeProfileService attributeProfiles) {
+            MDFormatTransformerService metadataFormats, ApiV5AttributeProfileService attributeProfiles,
+            ISnapshotStore snapshotStore, MetadataOrphanAnalysisService metadataOrphans) {
         this.networks = networks;
         this.snapshots = snapshots;
         this.validators = validators;
@@ -89,6 +95,8 @@ public class ApiV5ManagementService {
         this.objectMapper = objectMapper;
         this.metadataFormats = metadataFormats;
         this.attributeProfiles = attributeProfiles;
+        this.snapshotStore = snapshotStore;
+        this.metadataOrphans = metadataOrphans;
     }
 
     public PageResponse<NetworkResponse> listNetworks(int page, int size) {
@@ -98,6 +106,30 @@ public class ApiV5ManagementService {
     }
 
     public NetworkResponse network(Long id) { return networkResponse(requireNetwork(id)); }
+
+    /**
+     * Read-only analysis. It retains both LGK and last harvested snapshots so an
+     * operator can inspect cleanup impact without endangering a recent attempt.
+     */
+    public MetadataCleanupPreviewResponse previewMetadataCleanup(Long networkId) {
+        Network network = requireNetwork(networkId);
+        Long lgk = snapshotStore.findLastGoodKnownSnapshot(network);
+        Long lastHarvested = snapshotStore.findLastHarvestingSnapshot(network);
+        if (lgk == null) throw new ApiV5Exception(HttpStatus.CONFLICT, "METADATA_CLEANUP_NO_LGK",
+                "The source has no last good known snapshot");
+        List<Long> ids = new ArrayList<>(); ids.add(lgk);
+        if (lastHarvested != null && !lastHarvested.equals(lgk)) ids.add(lastHarvested);
+        try {
+            List<SnapshotMetadata> protectedSnapshots = ids.stream().map(snapshotStore::getSnapshotMetadata).toList();
+            MetadataOrphanAnalysisService.MetadataOrphanAnalysis analysis = metadataOrphans.analyze(protectedSnapshots);
+            return new MetadataCleanupPreviewResponse(networkId, analysis.protectedSnapshotIds(),
+                    analysis.oaiReferences(), analysis.validationReferences(), analysis.metadataEntriesScanned(),
+                    analysis.orphanCandidates(), analysis.falsePositiveProbability());
+        } catch (Exception error) {
+            throw new ApiV5Exception(HttpStatus.INTERNAL_SERVER_ERROR, "METADATA_CLEANUP_ANALYSIS_FAILED",
+                    "Could not analyze metadata cleanup: " + error.getMessage());
+        }
+    }
 
     @Transactional
     public NetworkResponse createNetwork(NetworkRequest request) {
@@ -160,6 +192,7 @@ public class ApiV5ManagementService {
         ObjectNode configuration = objectMapper.createObjectNode();
         configuration.setAll((ObjectNode) objectMapper.valueToTree(value));
         configuration.remove("id");
+        removeRuleIds(configuration);
         return new ConfigurationExport("lareferencia-harvester-configuration", 1, "validator",
                 OffsetDateTime.now(ZoneOffset.UTC).toString(), configuration);
     }
@@ -235,6 +268,7 @@ public class ApiV5ManagementService {
         ObjectNode configuration = objectMapper.createObjectNode();
         configuration.setAll((ObjectNode) objectMapper.valueToTree(value));
         configuration.remove("id");
+        removeRuleIds(configuration);
         return new ConfigurationExport("lareferencia-harvester-configuration", 1, "transformer",
                 OffsetDateTime.now(ZoneOffset.UTC).toString(), configuration);
     }
@@ -244,6 +278,13 @@ public class ApiV5ManagementService {
         if (!"transformer".equals(request.kind()) || request.configuration() == null)
             throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "CONFIGURATION_EXPORT_INVALID", "The export does not contain a transformer configuration");
         return createTransformer(objectMapper.convertValue(request.configuration(), TransformerRequest.class));
+    }
+
+    private void removeRuleIds(ObjectNode configuration) {
+        JsonNode rules = configuration.get("rules");
+        if (rules != null && rules.isArray()) {
+            rules.forEach(rule -> { if (rule.isObject()) ((ObjectNode) rule).remove("id"); });
+        }
     }
 
     @Transactional

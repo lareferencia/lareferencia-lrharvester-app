@@ -146,6 +146,12 @@ public class ApiV5ManagementController {
     @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
     public List<RuntimeProcessResponse> networkRuntime(@PathVariable Long id) { return service.networkRuntime(id); }
 
+    @PostMapping("/networks/{id}/metadata-cleanup/preview")
+    @PreAuthorize("hasRole('ADMIN')")
+    public MetadataCleanupPreviewResponse previewMetadataCleanup(@PathVariable Long id) {
+        return service.previewMetadataCleanup(id);
+    }
+
     @PostMapping(path = "/networks/{id}/commands", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CommandReceipt> command(@PathVariable Long id, @Valid @RequestBody CommandRequest request) {
