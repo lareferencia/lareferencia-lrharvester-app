@@ -160,8 +160,15 @@ public class WebSecurityConfig {
 				// Use ONLY our authentication manager
 				.authenticationManager(authenticationManager)
 				.authorizeHttpRequests(authz -> authz
-						// Login page and its resources must be public
-						.requestMatchers("/login", "/login.html").permitAll()
+						// The React shell is public; authentication is performed by the
+						// stateless /api/v5 chain and its own login screen.
+						.requestMatchers(org.springframework.http.HttpMethod.GET,
+								"/", "/index.html", "/login", "/networks/**", "/validators/**",
+								"/transformers/**", "/actions/**", "/runtime/**").permitAll()
+						.requestMatchers("/assets/**", "/config.json").permitAll()
+
+						// The old form-login application remains available under /legacy.
+						.requestMatchers("/legacy/login.html", "/legacy/css/**").permitAll()
 
 						// Static resources needed for login page (CSS, JS if any)
 						.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
@@ -173,24 +180,24 @@ public class WebSecurityConfig {
 						.anyRequest().hasRole("ADMIN"))
 				// Form Login for browser access
 				.formLogin(form -> form
-						.loginPage("/login.html")
+						.loginPage("/legacy/login.html")
 						.loginProcessingUrl("/login")
-						.defaultSuccessUrl("/", true)
-						.failureUrl("/login.html?error=true")
+						.defaultSuccessUrl("/legacy/index.html", true)
+						.failureUrl("/legacy/login.html?error=true")
 						.permitAll())
 				// HTTP Basic for API/CLI access
 				.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Platform"))
 				// Logout configuration
 				.logout(logout -> logout
 						.logoutUrl("/logout")
-						.logoutSuccessUrl("/login.html?logout=true")
+						.logoutSuccessUrl("/legacy/login.html?logout=true")
 						.invalidateHttpSession(true)
 						.deleteCookies("JSESSIONID")
 						.permitAll())
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.maximumSessions(1))
 				.exceptionHandling(exceptions -> exceptions
-						.authenticationEntryPoint(new AjaxAwareAuthenticationEntryPoint("/login.html")));
+						.authenticationEntryPoint(new AjaxAwareAuthenticationEntryPoint("/legacy/login.html")));
 
 		return http.build();
 	}

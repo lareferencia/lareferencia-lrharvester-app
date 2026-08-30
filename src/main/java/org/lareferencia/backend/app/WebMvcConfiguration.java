@@ -20,36 +20,37 @@
 
 package org.lareferencia.backend.app;
 
+import java.nio.file.Path;
+
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 //@EnableWebMvc
 public class WebMvcConfiguration implements WebMvcConfigurer {
-    
-	
-	@Override
+
+    @Value("${frontend.static-directory:static}")
+    private String staticDirectory;
+
+    @Value("${frontend.legacy-static-directory:static-legacy}")
+    private String legacyStaticDirectory;
+
+    @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		
-//        
-//		registry.addResourceHandler("/static/**")
-//                .addResourceLocations("/static/"); 
-//		
-//		registry.addResourceHandler("/modules/**")
-//        		.addResourceLocations("/modules/"); 
-//
-//		registry.addResourceHandler("/favicon.ico")
-//        		.addResourceLocations("/static/favicon.ico"); 
-		
-//		 If using Spring Security – it's important to allow access to the static resources. We'll need to add the corresponding permissions for accessing the resource URL's:
-//	    <intercept-url pattern="/files/**" access="permitAll" />
-//	    <intercept-url pattern="/other-files/**/" access="permitAll" />
-//	    <intercept-url pattern="/resources/**" access="permitAll" />
-//		<intercept-url pattern="/js/**" access="permitAll" />
-		 
+        registry.addResourceHandler("/legacy/**")
+                .addResourceLocations(fileLocation(legacyStaticDirectory));
+
+        // The generated React application has priority. Keeping the legacy
+        // directory as a second location preserves the old root as a fallback
+        // when static/index.html has not been generated yet.
+        registry.addResourceHandler("/**")
+                .addResourceLocations(fileLocation(staticDirectory), fileLocation(legacyStaticDirectory));
     }
-	
 
-
+    private String fileLocation(String directory) {
+        String location = Path.of(directory).toAbsolutePath().normalize().toUri().toString();
+        return location.endsWith("/") ? location : location + "/";
+    }
 }

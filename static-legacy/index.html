@@ -72,7 +72,7 @@
                     <li ui-sref-active="active"><a ui-sref="validators">Editar Validadores</a></li>
                     <li ui-sref-active="active"><a ui-sref="transformers">Editar Transformadores</a></li>
 
-                    <li><a href="./logout">Logout</a></li>
+                    <li><a href="/logout">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -165,7 +165,7 @@
             function () {
 
                 this.rebaseURL = function (url) {
-                    return "./" + url;
+                    return "/" + url;
                 };
             }]);
 
