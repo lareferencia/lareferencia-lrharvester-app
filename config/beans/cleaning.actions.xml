@@ -65,6 +65,19 @@
 		</property>
 	</bean>
 
+	<!-- Disabled by default in the v5 installation catalogue after discovery. It only
+		removes unreferenced metadata from the current network namespace. -->
+	<bean id="metadataOrphanCleanupNetworkAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="METADATA_ORPHAN_CLEANUP_ACTION" />
+		<property name="description" value="Limpiar metadatos huérfanos" />
+		<property name="enabledByDefault" value="false" />
+		<property name="workers">
+			<list>
+				<value>metadataOrphanCleanupWorker</value>
+			</list>
+		</property>
+	</bean>
+
 	<bean id="networkCleanWorker" class="org.lareferencia.core.worker.management.NetworkCleanWorker"
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="false"></property>
@@ -73,6 +86,14 @@
 	<bean id="networkDeleteWorker" class="org.lareferencia.core.worker.management.NetworkCleanWorker"
 		scope="prototype">
 		<property name="deleteEntireNetwork" value="true"></property>
+	</bean>
+
+	<bean id="metadataOrphanCleanupWorker"
+		class="org.lareferencia.core.worker.management.MetadataOrphanCleanupWorker" scope="prototype">
+		<!-- Installation-wide safety limits. They may be raised from v5 Worker configurations. -->
+		<property name="maxMetadataEntries" value="5000000" />
+		<property name="maxDeletes" value="1000000" />
+		<property name="progressEvery" value="10000" />
 	</bean>
 
 

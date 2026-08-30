@@ -49,6 +49,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -76,6 +77,7 @@ public class ApiV5ManagementService {
     private final ISnapshotStore snapshotStore;
     private final MetadataOrphanAnalysisService metadataOrphans;
 
+    @Autowired
     public ApiV5ManagementService(NetworkRepository networks, NetworkSnapshotRepository snapshots,
             ValidatorRepository validators, TransformerRepository transformers, ValidatorRuleRepository validatorRules,
             TransformerRuleRepository transformerRules, NetworkActionkManager actions, ApplicationActionCatalogService actionCatalog,
