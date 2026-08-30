@@ -99,6 +99,17 @@ public class ApiV5ManagementService {
         this.metadataOrphans = metadataOrphans;
     }
 
+    /** Compatibility constructor for lightweight controller tests and embedders. */
+    public ApiV5ManagementService(NetworkRepository networks, NetworkSnapshotRepository snapshots,
+            ValidatorRepository validators, TransformerRepository transformers, ValidatorRuleRepository validatorRules,
+            TransformerRuleRepository transformerRules, NetworkActionkManager actions,
+            ApplicationActionCatalogService actionCatalog, ValidatorRuleSchemaService ruleSchemas,
+            RuleSerializer ruleSerializer, ObjectMapper objectMapper, MDFormatTransformerService metadataFormats,
+            ApiV5AttributeProfileService attributeProfiles) {
+        this(networks, snapshots, validators, transformers, validatorRules, transformerRules, actions, actionCatalog,
+                ruleSchemas, ruleSerializer, objectMapper, metadataFormats, attributeProfiles, null, null);
+    }
+
     public PageResponse<NetworkResponse> listNetworks(int page, int size) {
         Page<Network> result = networks.findAll(PageRequest.of(page, size));
         return new PageResponse<>(result.map(this::networkResponse).toList(), result.getNumber(), result.getSize(),
