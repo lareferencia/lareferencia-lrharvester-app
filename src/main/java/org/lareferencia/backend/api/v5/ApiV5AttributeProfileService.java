@@ -77,7 +77,7 @@ public class ApiV5AttributeProfileService {
     public List<AttributeProfileResponse> list() { return profiles; }
 
     public AttributeProfileResponse get(String typeId) {
-        return profiles.stream().filter(profile -> profile.typeId().equals(typeId)).findFirst()
+        return profiles.stream().filter(profile -> profile.typeId().equals(typeId) || profile.className().equals(typeId)).findFirst()
                 .orElseThrow(() -> new ApiV5Exception(HttpStatus.NOT_FOUND, "ATTRIBUTE_PROFILE_NOT_FOUND",
                         "Attribute profile " + typeId + " was not found"));
     }
