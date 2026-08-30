@@ -155,6 +155,22 @@ public class ApiV5ManagementService {
 
     public ValidatorResponse validator(Long id) { return validatorResponse(requireValidator(id)); }
 
+    public ConfigurationExport exportValidator(Long id) {
+        ValidatorResponse value = validator(id);
+        ObjectNode configuration = objectMapper.createObjectNode();
+        configuration.setAll((ObjectNode) objectMapper.valueToTree(value));
+        configuration.remove("id");
+        return new ConfigurationExport("lareferencia-harvester-configuration", 1, "validator",
+                OffsetDateTime.now(ZoneOffset.UTC).toString(), configuration);
+    }
+
+    @Transactional
+    public ValidatorResponse importValidator(ConfigurationExport request) {
+        if (!"validator".equals(request.kind()) || request.configuration() == null)
+            throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "CONFIGURATION_EXPORT_INVALID", "The export does not contain a validator configuration");
+        return createValidator(objectMapper.convertValue(request.configuration(), ValidatorRequest.class));
+    }
+
     @Transactional
     public ValidatorResponse createValidator(ValidatorRequest request) {
         Validator validator = new Validator();
@@ -213,6 +229,22 @@ public class ApiV5ManagementService {
     }
 
     public TransformerResponse transformer(Long id) { return transformerResponse(requireTransformer(id)); }
+
+    public ConfigurationExport exportTransformer(Long id) {
+        TransformerResponse value = transformer(id);
+        ObjectNode configuration = objectMapper.createObjectNode();
+        configuration.setAll((ObjectNode) objectMapper.valueToTree(value));
+        configuration.remove("id");
+        return new ConfigurationExport("lareferencia-harvester-configuration", 1, "transformer",
+                OffsetDateTime.now(ZoneOffset.UTC).toString(), configuration);
+    }
+
+    @Transactional
+    public TransformerResponse importTransformer(ConfigurationExport request) {
+        if (!"transformer".equals(request.kind()) || request.configuration() == null)
+            throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "CONFIGURATION_EXPORT_INVALID", "The export does not contain a transformer configuration");
+        return createTransformer(objectMapper.convertValue(request.configuration(), TransformerRequest.class));
+    }
 
     @Transactional
     public TransformerResponse createTransformer(TransformerRequest request) {

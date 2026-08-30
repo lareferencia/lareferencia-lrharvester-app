@@ -86,6 +86,10 @@ public final class ApiV5Dtos {
     public record ValidatorResponse(Long id, String name, String description, List<RuleResponse> rules) {
     }
 
+    public record ConfigurationExport(String format, int version, String kind, String exportedAt,
+            JsonNode configuration) {
+    }
+
     public record TransformerResponse(Long id, String name, String description, List<RuleResponse> rules) {
     }
 
