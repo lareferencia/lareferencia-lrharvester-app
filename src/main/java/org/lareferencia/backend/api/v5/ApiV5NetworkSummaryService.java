@@ -66,11 +66,11 @@ public class ApiV5NetworkSummaryService {
         StringBuilder where = new StringBuilder(" where 1=1");
         Map<String, Object> parameters = new HashMap<>();
         like(where, parameters, "q", q,
-                " and (lower(n.acronym) like :q or lower(n.name) like :q or lower(n.institutionName) like :q)");
-        like(where, parameters, "acronym", acronym, " and lower(n.acronym) like :acronym");
-        like(where, parameters, "name", name, " and lower(n.name) like :name");
+                " and (lower(cast(n.acronym as string)) like :q or lower(cast(n.name as string)) like :q or lower(cast(n.institutionName as string)) like :q)");
+        like(where, parameters, "acronym", acronym, " and lower(cast(n.acronym as string)) like :acronym");
+        like(where, parameters, "name", name, " and lower(cast(n.name as string)) like :name");
         like(where, parameters, "institutionName", institutionName,
-                " and lower(n.institutionName) like :institutionName");
+                " and lower(cast(n.institutionName as string)) like :institutionName");
         if (published != null) { where.append(" and n.published = :published"); parameters.put("published", published); }
         if (snapshotStatus != null || indexStatus != null) {
             where.append(" and exists (select 1 from NetworkSnapshot ns where ns.network.id=n.id and ns.deleted=false")

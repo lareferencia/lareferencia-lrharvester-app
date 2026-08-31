@@ -56,6 +56,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.lareferencia</groupId>
+			<artifactId>lareferencia-dark-lib</artifactId>
+			<version>5.0.0-rc</version>
+		</dependency>
 
 
 		<dependency>
@@ -133,6 +138,9 @@
 
 		<profile>
 			<id>lite</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<properties></properties>
 			<dependencies>
 			</dependencies>

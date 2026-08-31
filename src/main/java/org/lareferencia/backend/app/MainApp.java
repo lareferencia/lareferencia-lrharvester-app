@@ -33,15 +33,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.lareferencia.contrib.dark.services.AppConfiguration;
 
 @SpringBootApplication
 
 @EntityScan(basePackages = { "org.lareferencia.core.domain",
-        "org.lareferencia.core.entity.domain" })
+        "org.lareferencia.core.entity.domain",
+        "org.lareferencia.contrib.dark.domain" })
 
 @EnableJpaRepositories(basePackages = {
         "org.lareferencia.core.repository.jpa",
@@ -58,6 +61,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @ComponentScan(basePackages = { "org.lareferencia.backend", "org.lareferencia.core" })
+@Import(AppConfiguration.class)
 @ImportResource({ "classpath*:application-context.xml" })
 public class MainApp {
 

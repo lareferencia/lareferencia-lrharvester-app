@@ -33,7 +33,7 @@ public class ApiV5AttributeProfileService {
     private List<AttributeProfileResponse> profiles = List.of();
 
     public ApiV5AttributeProfileService(ResourceLoader resourceLoader, ObjectMapper objectMapper,
-            @Value("${api-v5.attribute-profiles-location:file:config/api-v5-attribute-profiles.json}") String location) {
+            @Value("${api-v5.attribute-profiles-location:file:config/attribute-profiles}") String location) {
         this.resourceLoader = resourceLoader;
         this.objectMapper = objectMapper;
         this.location = location;
