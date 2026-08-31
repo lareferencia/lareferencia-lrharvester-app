@@ -20,45 +20,65 @@
 
 package org.lareferencia.backend.controllers;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lareferencia.core.domain.Network;
-import org.lareferencia.core.domain.NetworkSnapshot;
-import org.lareferencia.core.domain.SnapshotIndexStatus;
-import org.lareferencia.core.domain.SnapshotStatus;
-import org.lareferencia.core.repository.validation.RecordValidation;
-import org.lareferencia.core.repository.jpa.NetworkRepository;
-import org.lareferencia.core.repository.jpa.NetworkSnapshotRepository;
-import org.lareferencia.core.repository.jpa.OAIBitstreamRepository;
-import org.lareferencia.core.task.NetworkActionkManager;
-import org.lareferencia.core.service.validation.IValidationStatisticsService;
-import org.lareferencia.core.service.validation.ValidationStatisticsException;
-import org.lareferencia.core.service.validation.ValidationStatsResult;
-import org.lareferencia.core.service.validation.ValidationStatsObservationsResult;
-import org.lareferencia.core.service.validation.ValidationRuleOccurrencesCount;
+import org.lareferencia.backend.domain.Network;
+import org.lareferencia.backend.domain.NetworkSnapshot;
+import org.lareferencia.backend.domain.OAIBitstream;
+import org.lareferencia.backend.domain.OAIBitstreamStatus;
+import org.lareferencia.backend.domain.SnapshotIndexStatus;
+import org.lareferencia.backend.domain.SnapshotStatus;
+import org.lareferencia.backend.domain.Transformer;
+import org.lareferencia.backend.domain.TransformerRule;
+import org.lareferencia.backend.domain.ValidationStatObservation;
+import org.lareferencia.backend.domain.Validator;
+import org.lareferencia.backend.domain.ValidatorRule;
+import org.lareferencia.backend.repositories.jpa.NetworkRepository;
+import org.lareferencia.backend.repositories.jpa.NetworkSnapshotRepository;
+import org.lareferencia.backend.repositories.jpa.OAIBitstreamRepository;
+import org.lareferencia.backend.repositories.jpa.OAIRecordRepository;
+import org.lareferencia.backend.repositories.jpa.TransformerRepository;
+import org.lareferencia.backend.repositories.jpa.ValidatorRepository;
+import org.lareferencia.backend.services.ValidationStatisticsService;
+import org.lareferencia.backend.services.ValidationStatisticsService.ValidationRuleOccurrencesCount;
+import org.lareferencia.backend.taskmanager.NetworkAction;
+import org.lareferencia.backend.taskmanager.NetworkActionkManager;
+import org.lareferencia.backend.taskmanager.NetworkProperty;
 import org.lareferencia.core.metadata.MDFormatTransformerService;
-import org.lareferencia.core.metadata.IMetadataStore;
-import org.lareferencia.core.metadata.ISnapshotStore;
+import org.lareferencia.core.metadata.MedatadaDOMHelper;
+import org.lareferencia.backend.domain.OAIRecord;
+import org.lareferencia.core.metadata.IMetadataRecordStoreService;
 import org.lareferencia.core.util.JsonDateSerializer;
 import org.lareferencia.core.worker.NetworkRunningContext;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -76,460 +96,221 @@ import lombok.Setter;
  */
 @RestController
 public class BackendController {
-
+	
 	private static Logger logger = LogManager.getLogger(BackendController.class);
 
+	@Value("${downloaded.files.path}")
+	private String BITSTREAM_PATH;
+	
 	@Autowired
 	private OAIBitstreamRepository bitstreamRepository;
 
 	@Autowired
 	private NetworkRepository networkRepository;
-
+	
 	@Autowired
-	private IMetadataStore metadataStoreService;
-
-	@Autowired
-	private ISnapshotStore snapshotStoreService;
-
+	private IMetadataRecordStoreService metadataStoreService;
+	
 	@Autowired
 	private NetworkSnapshotRepository networkSnapshotRepository;
-
+	
 	@Autowired
-	private IValidationStatisticsService validationStatisticsService;
-
-	// @Autowired
-	// private ValidationStatisticsParquetService
-	// validationStatisticsParquetService;
+	private ValidationStatisticsService validationStatisticsService;
 
 	@Autowired
 	private NetworkActionkManager networkActionManager;
-
+	
 	@Autowired
 	private MDFormatTransformerService mdTransformationService;
-
+	
+	
 	/******************************************************
 	 * Login Services
 	 ******************************************************/
 
-	// @RequestMapping(value = "/", method = RequestMethod.GET)
-	// public String root(Locale locale, Model model) {
-	// return "static/home.html";
-	// }
+//	@RequestMapping(value = "/", method = RequestMethod.GET)
+//	public String root(Locale locale, Model model) {
+//		return "static/home.html";
+//	}
 
-	// @RequestMapping(value = "/home", method = RequestMethod.GET)
-	// public String home(Locale locale, Model model) {
-	// return "home";
-	// }
-	//
-	/*
-	 * @RequestMapping(value = "/login", method = RequestMethod.GET)
-	 * public String login(Locale locale, Model model) {
-	 * return "login";
-	 * }
-	 * 
-	 * @RequestMapping(value = "/login", params = "errorLogin", method =
-	 * RequestMethod.GET)
-	 * public String loginFailed(Locale locale, Model model) {
-	 * model.addAttribute("loginFailed", true);
-	 * return "login";
-	 * }
-	 * 
-	 * @RequestMapping(value="/logout", method = RequestMethod.GET)
-	 * public String logoutPage (HttpServletRequest request, HttpServletResponse
-	 * response) {
-	 * Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	 * if (auth != null){
-	 * new SecurityContextLogoutHandler().logout(request, response, auth);
-	 * }
-	 * return "redirect:/login";
-	 * }
-	 */
+//	@RequestMapping(value = "/home", method = RequestMethod.GET)
+//	public String home(Locale locale, Model model) {
+//		return "home";
+//	}
+//
+/*	@RequestMapping(value = "/login", method = RequestMethod.GET)
+	public String login(Locale locale, Model model) {
+		return "login";
+	}
 
-	// // @ResponseBody
-	// // @RequestMapping(value = "/public/getRecordMetadataByID/{id}", method =
-	// RequestMethod.GET, produces = "application/xml; charset=utf-8")
-	// // public String getRecordMetadataByID(@PathVariable Long id) throws
-	// Exception {
-
-	// // OAIRecord record = metadataStoreService.findRecordByRecordId(id);
-	// // if (record != null )
-	// // return metadataStoreService.getPublishedMetadata(record).toString();
-	// // else
-	// // return "No record found - Probably the diagnose report is outdated";
-
-	// // }
-
-	// @ResponseBody
-	// @RequestMapping(value =
-	// "/public/getRecordMetadataBySnapshotAndIdentifier/{snapshotId}/{identifier:.*}",
-	// method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
-	// public String getRecordMetadataBySnapshotAndIdentifier(
-	// @PathVariable Long snapshotId,
-	// @PathVariable String identifier) throws Exception {
-
-	// logger.debug("getRecordMetadataBySnapshotAndIdentifier RAW: snapshotId={},
-	// identifier={}", snapshotId, identifier);
-
-	// // Decodificar el identificador URL si es necesario
-	// // Spring ya decodifica una vez automáticamente, pero por si acaso viene
-	// doblemente codificado
-	// if (identifier.contains("%")) {
-	// try {
-	// identifier = java.net.URLDecoder.decode(identifier, "UTF-8");
-	// logger.debug("Identifier after URL decoding: {}", identifier);
-	// } catch (UnsupportedEncodingException e) {
-	// logger.warn("Error decoding identifier: {}", identifier, e);
-	// }
-	// }
-
-	// logger.info("getRecordMetadataBySnapshotAndIdentifier FINAL: snapshotId={},
-	// identifier={}", snapshotId, identifier);
-
-	// }
-
+	@RequestMapping(value = "/login", params = "errorLogin", method = RequestMethod.GET)
+	public String loginFailed(Locale locale, Model model) {
+		model.addAttribute("loginFailed", true);
+		return "login";
+	}
+	@RequestMapping(value="/logout", method = RequestMethod.GET)
+	public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    if (auth != null){    
+	        new SecurityContextLogoutHandler().logout(request, response, auth);
+	    }
+	    return "redirect:/login";
+	}
+*/
+	
 	@ResponseBody
-	@RequestMapping(value = "/public/getRecordMetadataBySnapshotAndIdentifierEncoded/{snapshotId}/{encodedIdentifier}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
-	public String getRecordMetadataBySnapshotAndIdentifierEncoded(
-			@PathVariable Long snapshotId,
-			@PathVariable String encodedIdentifier) throws Exception {
+	@RequestMapping(value = "/public/getRecordMetadataByID/{id}", method = RequestMethod.GET, produces = "application/xml; charset=utf-8")
+	public String getRecordMetadataByID(@PathVariable Long id) throws Exception {
 
-		String identifier = null;
-
-		try {
-			// Decodificar desde Base64
-			byte[] decodedBytes = java.util.Base64.getUrlDecoder().decode(encodedIdentifier);
-			identifier = new String(decodedBytes, "UTF-8");
-			logger.info("getRecordMetadataBySnapshotAndIdentifierEncoded: snapshotId={}, identifier={}", snapshotId,
-					identifier);
-		} catch (IllegalArgumentException e) {
-			logger.error("Invalid Base64 encoded identifier: {}", encodedIdentifier, e);
-			return "Invalid encoded identifier";
-		} catch (UnsupportedEncodingException e) {
-			logger.error("Error decoding identifier from Base64: {}", encodedIdentifier, e);
-			return "Error decoding identifier";
-		}
-
-		RecordValidation recordValidation = validationStatisticsService
-				.getRecordValidationListBySnapshotAndIdentifier(snapshotId, identifier);
-
-		if (recordValidation != null)
-			return metadataStoreService.getMetadata(snapshotStoreService.getSnapshotMetadata(snapshotId),
-					recordValidation.getPublishedMetadataHash());
+		OAIRecord record = metadataStoreService.findRecordByRecordId(id);
+		if (record != null )
+			return metadataStoreService.getPublishedMetadata(record).toString();
 		else
 			return "No record found - Probably the diagnose report is outdated";
 
 	}
-
+	
+	
 	/******************************************************
 	 * Diagnose Services
 	 ******************************************************/
 
-	// Endpoint con query parameters (nuevo formato)
-	@RequestMapping(value = "/public/diagnose/{snapshotID}", method = RequestMethod.GET)
-	@ResponseBody
-	public ValidationStatsResult diagnoseListRules(@PathVariable Long snapshotID,
-			@RequestParam(required = false) String fq) throws Exception {
 
-		logger.debug("Recibido diagnose request - snapshotID: {}, fq parameter RAW: '{}'", snapshotID, fq);
-
-		Optional<NetworkSnapshot> snapshot = networkSnapshotRepository.findById(snapshotID);
-
-		// Convertir el string fq a una lista
-		List<String> fqList = new ArrayList<>();
-		if (fq != null && !fq.trim().isEmpty()) {
-			// Decodificar manualmente el parámetro URL
-			String decodedFq = java.net.URLDecoder.decode(fq, "UTF-8");
-			logger.debug("Filtro decodificado: '{}'", decodedFq);
-
-			// Dividir por comas para múltiples filtros
-			String[] filters = decodedFq.split(",");
-			for (String filter : filters) {
-				if (!filter.trim().isEmpty()) {
-					fqList.add(filter.trim());
-				}
-			}
-		}
-
-		logger.debug("Filtros procesados: {}", fqList);
-
-		if (!snapshot.isPresent()) // TODO: Implementar Exc
-			throw new Exception("No snapshot found with id: " + snapshotID);
-
-		// Usar solo Parquet - retornar directamente el objeto ValidationStats
-		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fqList);
-	}
-
-	// Endpoint con path parameters (compatibilidad con frontend)
 	@RequestMapping(value = "/public/diagnose/{snapshotID}/{fq}", method = RequestMethod.GET)
 	@ResponseBody
-	public ValidationStatsResult diagnoseListRulesWithPathParams(@PathVariable Long snapshotID, @PathVariable String fq)
-			throws Exception {
-
-		logger.debug("Recibido diagnose request con path params - snapshotID: {}, fq path parameter RAW: '{}'",
-				snapshotID, fq);
+	public ValidationStatisticsService.ValidationStats diagnoseListRules(@PathVariable Long snapshotID, @PathVariable List<String> fq) throws Exception {
 
 		Optional<NetworkSnapshot> snapshot = networkSnapshotRepository.findById(snapshotID);
 
-		// Convertir el string fq a una lista
-		List<String> fqList = new ArrayList<>();
-		if (fq != null && !fq.trim().isEmpty()) {
-			// Decodificar manualmente el parámetro URL
-			String decodedFq = java.net.URLDecoder.decode(fq, "UTF-8");
-			logger.debug("Filtro path decodificado: '{}'", decodedFq);
+		if (!snapshot.isPresent()) // TODO: Implementar Exc
+			throw new Exception("No snapshot found with id: " + snapshotID);
+		
 
-			// Dividir por comas para múltiples filtros
-			String[] filters = decodedFq.split(",");
-			for (String filter : filters) {
-				if (!filter.trim().isEmpty()) {
-					fqList.add(filter.trim());
-				}
-			}
-		}
+		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fq);
+	}
+	
+	@RequestMapping(value = "/public/diagnose/{snapshotID}", method = RequestMethod.GET)
+	@ResponseBody
+	public ValidationStatisticsService.ValidationStats diagnoseListRules(@PathVariable Long snapshotID) throws Exception {
+		
+		List<String> fq = new ArrayList<String>();
 
-		logger.debug("Filtros path procesados: {}", fqList);
+		Optional<NetworkSnapshot> snapshot = networkSnapshotRepository.findById(snapshotID);
 
 		if (!snapshot.isPresent()) // TODO: Implementar Exc
 			throw new Exception("No snapshot found with id: " + snapshotID);
+		
 
-		// Usar solo Parquet - retornar directamente el objeto ValidationStats
-		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fqList);
+		return validationStatisticsService.queryValidatorRulesStatsBySnapshot(snapshot.get(), fq);
 	}
 
 	@RequestMapping(value = "/public/diagnoseValidationOcurrences/{snapshotID}/{ruleID}/{fq}", method = RequestMethod.GET)
 	@ResponseBody
-	public ValidationRuleOccurrencesCount diagnoseValidationOcurrences(@PathVariable Long snapshotID,
-			@PathVariable Long ruleID, @PathVariable List<String> fq) throws Exception {
+	public ValidationRuleOccurrencesCount diagnoseValidationOcurrences(@PathVariable Long snapshotID, @PathVariable Long ruleID, @PathVariable List<String> fq) throws Exception {
 
 		Optional<NetworkSnapshot> snapshot = networkSnapshotRepository.findById(snapshotID);
 
 		if (!snapshot.isPresent()) // TODO: Implementar Exc
 			throw new Exception("No snapshot found with id: " + snapshotID);
 
-		// Usar solo Parquet
-		return validationStatisticsService.queryValidRuleOccurrencesCountBySnapshotID(snapshotID, ruleID, fq);
+
+		return validationStatisticsService.queryValidRuleOcurrencesCountBySnapshotID(snapshotID, ruleID, fq);
 	}
 
 	@RequestMapping(value = "/public/diagnoseValidationOcurrences/{snapshotID}/{ruleID}", method = RequestMethod.GET)
 	@ResponseBody
-	public ValidationRuleOccurrencesCount diagnoseValidationOcurrences(@PathVariable Long snapshotID,
-			@PathVariable Long ruleID) throws Exception {
+	public ValidationRuleOccurrencesCount diagnoseValidationOcurrences(@PathVariable Long snapshotID, @PathVariable Long ruleID) throws Exception {
 
 		List<String> fq = new ArrayList<String>();
-
+		
 		Optional<NetworkSnapshot> snapshot = networkSnapshotRepository.findById(snapshotID);
 
 		if (!snapshot.isPresent()) // TODO: Implementar Exc
 			throw new Exception("No snapshot found with id: " + snapshotID);
 
-		return validationStatisticsService.queryValidRuleOccurrencesCountBySnapshotID(snapshotID, ruleID, fq);
+
+		return validationStatisticsService.queryValidRuleOcurrencesCountBySnapshotID(snapshotID, ruleID, fq);
 	}
 
-	@RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/{fq}", method = RequestMethod.GET)
-	@ResponseBody
-	public ResponseEntity<ValidationStatsObservationsResult> diagnoseListRecordValidationResults(
-			@PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params)
-			throws ValidationStatisticsException {
+	
+    @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/{fq}", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<Page<ValidationStatObservation>> diagnoseListRecordValidationResults(
+            @PathVariable Long snapshotID, @PathVariable List<String> fq, @RequestParam Map<String, String> params) {
 
-		int count = Integer.parseInt(params.getOrDefault("size", params.getOrDefault("count", "20")));
-		int page = Integer.parseInt(params.getOrDefault("page", "1"));
+        int count = Integer.parseInt(params.get("count"));
+        int page = Integer.parseInt(params.get("page"));
+        
+        fq.addAll(buildDiagnoseQueryFilterFromParam(params));
 
-		// Convertir paginación de base 1 a base 0 (Spring Data usa base 0)
-		int springDataPage = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(page, count);
+        return new ResponseEntity<Page<ValidationStatObservation>>(
+                validationStatisticsService.queryValidationStatsObservationsBySnapshotID(snapshotID, fq, pageable),
+                HttpStatus.OK);
+    }
 
-		// Procesar filtros de reglas de validación del parámetro fq del path
-		List<String> processedFq = processValidationRuleFilters(fq);
 
-		// Agregar filtros adicionales de los parámetros de query
-		processedFq.addAll(buildDiagnoseQueryFilterFromParam(params));
+    @RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/fq", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<Page<ValidationStatObservation>> diagnoseListRecordValidationResults(
+            @PathVariable Long snapshotID, @RequestParam Map<String, String> params) {
 
-		// Usar solo Parquet
-		Pageable pageable = PageRequest.of(springDataPage, count);
-		return new ResponseEntity<ValidationStatsObservationsResult>(
-				validationStatisticsService.queryValidationStatsObservationsBySnapshotID(snapshotID, processedFq,
-						pageable),
-				HttpStatus.OK);
-	}
+        List<String> fq = new ArrayList<String>();
+        int count = Integer.parseInt(params.get("count"));
+        int page = Integer.parseInt(params.get("page"));
 
-	@RequestMapping(value = "/public/diagnoseListRecordValidationResults/{snapshotID}/fq", method = RequestMethod.GET)
-	@ResponseBody
-	public ResponseEntity<ValidationStatsObservationsResult> diagnoseListRecordValidationResults(
-			@PathVariable Long snapshotID, @RequestParam Map<String, String> params)
-			throws ValidationStatisticsException {
+        fq.addAll(buildDiagnoseQueryFilterFromParam(params));
 
-		List<String> fq = new ArrayList<String>();
-		int count = Integer.parseInt(params.getOrDefault("size", params.getOrDefault("count", "20")));
-		int page = Integer.parseInt(params.getOrDefault("page", "1"));
+        Pageable pageable = PageRequest.of(page, count);
 
-		// Convertir paginación de base 1 a base 0 (Spring Data usa base 0)
-		int springDataPage = Math.max(0, page - 1);
+        return new ResponseEntity<Page<ValidationStatObservation>>(
+                validationStatisticsService.queryValidationStatsObservationsBySnapshotID(snapshotID, fq, pageable),
+                HttpStatus.OK);
+    }
 
-		fq.addAll(buildDiagnoseQueryFilterFromParam(params));
+    private List<String> buildDiagnoseQueryFilterFromParam(Map<String, String> params) {
+        List<String> fq = new ArrayList<String>();
 
-		Pageable pageable = PageRequest.of(springDataPage, count);
+        Pattern filterPattern = Pattern.compile("filter\\[(.*)\\]");
+        String filterColumn;
+        String filterNameExpression = null;
 
-		// Usar solo Parquet
-		return new ResponseEntity<ValidationStatsObservationsResult>(
-				validationStatisticsService.queryValidationStatsObservationsBySnapshotID(snapshotID, fq, pageable),
-				HttpStatus.OK);
-	}
+        for (String key : params.keySet()) {
+            filterColumn = null;
+            if (key.startsWith("filter")) {
 
-	private List<String> buildDiagnoseQueryFilterFromParam(Map<String, String> params) {
-		List<String> fq = new ArrayList<String>();
+                Matcher matcher = filterPattern.matcher(key);
 
-		Pattern filterPattern = Pattern.compile("filter\\[(.*)\\]");
-		String filterColumn;
-		String filterNameExpression = null;
+                if (matcher.find()) {
+                    filterColumn = matcher.group(1);
+                    filterNameExpression = key;
+                }
 
-		// Debug: log todos los parámetros recibidos
-		logger.debug("DIAGNOSE FILTER: Received parameters: {}", params);
+                if (filterColumn != null) {
 
-		for (String key : params.keySet()) {
-			filterColumn = null;
-			if (key.startsWith("filter")) {
+                    switch (filterColumn) {
 
-				Matcher matcher = filterPattern.matcher(key);
+                        case "identifier":
+                            String filterExpression = "oai_identifier:*" + params.get(filterNameExpression) + "*";
+                            try {
+                                filterExpression = java.net.URLDecoder.decode(filterExpression, "UTF-8");
+                            } catch (UnsupportedEncodingException e) {
+                            }
 
-				if (matcher.find()) {
-					filterColumn = matcher.group(1);
-					filterNameExpression = key;
-				}
+                            fq.add(filterExpression);
+                            break;
+                        default:
+                            break;
+                    }
 
-				if (filterColumn != null) {
+                }
+            }
+        }
 
-					switch (filterColumn) {
+        return fq;
+    }
 
-						case "identifier":
-							// Para Parquet: formato simple field:value para OAI identifier
-							String identifierValue = params.get(filterNameExpression);
-							logger.debug("DIAGNOSE FILTER: Identifier filter value original: {}", identifierValue);
-							try {
-								identifierValue = java.net.URLDecoder.decode(identifierValue, "UTF-8");
-								logger.debug("DIAGNOSE FILTER: Identifier filter value decoded: {}", identifierValue);
-							} catch (UnsupportedEncodingException e) {
-								logger.debug("DIAGNOSE FILTER: Error decoding identifier: {}", e.getMessage());
-							}
-
-							String identifierExpression = "identifier:" + identifierValue;
-							fq.add(identifierExpression);
-							logger.debug("DIAGNOSE FILTER: Identifier filter expression added: {}",
-									identifierExpression);
-							break;
-
-						case "isValid":
-							// Filtro por estado de validación (true/false)
-							String validValue = params.get(filterNameExpression);
-							logger.debug("DIAGNOSE FILTER: isValid filter value: {}", validValue);
-							try {
-								validValue = java.net.URLDecoder.decode(validValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-
-							String validExpression = "isValid:" + validValue;
-							fq.add(validExpression);
-							logger.debug("DIAGNOSE FILTER: isValid filter expression added: {}", validExpression);
-							break;
-
-						case "isTransformed":
-							// Filtro por estado de transformación (true/false)
-							String transformedValue = params.get(filterNameExpression);
-							logger.debug("DIAGNOSE FILTER: isTransformed filter value: {}", transformedValue);
-							try {
-								transformedValue = java.net.URLDecoder.decode(transformedValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-
-							String transformedExpression = "isTransformed:" + transformedValue;
-							fq.add(transformedExpression);
-							logger.debug("DIAGNOSE FILTER: isTransformed filter expression added: {}",
-									transformedExpression);
-							break;
-
-						case "networkAcronym":
-							String networkValue = params.get(filterNameExpression);
-							try {
-								networkValue = java.net.URLDecoder.decode(networkValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-							fq.add("networkAcronym:" + networkValue);
-							break;
-
-						case "repositoryName":
-							String repoValue = params.get(filterNameExpression);
-							try {
-								repoValue = java.net.URLDecoder.decode(repoValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-							fq.add("repositoryName:" + repoValue);
-							break;
-
-						case "institutionName":
-							String instValue = params.get(filterNameExpression);
-							try {
-								instValue = java.net.URLDecoder.decode(instValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-							fq.add("institutionName:" + instValue);
-							break;
-
-						case "origin":
-							String originValue = params.get(filterNameExpression);
-							try {
-								originValue = java.net.URLDecoder.decode(originValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-							fq.add("origin:" + originValue);
-							break;
-
-						case "setSpec":
-							String setSpecValue = params.get(filterNameExpression);
-							try {
-								setSpecValue = java.net.URLDecoder.decode(setSpecValue, "UTF-8");
-							} catch (UnsupportedEncodingException e) {
-							}
-							fq.add("setSpec:" + setSpecValue);
-							break;
-					}
-
-				}
-			}
-		}
-
-		logger.debug("DIAGNOSE FILTER: Final filter list: {}", fq);
-		return fq;
-	}
-
-	/**
-	 * Procesa filtros de reglas de validación del parámetro fq del path.
-	 * Formatos soportados:
-	 * - invalid_rules@@"2" -> invalid_rules:2
-	 * - valid_rules@@"5" -> valid_rules:5
-	 */
-	private List<String> processValidationRuleFilters(List<String> rawFq) {
-		List<String> processedFq = new ArrayList<>();
-
-		logger.debug("VALIDATION FILTER: Processing validation rule filters: {}", rawFq);
-
-		for (String fqItem : rawFq) {
-			try {
-				// Decodificar URL
-				String decodedItem = java.net.URLDecoder.decode(fqItem, "UTF-8");
-				logger.debug("VALIDATION FILTER: Decoded item: {}", decodedItem);
-
-				// MANTENER FORMATO ORIGINAL - NO CONVERTIR
-				// Consistencia con otros endpoints que usan record_is_valid,
-				// record_is_transformed, etc.
-				processedFq.add(decodedItem);
-				logger.debug("VALIDATION FILTER: Kept original format: {}", decodedItem);
-
-			} catch (Exception e) {
-				logger.error("VALIDATION FILTER: Error processing filter: {}", fqItem, e);
-				processedFq.add(fqItem);
-			}
-		}
-
-		logger.debug("VALIDATION FILTER: Processed filters: {}", processedFq);
-		return processedFq;
-	}
+	
 
 	/**************************** FrontEnd ************************************/
 
@@ -538,8 +319,7 @@ public class BackendController {
 	public ResponseEntity<NetworkSnapshot> getLGKSnapshot(@PathVariable Long id) {
 
 		NetworkSnapshot snapshot = networkSnapshotRepository.findLastGoodKnowByNetworkID(id);
-		ResponseEntity<NetworkSnapshot> response = new ResponseEntity<NetworkSnapshot>(snapshot,
-				snapshot == null ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+		ResponseEntity<NetworkSnapshot> response = new ResponseEntity<NetworkSnapshot>(snapshot, snapshot == null ? HttpStatus.NOT_FOUND : HttpStatus.OK);
 		return response;
 	}
 
@@ -548,8 +328,7 @@ public class BackendController {
 	public ResponseEntity<NetworkSnapshot> getSnapshotByID(@PathVariable Long id) {
 
 		Optional<NetworkSnapshot> snapshot = networkSnapshotRepository.findById(id);
-		ResponseEntity<NetworkSnapshot> response = new ResponseEntity<NetworkSnapshot>(snapshot.get(),
-				!snapshot.isPresent() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+		ResponseEntity<NetworkSnapshot> response = new ResponseEntity<NetworkSnapshot>(snapshot.get(), !snapshot.isPresent() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
 		return response;
 	}
 
@@ -563,7 +342,7 @@ public class BackendController {
 			throw new Exception("No snapshot found with id: " + id);
 
 		NetworkSnapshot snapshot = optionalSnapshot.get();
-
+		
 		Network network = snapshot.getNetwork();
 
 		NetworkInfo ninfo = new NetworkInfo();
@@ -592,8 +371,7 @@ public class BackendController {
 		if (snapshot == null) // TODO: Implementar Exc
 			throw new Exception("No valid Snapshot found for Network: " + acronym);
 
-		ResponseEntity<NetworkSnapshot> response = new ResponseEntity<NetworkSnapshot>(snapshot,
-				snapshot == null ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+		ResponseEntity<NetworkSnapshot> response = new ResponseEntity<NetworkSnapshot>(snapshot, snapshot == null ? HttpStatus.NOT_FOUND : HttpStatus.OK);
 
 		return response;
 	}
@@ -606,54 +384,50 @@ public class BackendController {
 		if (network == null)
 			throw new Exception("No Network found: " + acronym);
 
-		ResponseEntity<List<NetworkSnapshot>> response = new ResponseEntity<List<NetworkSnapshot>>(
-				networkSnapshotRepository.findByNetworkOrderByEndTimeAsc(network), HttpStatus.OK);
+		ResponseEntity<List<NetworkSnapshot>> response = new ResponseEntity<List<NetworkSnapshot>>(networkSnapshotRepository.findByNetworkOrderByEndTimeAsc(network), HttpStatus.OK);
 
 		return response;
 	}
-
+	
 	@ResponseBody
 	@RequestMapping(value = "/public/listMetadataFormats", method = RequestMethod.GET)
-	public ResponseEntity<List<String>> listMetadataFormats() throws Exception {
-		ResponseEntity<List<String>> response = new ResponseEntity<List<String>>(
-				mdTransformationService.getSourceMetadataFormats(), HttpStatus.OK);
+	public ResponseEntity<List<String>> listMetadataFormats() throws Exception {		
+		ResponseEntity<List<String>> response = new ResponseEntity<List<String>>(mdTransformationService.getSourceMetadataFormats() , HttpStatus.OK);
 		return response;
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/public/getBitstream/{hash}", method = RequestMethod.GET)
+	public ResponseEntity<InputStreamResource> getBitstream(@PathVariable String hash, HttpServletResponse response) throws Exception {		
+		
+	    try {
+	    
+	      OAIBitstream bitstream = bitstreamRepository.findOneByHash(hash);
+	      
+	      if ( bitstream != null && bitstream.getStatus() == OAIBitstreamStatus.DOWNLOADED ) {
+	    	
+		    	// get your file as InputStream
+			  File file = new File( BITSTREAM_PATH + "/" + hash);
+			  
+		      HttpHeaders respHeaders = new HttpHeaders();
+			    respHeaders.setContentType( MediaType.parseMediaType( bitstream.getMime())  );
+			    respHeaders.setContentDispositionFormData("attachment", bitstream.getFilename());
+	
+			  InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
+			  
+			  return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+	      } else
+	    	  return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+	    
+	    } catch (Exception ex) {
+	    	//log.info("Error writing file to output stream. Filename was '{}'", ex);
+	    	return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
+	    }
 
-	// @ResponseBody
-	// @RequestMapping(value = "/public/getBitstream/{hash}", method =
-	// RequestMethod.GET)
-	// public ResponseEntity<InputStreamResource> getBitstream(@PathVariable String
-	// hash, HttpServletResponse response) throws Exception {
+	}
+	
+	
 
-	// try {
-
-	// OAIBitstream bitstream = bitstreamRepository.findOneByHash(hash);
-
-	// if ( bitstream != null && bitstream.getStatus() ==
-	// OAIBitstreamStatus.DOWNLOADED ) {
-
-	// // get your file as InputStream
-	// File file = new File( BITSTREAM_PATH + "/" + hash);
-
-	// HttpHeaders respHeaders = new HttpHeaders();
-	// respHeaders.setContentType( MediaType.parseMediaType( bitstream.getMime()) );
-	// respHeaders.setContentDispositionFormData("attachment",
-	// bitstream.getFilename());
-
-	// InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
-
-	// return new ResponseEntity<InputStreamResource>(isr, respHeaders,
-	// HttpStatus.OK);
-	// } else
-	// return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
-
-	// } catch (Exception ex) {
-	// //log.info("Error writing file to output stream. Filename was '{}'", ex);
-	// return new ResponseEntity<InputStreamResource>(HttpStatus.NOT_FOUND);
-	// }
-
-	// }
 
 	// //////////////////////// Listar Redes y sus datos
 	// //////////////////////////
@@ -670,13 +444,15 @@ public class BackendController {
 			ninfo.name = network.getName();
 			ninfo.institution = network.getInstitutionName();
 			ninfo.institutionAcronym = network.getInstitutionAcronym();
-			ninfo.setAttributes(network.getAttributes());
-
+			ninfo.setAttributes( network.getAttributes() );
+			
+			
 			String runningContextID = NetworkRunningContext.buildID(network);
-
-			ninfo.running = networkActionManager.getRunningTasksByRunningContextID(runningContextID);
-			ninfo.queued = networkActionManager.getQueuedTasksByRunningContextID(runningContextID);
-			ninfo.scheduled = networkActionManager.getScheduledTasksByRunningContextID(runningContextID);
+			
+			ninfo.running = networkActionManager.getTaskManager().getRunningTasksByRunningContextID(runningContextID);
+			ninfo.queued = networkActionManager.getTaskManager().getQueuedTasksByRunningContextID(runningContextID);
+			ninfo.scheduled = networkActionManager.getTaskManager().getScheduledTasksByRunningContextID(runningContextID);
+	
 
 			NetworkSnapshot lstSnapshot = networkSnapshotRepository.findLastByNetworkID(network.getId());
 			if (lstSnapshot != null) {
@@ -725,7 +501,7 @@ public class BackendController {
 	@ResponseBody
 	@RequestMapping(value = "/private/networks", method = RequestMethod.GET)
 	public ResponseEntity<NetworksListResponse> listNetworks(@RequestParam Map<String, String> params) {
-
+	
 		NetworksListResponse response = new NetworksListResponse(findByParams(params));
 		return new ResponseEntity<NetworksListResponse>(response, HttpStatus.OK);
 	}
@@ -772,8 +548,7 @@ public class BackendController {
 					filterExpression = params.get(key);
 					try {
 						filterExpression = java.net.URLDecoder.decode(filterExpression, "UTF-8");
-					} catch (UnsupportedEncodingException e) {
-					}
+					} catch (UnsupportedEncodingException e) {}
 				}
 			}
 		}
@@ -781,29 +556,29 @@ public class BackendController {
 		if (filterColumn != null) {
 
 			switch (filterColumn) {
+			
+			case "id":
+				return networkRepository.findById(filterExpression, pageRequest);
 
-				case "id":
-					return networkRepository.findById(filterExpression, pageRequest);
+			case "name":
+				return networkRepository.findByNameIgnoreCaseContaining(filterExpression, pageRequest);
 
-				case "name":
-					return networkRepository.findByNameIgnoreCaseContaining(filterExpression, pageRequest);
+			case "institution":
+				return networkRepository.findByInstitutionNameIgnoreCaseContaining(filterExpression, pageRequest);
+				
+			case "status":
+				SnapshotStatus filterStatus = SnapshotStatus.fromString(filterExpression);
+				return networkRepository.customFindByStatus( filterStatus, pageRequest);
+			
+			case "indexStatus":
+				SnapshotIndexStatus filterIndexStatus = SnapshotIndexStatus.fromString(filterExpression);
+				return networkRepository.customFindByIndexStatus( filterIndexStatus, pageRequest);
+				
+			case "acronym":
+				return networkRepository.findByAcronymIgnoreCaseContaining(filterExpression, pageRequest);
 
-				case "institution":
-					return networkRepository.findByInstitutionNameIgnoreCaseContaining(filterExpression, pageRequest);
-
-				case "status":
-					SnapshotStatus filterStatus = SnapshotStatus.fromString(filterExpression);
-					return networkRepository.customFindByStatus(filterStatus, pageRequest);
-
-				case "indexStatus":
-					SnapshotIndexStatus filterIndexStatus = SnapshotIndexStatus.fromString(filterExpression);
-					return networkRepository.customFindByIndexStatus(filterIndexStatus, pageRequest);
-
-				case "acronym":
-					return networkRepository.findByAcronymIgnoreCaseContaining(filterExpression, pageRequest);
-
-				default:
-					return networkRepository.findAll(pageRequest);
+			default:
+				return networkRepository.findAll(pageRequest);
 
 			}
 		} else
@@ -823,13 +598,11 @@ public class BackendController {
 			nhistory.name = network.getName();
 			nhistory.networkID = network.getId();
 			nhistory.acronym = network.getAcronym();
-			nhistory.validSnapshots = networkSnapshotRepository.findByNetworkAndStatusOrderByEndTimeAsc(network,
-					SnapshotStatus.VALID);
+			nhistory.validSnapshots = networkSnapshotRepository.findByNetworkAndStatusOrderByEndTimeAsc(network, SnapshotStatus.VALID);
 			NHistoryList.add(nhistory);
 		}
 
-		ResponseEntity<List<NetworkHistory>> response = new ResponseEntity<List<NetworkHistory>>(NHistoryList,
-				HttpStatus.OK);
+		ResponseEntity<List<NetworkHistory>> response = new ResponseEntity<List<NetworkHistory>>(NHistoryList, HttpStatus.OK);
 
 		return response;
 	}
@@ -839,14 +612,14 @@ public class BackendController {
 	@Getter
 	@Setter
 	class NetworkInfo {
-
+		
 		private Long networkID;
 		public String institutionAcronym;
 		public String acronym;
 		private String name;
 		private String institution;
-		private Map<String, Object> attributes;
-
+		private Map<String,Object> attributes;
+			
 		private List<String> running;
 		private List<String> queued;
 		private List<String> scheduled;
@@ -872,7 +645,7 @@ public class BackendController {
 		@JsonSerialize(using = JsonDateSerializer.class)
 		private LocalDateTime lstSnapshotDate;
 		private SnapshotStatus lstSnapshotStatus;
-		public SnapshotIndexStatus lstIndexStatus;
+		public  SnapshotIndexStatus lstIndexStatus;
 		private int lstSize;
 		private int lstValidSize;
 		private int lstTransformedSize;

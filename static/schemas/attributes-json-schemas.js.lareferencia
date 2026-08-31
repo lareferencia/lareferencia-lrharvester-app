@@ -31,8 +31,6 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas', f
                                           "issn",
                                           "issn_l",
                                           "repository_id",
-                                          "stats_source_id",
-                                          "oai_identifier_prefix",
                                   ]
                                 },
                               ]
@@ -59,10 +57,6 @@ angular.module('attributes.json.schemas', []).service('JSONAttributesSchemas', f
                                         issn:{ type: "string", default: "", title: "ISSN"},
                                         issn_l:{ type: "string", default: "", title: "ISSN-L"},
                                         repository_id:{ type: "string", default: "", title: "ID del repositorio"},
-                                        stats_source_id:{ type: "string", default: "", title: "ID de la fuente de estadísticas"},
-                                        oai_identifier_prefix:{ type: "string", default: "", title: "Prefijo OAI identifier"},
-
-
                                     }
                                 } /* fin schema */
         }, /** fin de profile */
