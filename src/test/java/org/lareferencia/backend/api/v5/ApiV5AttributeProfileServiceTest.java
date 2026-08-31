@@ -14,10 +14,11 @@ class ApiV5AttributeProfileServiceTest {
     @Test
     void loadsConfiguredProfilesAndValidatesClassReference() {
         ApiV5AttributeProfileService service = new ApiV5AttributeProfileService(new DefaultResourceLoader(),
-                new ObjectMapper(), "file:config/api-v5-attribute-profiles.json");
+                new ObjectMapper(), "file:config/attribute-profiles");
         service.load();
 
-        assertEquals("lareferencia-repository", service.list().get(0).typeId());
+        assertEquals(4, service.list().size());
+        assertEquals("lareferencia-repository", service.get("lareferencia-repository").typeId());
         service.validateReference(Map.of("@class",
                 "org.lareferencia.backend.network.LAReferenciaNetworkAttributes"));
         assertThrows(ApiV5Exception.class, () -> service.validateReference(Map.of("@class", "unknown.Profile")));
@@ -26,7 +27,7 @@ class ApiV5AttributeProfileServiceTest {
     @Test
     void missingExternalCatalogDoesNotPreventApplicationStartup() {
         ApiV5AttributeProfileService service = new ApiV5AttributeProfileService(new DefaultResourceLoader(),
-                new ObjectMapper(), "file:config/does-not-exist-api-v5-profiles.json");
+                new ObjectMapper(), "file:config/attribute-profiles-missing");
 
         service.load();
 
