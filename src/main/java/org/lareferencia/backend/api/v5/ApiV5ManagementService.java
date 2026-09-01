@@ -211,10 +211,31 @@ public class ApiV5ManagementService {
     }
 
     @Transactional
-    public ValidatorResponse importValidator(ConfigurationExport request) {
-        if (!"validator".equals(request.kind()) || request.configuration() == null)
+    public ValidatorResponse importValidator(JsonNode payload) {
+        JsonNode configuration = payload == null ? null : payload.path("configuration");
+        if (!configuration.isObject() && payload != null && payload.path("rules").isArray()) configuration = convertLegacyConfiguration(payload, "validator");
+        if (payload == null || (payload.has("kind") && !"validator".equals(payload.path("kind").asText())) || !configuration.isObject())
             throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "CONFIGURATION_EXPORT_INVALID", "The export does not contain a validator configuration");
-        return createValidator(objectMapper.convertValue(request.configuration(), ValidatorRequest.class));
+        return createValidator(objectMapper.convertValue(configuration, ValidatorRequest.class));
+    }
+
+    private ObjectNode convertLegacyConfiguration(JsonNode legacy, String kind) {
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("name", legacy.path("name").asText()); result.put("description", legacy.path("description").asText());
+        var rules = result.putArray("rules");
+        legacy.path("rules").forEach(item -> {
+            try {
+                JsonNode serialized = objectMapper.readTree(item.path("jsonserialization").asText());
+                ObjectNode rule = objectMapper.createObjectNode();
+                rule.put("className", serialized.path("@class").asText());
+                rule.put("name", item.path("name").asText()); rule.put("description", item.path("description").asText());
+                if (item.has("mandatory")) rule.set("mandatory", item.get("mandatory"));
+                if (item.has("quantifier")) rule.set("quantifier", item.get("quantifier"));
+                if (item.has("runorder")) rule.set("runOrder", item.get("runorder"));
+                ((ObjectNode) serialized).remove("@class"); rule.set("configuration", serialized); rules.add(rule);
+            } catch (Exception e) { throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "LEGACY_CONFIGURATION_INVALID", "Invalid legacy rule jsonserialization"); }
+        });
+        return result;
     }
 
     @Transactional
@@ -287,10 +308,12 @@ public class ApiV5ManagementService {
     }
 
     @Transactional
-    public TransformerResponse importTransformer(ConfigurationExport request) {
-        if (!"transformer".equals(request.kind()) || request.configuration() == null)
+    public TransformerResponse importTransformer(JsonNode payload) {
+        JsonNode configuration = payload == null ? null : payload.path("configuration");
+        if (!configuration.isObject() && payload != null && payload.path("rules").isArray()) configuration = convertLegacyConfiguration(payload, "transformer");
+        if (payload == null || (payload.has("kind") && !"transformer".equals(payload.path("kind").asText())) || !configuration.isObject())
             throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "CONFIGURATION_EXPORT_INVALID", "The export does not contain a transformer configuration");
-        return createTransformer(objectMapper.convertValue(request.configuration(), TransformerRequest.class));
+        return createTransformer(objectMapper.convertValue(configuration, TransformerRequest.class));
     }
 
     private void removeRuleIds(ObjectNode configuration) {

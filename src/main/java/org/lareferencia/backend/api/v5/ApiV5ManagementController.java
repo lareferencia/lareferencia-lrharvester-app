@@ -32,6 +32,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import org.lareferencia.backend.app.FileBasedUserDetailsService;
 
 @RestController
 @RequestMapping(path = "/api/v5", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -41,28 +42,30 @@ public class ApiV5ManagementController {
     private final ApiV5NetworkSummaryService summaries;
     private final ApiV5AttributeProfileService attributeProfiles;
     private final Validator requestValidator;
+    private final FileBasedUserDetailsService users;
 
     @Value("${security.api-v5.auth-mode:file}")
     private String authMode;
 
     public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper) {
-        this(service, objectMapper, null, null, null);
+        this(service, objectMapper, null, null, null, null);
     }
 
     public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper,
             ApiV5NetworkSummaryService summaries, ApiV5AttributeProfileService attributeProfiles) {
-        this(service, objectMapper, summaries, attributeProfiles, null);
+        this(service, objectMapper, summaries, attributeProfiles, null, null);
     }
 
     @Autowired
     public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper,
             ApiV5NetworkSummaryService summaries, ApiV5AttributeProfileService attributeProfiles,
-            Validator requestValidator) {
+            Validator requestValidator, FileBasedUserDetailsService users) {
         this.service = service;
         this.objectMapper = objectMapper;
         this.summaries = summaries;
         this.attributeProfiles = attributeProfiles;
         this.requestValidator = requestValidator;
+        this.users = users;
     }
 
     @GetMapping("/capabilities")
@@ -95,6 +98,24 @@ public class ApiV5ManagementController {
                 .distinct().sorted().toList();
         return new CurrentUserResponse(authentication.getName(), authentication.getName(), roles, authMode);
     }
+
+    @GetMapping("/users") @PreAuthorize("hasRole('ADMIN')")
+    public List<UserResponse> users() { return users.listUsers().stream().map(u -> new UserResponse(u.username(), u.roles())).toList(); }
+
+    @PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
+        users.createOrUpdateUser(request.username(), new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(request.password()), request.roles(), true);
+        return ResponseEntity.status(HttpStatus.CREATED).body(users.listUsers().stream().filter(u -> u.username().equals(request.username())).findFirst().map(u -> new UserResponse(u.username(), u.roles())).orElseThrow());
+    }
+
+    @PutMapping(path = "/users/{username}/roles", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse updateUserRoles(@PathVariable String username, @Valid @RequestBody UserRolesRequest request) { users.createOrUpdateUser(username, null, request.roles(), false); return users.listUsers().stream().filter(u -> u.username().equals(username)).findFirst().map(u -> new UserResponse(u.username(), u.roles())).orElseThrow(); }
+
+    @PostMapping(path = "/users/{username}/password", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')")
+    public void updateUserPassword(@PathVariable String username, @Valid @RequestBody PasswordRequest request) { var current = users.listUsers().stream().filter(u -> u.username().equals(username)).findFirst().orElseThrow(); users.createOrUpdateUser(username, new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(request.password()), current.roles(), true); }
+
+    @DeleteMapping("/users/{username}") @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable String username) { users.deleteUser(username); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/attribute-profiles")
     @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
@@ -174,7 +195,7 @@ public class ApiV5ManagementController {
 
     @GetMapping("/validators/{id}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public ValidatorResponse validator(@PathVariable Long id) { return service.validator(id); }
     @GetMapping("/validators/{id}/export") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public ConfigurationExport exportValidator(@PathVariable Long id) { return service.exportValidator(id); }
-    @PostMapping(path = "/validators/import", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ValidatorResponse> importValidator(@Valid @RequestBody ConfigurationExport request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.importValidator(request)); }
+    @PostMapping(path = "/validators/import", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<ValidatorResponse> importValidator(@RequestBody JsonNode request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.importValidator(request)); }
     @PutMapping(path = "/validators/{id}", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ValidatorResponse replaceValidator(@PathVariable Long id, @Valid @RequestBody ValidatorRequest request) { return service.replaceValidator(id, request); }
     @PutMapping(path = "/validators/{id}/metadata", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ValidatorResponse updateValidatorMetadata(@PathVariable Long id, @Valid @RequestBody ConfigurationMetadataRequest request) { return service.updateValidatorMetadata(id, request); }
     @PatchMapping(path = "/validators/{id}", consumes = { "application/merge-patch+json", MediaType.APPLICATION_JSON_VALUE }) @PreAuthorize("hasRole('ADMIN')") public ValidatorResponse patchValidator(@PathVariable Long id, @RequestBody JsonNode patch) { ObjectNode current = objectMapper.valueToTree(service.validator(id)); merge(current, patch); return service.replaceValidator(id, patchedRequest(current, ValidatorRequest.class)); }
@@ -192,7 +213,7 @@ public class ApiV5ManagementController {
     @PostMapping(path = "/transformers", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<TransformerResponse> createTransformer(@Valid @RequestBody TransformerRequest request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.createTransformer(request)); }
     @GetMapping("/transformers/{id}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public TransformerResponse transformer(@PathVariable Long id) { return service.transformer(id); }
     @GetMapping("/transformers/{id}/export") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public ConfigurationExport exportTransformer(@PathVariable Long id) { return service.exportTransformer(id); }
-    @PostMapping(path = "/transformers/import", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<TransformerResponse> importTransformer(@Valid @RequestBody ConfigurationExport request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.importTransformer(request)); }
+    @PostMapping(path = "/transformers/import", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<TransformerResponse> importTransformer(@RequestBody JsonNode request) { return ResponseEntity.status(HttpStatus.CREATED).body(service.importTransformer(request)); }
     @PutMapping(path = "/transformers/{id}", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public TransformerResponse replaceTransformer(@PathVariable Long id, @Valid @RequestBody TransformerRequest request) { return service.replaceTransformer(id, request); }
     @PutMapping(path = "/transformers/{id}/metadata", consumes = MediaType.APPLICATION_JSON_VALUE) @PreAuthorize("hasRole('ADMIN')") public TransformerResponse updateTransformerMetadata(@PathVariable Long id, @Valid @RequestBody ConfigurationMetadataRequest request) { return service.updateTransformerMetadata(id, request); }
     @PatchMapping(path = "/transformers/{id}", consumes = { "application/merge-patch+json", MediaType.APPLICATION_JSON_VALUE }) @PreAuthorize("hasRole('ADMIN')") public TransformerResponse patchTransformer(@PathVariable Long id, @RequestBody JsonNode patch) { ObjectNode current = objectMapper.valueToTree(service.transformer(id)); merge(current, patch); return service.replaceTransformer(id, patchedRequest(current, TransformerRequest.class)); }

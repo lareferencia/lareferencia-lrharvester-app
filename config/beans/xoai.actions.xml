@@ -51,6 +51,7 @@
 		<property name="workerConfigurations"><list><bean class="org.lareferencia.core.task.WorkerConfigurationDescriptor">
 			<property name="key" value="xoaiIndexer" /><property name="beanName" value="xoaiIndexerWorker" />
 			<property name="properties"><list>
+				<bean class="org.lareferencia.core.task.WorkerConfigurationProperty"><property name="name" value="solrUrl" /><property name="description" value="URL de Solr" /><property name="type" value="string" /><property name="defaultValue" value="${xoai.solr.url}" /></bean>
 				<bean class="org.lareferencia.core.task.WorkerConfigurationProperty"><property name="name" value="indexDeletedRecords" /><property name="description" value="Indexar registros eliminados" /><property name="type" value="boolean" /><property name="defaultValue" value="true" /></bean>
 				<bean class="org.lareferencia.core.task.WorkerConfigurationProperty"><property name="name" value="indexNetworkAttributes" /><property name="description" value="Indexar atributos de la fuente" /><property name="type" value="boolean" /><property name="defaultValue" value="false" /></bean>
 			</list></property>

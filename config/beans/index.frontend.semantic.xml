@@ -61,6 +61,12 @@
 				<value>semanticIndexerWorker</value>
 			</list>
 		</property>
+		<property name="workerConfigurations"><list><bean class="org.lareferencia.core.task.WorkerConfigurationDescriptor">
+			<property name="key" value="semanticIndexer" /><property name="beanName" value="semanticIndexerWorker" />
+			<property name="properties"><list>
+				<bean class="org.lareferencia.core.task.WorkerConfigurationProperty"><property name="name" value="solrUrl" /><property name="description" value="URL de Solr" /><property name="type" value="string" /><property name="defaultValue" value="${semantic.solr.url:${frontend.solr.url}}" /></bean>
+			</list></property>
+		</bean></list></property>
 		<property name="properties">
 			<list>
 				<bean class="org.lareferencia.core.task.NetworkProperty">

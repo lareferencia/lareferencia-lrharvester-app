@@ -43,6 +43,12 @@
                         value="${config.dir.path}/mdfcrosswalks/oai_dc2xoai.xsl"/>
                 </bean>
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="dim"/>
+                    <constructor-arg type="String" value="xoai"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/dim2xoai.xsl"/>
+                </bean>
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="mets"/>
                     <constructor-arg type="String" value="xoai"/>
                     <constructor-arg type="String"

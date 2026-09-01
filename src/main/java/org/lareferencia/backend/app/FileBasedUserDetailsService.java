@@ -27,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -69,6 +71,7 @@ public class FileBasedUserDetailsService implements UserDetailsService {
     private final ResourceLoader resourceLoader;
     
     private final ConcurrentHashMap<String, UserDetails> usersCache = new ConcurrentHashMap<>();
+    private Path resolvedUsersFile;
 
     public FileBasedUserDetailsService(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
@@ -101,6 +104,7 @@ public class FileBasedUserDetailsService implements UserDetailsService {
             Path path = Paths.get(usersFilePath);
             if (Files.exists(path)) {
                 resolvedPath = path.toAbsolutePath().toString();
+                resolvedUsersFile = path.toAbsolutePath();
                 logger.info("Found users file at: {}", resolvedPath);
                 reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
             } else {
@@ -300,4 +304,35 @@ public class FileBasedUserDetailsService implements UserDetailsService {
     public int getUserCount() {
         return usersCache.size();
     }
+
+    public synchronized List<UserSummary> listUsers() {
+        return usersCache.values().stream().map(u -> new UserSummary(u.getUsername(),
+                u.getAuthorities().stream().map(a -> a.getAuthority()).toList())).sorted((a, b) -> a.username().compareToIgnoreCase(b.username())).toList();
+    }
+
+    public record UserSummary(String username, List<String> roles) {}
+
+    public synchronized void createOrUpdateUser(String username, String encodedPassword, List<String> roles, boolean replacePassword) {
+        validateUsername(username); validateRoles(roles);
+        var lines = readUserLines();
+        String value = username + "=" + (replacePassword ? encodedPassword : findPassword(lines, username)) + "," + String.join(",", roles);
+        boolean replaced = false;
+        for (int i = 0; i < lines.size(); i++) if (lines.get(i).trim().startsWith(username + "=")) { lines.set(i, value); replaced = true; break; }
+        if (!replaced) lines.add(value);
+        writeUserLines(lines); loadUsersFromFile();
+    }
+
+    public synchronized void deleteUser(String username) {
+        validateUsername(username);
+        if (!usersCache.containsKey(username)) throw new UsernameNotFoundException("User not found: " + username);
+        long admins = usersCache.values().stream().filter(u -> u.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()))).count();
+        if (admins <= 1 && usersCache.get(username).getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()))) throw new IllegalArgumentException("Cannot delete the last administrator");
+        writeUserLines(readUserLines().stream().filter(line -> !line.trim().startsWith(username + "=")).toList()); loadUsersFromFile();
+    }
+
+    private void validateUsername(String username) { if (username == null || !username.matches("[A-Za-z0-9._-]{1,64}")) throw new IllegalArgumentException("Invalid username"); }
+    private void validateRoles(List<String> roles) { if (roles == null || roles.isEmpty() || roles.stream().anyMatch(r -> !List.of("ROLE_ADMIN", "ROLE_VIEWER", "ROLE_USER").contains(r))) throw new IllegalArgumentException("Invalid roles"); }
+    private String findPassword(List<String> lines, String username) { return lines.stream().filter(l -> l.trim().startsWith(username + "=")).findFirst().map(l -> l.substring(l.indexOf('=') + 1).split(",ROLE_", 2)[0]).orElseThrow(() -> new IllegalArgumentException("Password required")); }
+    private List<String> readUserLines() { try { if (resolvedUsersFile == null) throw new IllegalStateException("Users file is not available"); return Files.readAllLines(resolvedUsersFile, StandardCharsets.UTF_8); } catch (IOException e) { throw new IllegalStateException("Cannot read users file", e); } }
+    private void writeUserLines(List<String> lines) { try { Path tmp = resolvedUsersFile.resolveSibling(resolvedUsersFile.getFileName() + ".tmp"); Files.write(tmp, lines, StandardCharsets.UTF_8); Files.move(tmp, resolvedUsersFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE); } catch (IOException e) { throw new IllegalStateException("Cannot write users file", e); } }
 }

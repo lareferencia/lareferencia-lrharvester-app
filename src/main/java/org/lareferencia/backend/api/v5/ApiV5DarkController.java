@@ -8,13 +8,35 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.lareferencia.contrib.dark.services.DarkRuntimeConfigurationService;
 
 @RestController
 @RequestMapping("/api/v5/dark")
 @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
 public class ApiV5DarkController {
     private final ApiV5DarkService service;
-    public ApiV5DarkController(ApiV5DarkService service) { this.service = service; }
+    private final DarkRuntimeConfigurationService runtimeConfiguration;
+    public ApiV5DarkController(ApiV5DarkService service, DarkRuntimeConfigurationService runtimeConfiguration) {
+        this.service = service; this.runtimeConfiguration = runtimeConfiguration;
+    }
+
+    @GetMapping("/configuration")
+    public RuntimeConfiguration configuration() { return new RuntimeConfiguration(runtimeConfiguration.get()); }
+
+    @PutMapping("/configuration")
+    @PreAuthorize("hasRole('ADMIN')")
+    @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.OK)
+    public RuntimeConfiguration replaceConfiguration(@RequestBody RuntimeConfiguration request, Authentication authentication) {
+        try {
+            return new RuntimeConfiguration(runtimeConfiguration.replace(request.configuration(), authentication.getName()));
+        } catch (IllegalArgumentException e) {
+            throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "DARK_CONFIGURATION_INVALID", e.getMessage());
+        }
+    }
 
     @GetMapping("/summary")
     public Summary summary(@RequestParam(required = false) String arkNaan) { return service.summary(arkNaan); }

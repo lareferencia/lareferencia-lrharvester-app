@@ -192,6 +192,13 @@ public final class ApiV5Dtos {
     public record CurrentUserResponse(String username, String displayName, List<String> roles, String authMode) {
     }
 
+    public record UserResponse(String username, List<String> roles) {}
+    public record CreateUserRequest(@jakarta.validation.constraints.NotBlank String username,
+            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 8, max = 200) String password,
+            @jakarta.validation.constraints.NotEmpty List<String> roles) {}
+    public record UserRolesRequest(@jakarta.validation.constraints.NotEmpty List<String> roles) {}
+    public record PasswordRequest(@jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 8, max = 200) String password) {}
+
     public record AttributeProfileResponse(String typeId, String name, String className, String version,
             JsonNode schema, JsonNode uiSchema) {
     }
