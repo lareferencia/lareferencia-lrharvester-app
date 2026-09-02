@@ -11,7 +11,7 @@ Configure and manage national repository networks, harvesting schedules, validat
 Full and incremental harvesting with multiple metadata formats, automatic retry, and comprehensive logging.
 
 ### Metadata Processing
-Validation rule engine, field transformation, entity extraction, and statistics generation (Parquet format in v5.0).
+Validation rule engine, field transformation, entity extraction, and SQLite-backed validation statistics.
 
 ### Indexing
 Elasticsearch indexing for search and entity relationship tracking.
@@ -31,4 +31,4 @@ See [LICENSE.txt](../LICENSE.txt) for complete terms.
 ---
 
 **LA Referencia** - Red Latinoamericana y de España de Ciencia Abierta  
-Part of the LA Referencia Platform v4.2.6 / v5.0
+Part of the LA Referencia Platform 5.0.0-rc
