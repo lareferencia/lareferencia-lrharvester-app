@@ -42,7 +42,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.config.Customizer;
 import org.springframework.http.MediaType;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -146,7 +145,12 @@ public class WebSecurityConfig {
 							boolean anonymous = authentication == null || authentication instanceof AnonymousAuthenticationToken;
 							writeApiError(response, anonymous ? 401 : 403, anonymous ? "UNAUTHORIZED" : "FORBIDDEN");
 						}));
-		if (basic) http.httpBasic(Customizer.withDefaults());
+		if (basic) http.httpBasic(httpBasic -> httpBasic
+				.realmName("LA Referencia Platform")
+				// The React client sends the Basic header itself. Do not emit
+				// WWW-Authenticate for API failures, otherwise browsers display
+				// their native username/password dialog over the application.
+				.authenticationEntryPoint((request, response, exception) -> writeApiError(response, 401, "UNAUTHORIZED")));
 		if (oidc) http.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(apiV5JwtConverter())));
 		return http.build();
 	}
