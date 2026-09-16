@@ -68,6 +68,9 @@ public class FileBasedUserDetailsService implements UserDetailsService {
     @Value("${security.users.file:config/users.properties}")
     private String usersFilePath;
 
+    @Value("${security.users.default-file:config/users.properties.default}")
+    private String defaultUsersFilePath;
+
     private final ResourceLoader resourceLoader;
     
     private final ConcurrentHashMap<String, UserDetails> usersCache = new ConcurrentHashMap<>();
@@ -102,6 +105,7 @@ public class FileBasedUserDetailsService implements UserDetailsService {
         try {
             // First try as a regular file path
             Path path = Paths.get(usersFilePath);
+            ensureUsersFileExists(path);
             if (Files.exists(path)) {
                 resolvedPath = path.toAbsolutePath().toString();
                 resolvedUsersFile = path.toAbsolutePath();
@@ -146,6 +150,28 @@ public class FileBasedUserDetailsService implements UserDetailsService {
                 }
             }
         }
+    }
+
+    /**
+     * Initializes the writable users file from the versioned template only when
+     * it does not exist yet. Existing installation credentials are never
+     * replaced.
+     */
+    private void ensureUsersFileExists(Path usersPath) throws IOException {
+        if (Files.exists(usersPath)) return;
+
+        Path defaultPath = Paths.get(defaultUsersFilePath);
+        if (!Files.exists(defaultPath)) {
+            logger.warn("Users file {} is absent and no default template was found at {}",
+                    usersPath.toAbsolutePath(), defaultPath.toAbsolutePath());
+            return;
+        }
+
+        Path parent = usersPath.toAbsolutePath().getParent();
+        if (parent != null) Files.createDirectories(parent);
+        Files.copy(defaultPath, usersPath, StandardCopyOption.COPY_ATTRIBUTES);
+        logger.info("Initialized users file {} from default template {}",
+                usersPath.toAbsolutePath(), defaultPath.toAbsolutePath());
     }
     
     /**
