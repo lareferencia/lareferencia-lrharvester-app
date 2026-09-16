@@ -90,6 +90,7 @@
 		<property name="targetSchemaName" value="provider" />
 		<property name="solrNetworkIDField" value="item.collections" />
 		<property name="solrRecordIDField" value="item.id" />
+		<property name="solrRecordIDValue" value="record_id" />
 
 
 		<property name="executeDeletion" value="true" />
@@ -111,6 +112,7 @@
 
 		<property name="solrNetworkIDField" value="item.collections" />
 		<property name="solrRecordIDField" value="item.id" />
+		<property name="solrRecordIDValue" value="record_id" />
 
 
 		<property name="executeDeletion" value="true" />

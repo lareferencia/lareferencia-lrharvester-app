@@ -118,6 +118,7 @@
 
 		<property name="solrNetworkIDField" value="network_acronym_str"/>
 		<property name="solrRecordIDField" value="id"/>
+		<property name="solrRecordIDValue" value="fingerprint"/>
 
 	</bean>
 

@@ -98,6 +98,7 @@
 
         <property name="solrNetworkIDField" value="network_acronym_str"/>
         <property name="solrRecordIDField" value="id"/>
+        <property name="solrRecordIDValue" value="identifier"/>
 
         <property name="pageSize" value="1000"/>
 
