@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.lareferencia.contrib.dark.services.DarkRuntimeConfigurationService;
 
 @RestController
@@ -65,5 +66,34 @@ public class ApiV5DarkController {
         String naan = service.networkNaan(networkId);
         if (naan == null) return new ApiV5Dtos.PageResponse<>(java.util.List.of(), page, size, 0, 0);
         return service.records(naan, state, q, page, size);
+    }
+
+    @PostMapping("/naans/{arkNaan}/stage")
+    @PreAuthorize("hasRole('ADMIN')")
+    @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.ACCEPTED)
+    public ManualCommandResponse stage(@PathVariable String arkNaan, @RequestBody ManualCommandRequest request,
+            Authentication authentication) {
+        return service.launch(arkNaan, authentication.getName(),
+                org.lareferencia.contrib.dark.worker.DarkManualRunningContext.Action.STAGE, request.oaiIds());
+    }
+
+    @PostMapping("/naans/{arkNaan}/preview")
+    @PreAuthorize("hasRole('ADMIN')")
+    public PreviewResponse preview(@PathVariable String arkNaan, @RequestBody ManualCommandRequest request) {
+        return service.preview(arkNaan, request.oaiIds());
+    }
+
+    @PostMapping("/naans/{arkNaan}/reconcile")
+    @PreAuthorize("hasRole('ADMIN')")
+    @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.ACCEPTED)
+    public ManualCommandResponse reconcile(@PathVariable String arkNaan, @RequestBody ManualCommandRequest request,
+            Authentication authentication) {
+        return service.launch(arkNaan, authentication.getName(),
+                org.lareferencia.contrib.dark.worker.DarkManualRunningContext.Action.RECONCILE, request.oaiIds());
+    }
+
+    @GetMapping("/commands/{commandId}")
+    public ManualCommandResponse command(@PathVariable String commandId) {
+        return service.command(commandId);
     }
 }
