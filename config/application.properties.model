@@ -180,6 +180,23 @@ embedding.use.multivalued.vector=true
 # ==============================================================================
 # ADDITIONAL CONFIGURATION
 # ==============================================================================
+# Solr core per entity
+publication.solr.url=http://localhost:8983/solr/publication
+person.solr.url=http://localhost:8983/solr/person
+organization.solr.url=http://localhost:8983/solr/organization
+service.solr.url=http://localhost:8983/solr/biblio
+
+# RCAAP Historic Stats config
+historic.solr.server=http://localhost:8983/solr/
+historic.solr.core=historic
+
+# RCAAP projects indexer config (legacy)
+projects.solr.server=http://localhost:8983/solr
+projects.solr.core=projects
+
+#project upload (legacy)
+projects.file.path = /etc/lrharvester/project/projects.xlsx
+
 
 # ==============================================================================
 # END OF CONFIGURATION
