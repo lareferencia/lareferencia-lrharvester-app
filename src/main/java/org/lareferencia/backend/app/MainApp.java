@@ -52,9 +52,7 @@ import org.lareferencia.contrib.dark.services.AppConfiguration;
 
 @EnableTransactionManagement
 
-// Exclude UserDetailsServiceAutoConfiguration to prevent Spring from creating a
-// default user
-// (We provide our own FileBasedUserDetailsService in WebSecurityConfig)
+// Local database authentication is configured explicitly in WebSecurityConfig.
 @EnableAutoConfiguration(exclude = {
         UserDetailsServiceAutoConfiguration.class,
         ElasticsearchDataAutoConfiguration.class })

@@ -26,19 +26,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,7 +48,13 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
+import org.lareferencia.backend.security.ApiTokenAuthenticationFilter;
+import org.lareferencia.backend.security.LocalPrincipal;
+import org.lareferencia.backend.security.LocalUserDetailsService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -58,33 +63,28 @@ import jakarta.servlet.http.HttpServletResponse;
  * 5.7, removed in 6.0)
  * 
  * Features:
- * - File-based user authentication (config/users.properties)
- * - Dual authentication: Form Login (browser) + HTTP Basic (API)
+ * - Local database-backed authentication for API v5
  * - BCrypt password encoding
- * - Automatic user reload on login attempt
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableJdbcHttpSession
 public class WebSecurityConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
-	private final FileBasedUserDetailsService userDetailsService;
-
-    @Value("${security.api-v5.auth-mode:file}")
-    private String apiV5AuthMode;
+	private final LocalUserDetailsService userDetailsService;
 
     @Value("${security.api-v5.allowed-origins:}")
     private String apiV5AllowedOrigins;
 
-    @Value("${security.api-v5.oidc.roles-claim:roles}")
-    private String apiV5RolesClaim;
+    @Value("${security.api-v5.cookies-secure:true}")
+    private boolean apiV5CookiesSecure;
 
-	public WebSecurityConfig(FileBasedUserDetailsService userDetailsService) {
+	public WebSecurityConfig(LocalUserDetailsService userDetailsService) {
 		this.userDetailsService = userDetailsService;
-		logger.info("WebSecurityConfig instantiated with FileBasedUserDetailsService (users loaded: {})",
-				userDetailsService.getUserCount());
+		logger.info("WebSecurityConfig instantiated with local database identities");
 	}
 
 	@Bean
@@ -99,16 +99,16 @@ public class WebSecurityConfig {
 		provider.setPasswordEncoder(passwordEncoder);
 		// Hide user not found exceptions (returns BadCredentials instead)
 		provider.setHideUserNotFoundExceptions(true);
-		logger.info("DaoAuthenticationProvider configured with FileBasedUserDetailsService");
+		logger.info("DaoAuthenticationProvider configured for local v5 identities");
 		return provider;
 	}
 
 	/**
-	 * Create AuthenticationManager that uses ONLY our DaoAuthenticationProvider.
+	 * Create an AuthenticationManager that uses ONLY our DaoAuthenticationProvider.
 	 * This prevents Spring from adding default InMemoryUserDetailsManager.
 	 */
 	@Bean
-	public AuthenticationManager authenticationManager(DaoAuthenticationProvider authenticationProvider) {
+	public org.springframework.security.authentication.AuthenticationManager authenticationManager(DaoAuthenticationProvider authenticationProvider) {
 		return new ProviderManager(authenticationProvider);
 	}
 
@@ -122,97 +122,52 @@ public class WebSecurityConfig {
 		return firewall;
 	}
 
-	/**
-	 * Main security filter chain configuration
-	 * Supports both Form Login (for browsers) and HTTP Basic (for APIs)
-	 */
+	/** API v5 uses session cookies for the browser and bearer tokens for integrations. */
 	@Bean
-	@Order(1)
-	public SecurityFilterChain apiV5SecurityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-		boolean oidc = "oidc".equalsIgnoreCase(apiV5AuthMode) || "hybrid".equalsIgnoreCase(apiV5AuthMode);
-		boolean basic = "file".equalsIgnoreCase(apiV5AuthMode) || "hybrid".equalsIgnoreCase(apiV5AuthMode);
-		http.securityMatcher("/api/v5/**")
-				.authenticationManager(authenticationManager)
-				.cors(cors -> cors.configurationSource(apiV5CorsConfigurationSource()))
-				.csrf(csrf -> csrf.disable())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/v5/openapi", "/api/v5/openapi/**", "/api/v5/docs", "/api/v5/docs/**", "/api/v5/swagger-ui/**").permitAll()
-						.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v5/**").hasAnyRole("VIEWER", "ADMIN")
-						.anyRequest().hasRole("ADMIN"))
+	public SecurityFilterChain apiV5SecurityFilterChain(HttpSecurity http, JdbcTemplate jdbc) throws Exception {
+		CookieCsrfTokenRepository csrfRepository = apiV5CsrfTokenRepository();
+		CsrfTokenRequestAttributeHandler csrfRequestHandler = new CsrfTokenRequestAttributeHandler();
+		csrfRequestHandler.setCsrfRequestAttributeName(null);
+		http.cors(cors -> cors.configurationSource(apiV5CorsConfigurationSource()))
+				.csrf(csrf -> csrf.csrfTokenRepository(csrfRepository).csrfTokenRequestHandler(csrfRequestHandler)
+						.requireCsrfProtectionMatcher(WebSecurityConfig::requiresCsrf))
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+				.logout(logout -> logout.logoutUrl("/api/v5/auth/logout")
+						.invalidateHttpSession(true)
+						.clearAuthentication(true)
+						.deleteCookies("SESSION", "JSESSIONID", "XSRF-TOKEN")
+						.logoutSuccessHandler((request, response, authentication) ->
+								response.setStatus(HttpServletResponse.SC_NO_CONTENT)))
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/v5/auth/csrf", "/api/v5/auth/login",
+						"/api/v5/openapi", "/api/v5/openapi/**", "/api/v5/docs", "/api/v5/docs/**", "/api/v5/swagger-ui/**",
+						"/", "/admin/**", "/dashboard/**", "/favicon.ico").permitAll()
+					.requestMatchers("/api/v5/me").authenticated()
+					.requestMatchers("/api/v5/dashboard/**").hasAnyRole("ADMIN", "DASHBOARD")
+					.requestMatchers("/api/v5/**").hasAnyRole("ADMIN", "READER", "SERVICE_ACCOUNT")
+					.anyRequest().denyAll())
 				.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint((request, response, exception) -> writeApiError(response, 401, "UNAUTHORIZED"))
 						.accessDeniedHandler((request, response, exception) -> {
 							Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 							boolean anonymous = authentication == null || authentication instanceof AnonymousAuthenticationToken;
 							writeApiError(response, anonymous ? 401 : 403, anonymous ? "UNAUTHORIZED" : "FORBIDDEN");
 						}));
-		if (basic) http.httpBasic(httpBasic -> httpBasic
-				.realmName("LA Referencia Platform")
-				// The React client sends the Basic header itself. Do not emit
-				// WWW-Authenticate for API failures, otherwise browsers display
-				// their native username/password dialog over the application.
-				.authenticationEntryPoint((request, response, exception) -> writeApiError(response, 401, "UNAUTHORIZED")));
-		if (oidc) http.oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(apiV5JwtConverter())));
+		http.addFilterBefore(new ApiTokenAuthenticationFilter(jdbc), CsrfFilter.class);
 		return http.build();
+	}
+
+	static boolean requiresCsrf(HttpServletRequest request) {
+		if (!CsrfFilter.DEFAULT_CSRF_MATCHER.matches(request)) return false;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return !(authentication != null && authentication.getPrincipal() instanceof LocalPrincipal principal
+				&& principal.kind() == LocalPrincipal.Kind.SERVICE_ACCOUNT);
 	}
 
 	@Bean
-	@Order(2)
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager)
-			throws Exception {
-		http
-				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-				// Use ONLY our authentication manager
-				.authenticationManager(authenticationManager)
-				.authorizeHttpRequests(authz -> authz
-						// The React shell is public; authentication is performed by the
-						// stateless /api/v5 chain and its own login screen.
-						.requestMatchers(org.springframework.http.HttpMethod.GET,
-								"/", "/index.html", "/login", "/networks/**", "/validators/**",
-								"/transformers/**", "/actions/**", "/runtime/**").permitAll()
-						.requestMatchers("/assets/**", "/config.json").permitAll()
-
-						// The old form-login application remains available under /legacy.
-						.requestMatchers("/legacy/login.html", "/legacy/css/**").permitAll()
-
-						// Static resources needed for login page (CSS, JS if any)
-						.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-						.requestMatchers("/fonts/**", "/libs/**", "/modules/**", "/schemas/**", "/services/**",
-								"/hal-browser/**")
-						.permitAll()
-
-						// All other requests require ADMIN role (including index.html, REST, etc.)
-						.anyRequest().hasRole("ADMIN"))
-				// Form Login for browser access
-				.formLogin(form -> form
-						.loginPage("/legacy/login.html")
-						.loginProcessingUrl("/login")
-						.defaultSuccessUrl("/legacy/index.html", true)
-						.failureUrl("/legacy/login.html?error=true")
-						.permitAll())
-				// HTTP Basic for API/CLI access
-				.httpBasic(httpBasic -> httpBasic.realmName("LA Referencia Platform"))
-				// Logout configuration
-				.logout(logout -> logout
-						.logoutUrl("/logout")
-						.logoutSuccessUrl("/legacy/login.html?logout=true")
-						.invalidateHttpSession(true)
-						.deleteCookies("JSESSIONID")
-						.permitAll())
-				.csrf(csrf -> csrf.disable())
-				.sessionManagement(session -> session.maximumSessions(1))
-				.exceptionHandling(exceptions -> exceptions
-						.authenticationEntryPoint(new AjaxAwareAuthenticationEntryPoint("/legacy/login.html")));
-
-		return http.build();
-	}
-
-	private JwtAuthenticationConverter apiV5JwtConverter() {
-		JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
-		authorities.setAuthoritiesClaimName(apiV5RolesClaim);
-		authorities.setAuthorityPrefix("ROLE_");
-		JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-		converter.setJwtGrantedAuthoritiesConverter(authorities);
-		return converter;
+	public CookieCsrfTokenRepository apiV5CsrfTokenRepository() {
+		CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+		repository.setCookiePath("/");
+		repository.setCookieCustomizer(cookie -> cookie.secure(apiV5CookiesSecure).sameSite("Lax"));
+		return repository;
 	}
 
 	private CorsConfigurationSource apiV5CorsConfigurationSource() {
@@ -220,7 +175,7 @@ public class WebSecurityConfig {
 		if (apiV5AllowedOrigins != null && !apiV5AllowedOrigins.isBlank()) {
 			configuration.setAllowedOrigins(Arrays.stream(apiV5AllowedOrigins.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList());
 			configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-			configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Confirm-Network-Deletion"));
+			configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Confirm-Network-Deletion", "X-XSRF-TOKEN"));
 			configuration.setAllowCredentials(true);
 		}
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -234,10 +189,7 @@ public class WebSecurityConfig {
 		response.getWriter().write("{\"type\":\"urn:lareferencia:api:v5:" + code.toLowerCase() + "\",\"title\":\"" + code + "\",\"status\":" + status + ",\"code\":\"" + code + "\"}");
 	}
 
-	/**
-	 * CORS configuration to allow credentials (HTTP Basic Auth) in cross-origin
-	 * requests
-	 */
+	/** CORS configuration for credentialed React browser requests. */
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
@@ -248,7 +200,7 @@ public class WebSecurityConfig {
 		// Allow common HTTP methods
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-		// Allow common headers including Authorization for HTTP Basic Auth
+		// Allow the bearer token and CSRF headers used by v5 clients.
 		configuration.setAllowedHeaders(Arrays.asList("*"));
 
 		// CRITICAL: Allow credentials (cookies, authorization headers, etc.)
