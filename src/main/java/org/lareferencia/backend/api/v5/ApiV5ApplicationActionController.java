@@ -28,11 +28,11 @@ public class ApiV5ApplicationActionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<ApplicationActionResponse> list() { return service.list(); }
 
     @GetMapping("/{actionKey}")
-    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApplicationActionResponse get(@PathVariable String actionKey) { return service.get(actionKey); }
 
     @PutMapping("/{actionKey}")
@@ -50,7 +50,7 @@ public class ApiV5ApplicationActionController {
     }
 
     @GetMapping("/{actionKey}/usage")
-    @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApplicationActionUsageResponse usage(@PathVariable String actionKey) { return service.usage(actionKey); }
 
     @PostMapping("/refresh")

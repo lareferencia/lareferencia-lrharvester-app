@@ -18,7 +18,10 @@ import org.lareferencia.core.service.validation.ValidationStatsObservationsResul
 import org.lareferencia.core.service.validation.ValidationStatsResult;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.lareferencia.backend.security.LocalAuthorizationService;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class ApiV5DiagnosticsService {
@@ -27,24 +30,32 @@ public class ApiV5DiagnosticsService {
     private final IValidationStatisticsService statistics;
     private final IMetadataStore metadataStore;
     private final ISnapshotStore snapshotStore;
+    private final LocalAuthorizationService authorization;
+
+    @Autowired
+    public ApiV5DiagnosticsService(NetworkSnapshotRepository snapshots, SnapshotLogService logs,
+            IValidationStatisticsService statistics, IMetadataStore metadataStore, ISnapshotStore snapshotStore,
+            LocalAuthorizationService authorization) {
+        this.snapshots = snapshots; this.logs = logs; this.statistics = statistics;
+        this.metadataStore = metadataStore; this.snapshotStore = snapshotStore; this.authorization = authorization;
+    }
 
     public ApiV5DiagnosticsService(NetworkSnapshotRepository snapshots, SnapshotLogService logs,
             IValidationStatisticsService statistics, IMetadataStore metadataStore, ISnapshotStore snapshotStore) {
-        this.snapshots = snapshots; this.logs = logs; this.statistics = statistics;
-        this.metadataStore = metadataStore; this.snapshotStore = snapshotStore;
+        this(snapshots, logs, statistics, metadataStore, snapshotStore, null);
     }
 
-    public PageResponse<LogEntryResponse> logs(Long snapshotId, int page, int size) {
-        requireSnapshot(snapshotId);
+    public PageResponse<LogEntryResponse> logs(Long snapshotId, int page, int size, Authentication authentication) {
+        requireSnapshot(snapshotId, authentication);
         SnapshotLogService.LogQueryResult result = logs.getLogEntries(snapshotId, page, size);
         if (!result.isSuccess()) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_LOG_NOT_FOUND", result.getError());
         return new PageResponse<>(result.getEntries().stream().map(e -> new LogEntryResponse(e.getTimestamp(), e.getMessage())).toList(),
                 result.getCurrentPage(), result.getPageSize(), result.getTotalElements(), result.getTotalPages());
     }
 
-    public DiagnosticSummaryResponse summary(Long snapshotId, List<DiagnosticFilter> filters) {
+    public DiagnosticSummaryResponse summary(Long snapshotId, List<DiagnosticFilter> filters, Authentication authentication) {
         try {
-            ValidationStatsResult result = statistics.queryValidatorRulesStatsBySnapshot(requireSnapshot(snapshotId), translate(filters));
+            ValidationStatsResult result = statistics.queryValidatorRulesStatsBySnapshot(requireSnapshot(snapshotId, authentication), translate(filters));
             List<DiagnosticRuleResponse> rules = result.getRulesByID().values().stream()
                     .map(rule -> new DiagnosticRuleResponse(rule.getRuleID(), rule.getName(), rule.getDescription(),
                             rule.getQuantifier() == null ? null : rule.getQuantifier().name(), rule.getMandatory(),
@@ -64,8 +75,9 @@ public class ApiV5DiagnosticsService {
         }
     }
 
-    public PageResponse<DiagnosticRecordResponse> records(Long snapshotId, List<DiagnosticFilter> filters, int page, int size) {
-        requireSnapshot(snapshotId);
+    public PageResponse<DiagnosticRecordResponse> records(Long snapshotId, List<DiagnosticFilter> filters, int page, int size,
+            Authentication authentication) {
+        requireSnapshot(snapshotId, authentication);
         try {
             ValidationStatsObservationsResult result = statistics.queryValidationStatsObservationsBySnapshotID(
                     snapshotId, translate(filters), PageRequest.of(page, size));
@@ -76,8 +88,9 @@ public class ApiV5DiagnosticsService {
         }
     }
 
-    public RuleOccurrencesResponse occurrences(Long snapshotId, Long ruleId, List<DiagnosticFilter> filters) {
-        requireSnapshot(snapshotId);
+    public RuleOccurrencesResponse occurrences(Long snapshotId, Long ruleId, List<DiagnosticFilter> filters,
+            Authentication authentication) {
+        requireSnapshot(snapshotId, authentication);
         try {
             ValidationRuleOccurrencesCount result = statistics.queryValidRuleOccurrencesCountBySnapshotID(snapshotId,
                     ruleId, translate(filters));
@@ -88,9 +101,9 @@ public class ApiV5DiagnosticsService {
         }
     }
 
-    public String metadata(Long snapshotId, String identifier) {
+    public String metadata(Long snapshotId, String identifier, Authentication authentication) {
         if (identifier == null || identifier.isBlank()) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
-        requireSnapshot(snapshotId);
+        requireSnapshot(snapshotId, authentication);
         try {
             RecordValidation validation = statistics.getRecordValidationListBySnapshotAndIdentifier(snapshotId, identifier);
             if (validation == null) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "RECORD_NOT_FOUND", "Record was not found in diagnostics");
@@ -99,7 +112,10 @@ public class ApiV5DiagnosticsService {
         } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", exception.getMessage()); }
     }
 
-    private NetworkSnapshot requireSnapshot(Long id) { return snapshots.findById(id).orElseThrow(() -> new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_NOT_FOUND", "Snapshot " + id + " was not found")); }
+    private NetworkSnapshot requireSnapshot(Long id, Authentication authentication) {
+        if (authorization != null) authorization.requireSnapshotRead(authentication, id);
+        return snapshots.findById(id).orElseThrow(() -> new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_NOT_FOUND", "Snapshot " + id + " was not found"));
+    }
     private DiagnosticRecordResponse record(ValidationStatObservation item) {
         return new DiagnosticRecordResponse(item.getId(), item.getIdentifier(), item.getSnapshotId(), item.getOrigin(),
                 item.getSetSpec(), item.getMetadataPrefix(), item.getNetworkAcronym(), item.getRepositoryName(),

@@ -45,6 +45,18 @@ public class ApiV5ExceptionHandler {
         return ResponseEntity.unprocessableEntity().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON).body(problem);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ProblemDetail> invalidArgument(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problem(HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT", exception.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    ResponseEntity<ProblemDetail> invalidState(IllegalStateException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problem(HttpStatus.CONFLICT, "STATE_CONFLICT", exception.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ProblemDetail> unexpected(Exception exception) {
         return ResponseEntity.internalServerError().contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)

@@ -3,6 +3,7 @@ package org.lareferencia.backend.api.v5;
 import static org.lareferencia.backend.api.v5.ApiV5DarkDtos.*;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,15 +15,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.lareferencia.contrib.dark.services.DarkRuntimeConfigurationService;
+import org.lareferencia.backend.security.LocalAuthorizationService;
 
 @RestController
 @RequestMapping("/api/v5/dark")
-@PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 public class ApiV5DarkController {
     private final ApiV5DarkService service;
     private final DarkRuntimeConfigurationService runtimeConfiguration;
+    private final LocalAuthorizationService authorization;
     public ApiV5DarkController(ApiV5DarkService service, DarkRuntimeConfigurationService runtimeConfiguration) {
-        this.service = service; this.runtimeConfiguration = runtimeConfiguration;
+        this(service, runtimeConfiguration, null);
+    }
+    @Autowired
+    public ApiV5DarkController(ApiV5DarkService service, DarkRuntimeConfigurationService runtimeConfiguration,
+            LocalAuthorizationService authorization) {
+        this.service = service; this.runtimeConfiguration = runtimeConfiguration; this.authorization = authorization;
     }
 
     @GetMapping("/configuration")
@@ -52,7 +60,8 @@ public class ApiV5DarkController {
     }
 
     @GetMapping("/networks/{networkId}/summary")
-    public Summary networkSummary(@PathVariable Long networkId) {
+    public Summary networkSummary(@PathVariable Long networkId, Authentication authentication) {
+        if (authorization != null) authorization.requireNetworkRead(authentication, networkId);
         String naan = service.networkNaan(networkId);
         return naan == null ? new Summary(0, java.util.List.of(), java.util.List.of(), java.util.List.of()) : service.summary(naan);
     }
@@ -60,7 +69,8 @@ public class ApiV5DarkController {
     @GetMapping("/networks/{networkId}/records")
     public ApiV5Dtos.PageResponse<RecordResponse> networkRecords(@PathVariable Long networkId,
             @RequestParam(required = false) String state, @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "25") int size) {
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "25") int size, Authentication authentication) {
+        if (authorization != null) authorization.requireNetworkRead(authentication, networkId);
         if (page < 0) throw new ApiV5Exception(org.springframework.http.HttpStatus.BAD_REQUEST, "PAGE_INVALID", "page must be zero or greater");
         if (size < 1 || size > 200) throw new ApiV5Exception(org.springframework.http.HttpStatus.BAD_REQUEST, "SIZE_INVALID", "size must be between 1 and 200");
         String naan = service.networkNaan(networkId);

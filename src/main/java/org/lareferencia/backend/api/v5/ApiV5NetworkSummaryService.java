@@ -39,15 +39,28 @@ public class ApiV5NetworkSummaryService {
     @Transactional(readOnly = true)
     public PageResponse<NetworkSummaryResponse> list(int page, int size, String sort, String q, String acronym,
             String name, String institutionName, Boolean published, String snapshotStatus, String indexStatus) {
+        return list(page, size, sort, q, acronym, name, institutionName, published, snapshotStatus, indexStatus, null);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<NetworkSummaryResponse> list(int page, int size, String sort, String q, String acronym,
+            String name, String institutionName, Boolean published, String snapshotStatus, String indexStatus,
+            List<Long> allowedNetworkIds) {
         SortSelection sorting = sort(sort);
         SnapshotStatus parsedSnapshotStatus = enumValue(SnapshotStatus.class, snapshotStatus, "SNAPSHOT_STATUS_INVALID");
         SnapshotIndexStatus parsedIndexStatus = enumValue(SnapshotIndexStatus.class, indexStatus, "INDEX_STATUS_INVALID");
 
         QueryParts parts = queryParts(q, acronym, name, institutionName, published, parsedSnapshotStatus, parsedIndexStatus);
+        if (allowedNetworkIds != null && allowedNetworkIds.isEmpty())
+            return new PageResponse<>(List.of(), page, size, 0, 0);
+        if (allowedNetworkIds != null) {
+            parts.parameters().put("allowedNetworkIds", allowedNetworkIds);
+        }
+        String where = parts.where() + (allowedNetworkIds == null ? "" : " and n.id in :allowedNetworkIds");
         TypedQuery<Network> query = entityManager.createQuery(
-                "select n from Network n" + parts.where() + " order by n." + sorting.field() + " " + sorting.direction(),
+                "select n from Network n" + where + " order by n." + sorting.field() + " " + sorting.direction(),
                 Network.class);
-        TypedQuery<Long> count = entityManager.createQuery("select count(n) from Network n" + parts.where(), Long.class);
+        TypedQuery<Long> count = entityManager.createQuery("select count(n) from Network n" + where, Long.class);
         parts.parameters().forEach((key, value) -> { query.setParameter(key, value); count.setParameter(key, value); });
         query.setFirstResult(page * size).setMaxResults(size);
 

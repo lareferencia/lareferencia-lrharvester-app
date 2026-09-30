@@ -21,10 +21,10 @@ public class ApiV5NetworkActionController {
     private final ApiV5NetworkActionService service;
     public ApiV5NetworkActionController(ApiV5NetworkActionService service) { this.service = service; }
 
-    @GetMapping @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    @GetMapping @PreAuthorize("hasRole('ADMIN')")
     public List<NetworkActionResponse> list(@PathVariable Long networkId) { return service.list(networkId); }
 
-    @GetMapping("/{actionKey}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')")
+    @GetMapping("/{actionKey}") @PreAuthorize("hasRole('ADMIN')")
     public NetworkActionResponse get(@PathVariable Long networkId, @PathVariable String actionKey) { return service.get(networkId, actionKey); }
 
     @PutMapping("/{actionKey}") @PreAuthorize("hasRole('ADMIN')")

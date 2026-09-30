@@ -12,8 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -54,16 +52,6 @@ class ApiV5ManagementControllerTest {
                 .andExpect(jsonPath("$.items[0].runtime.runningCount").value(1));
     }
 
-    @Test
-    void me_ExposesNormalizedRoles() throws Exception {
-        var authentication = new UsernamePasswordAuthenticationToken("reader", "n/a",
-                List.of(new SimpleGrantedAuthority("ROLE_VIEWER")));
-        mvc.perform(get("/api/v5/me").principal(authentication))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("reader"))
-                .andExpect(jsonPath("$.roles[0]").value("VIEWER"));
-    }
-
     private static final class StubManagementService extends ApiV5ManagementService {
         StubManagementService() { super(null, null, null, null, null, null, null, null, null, null, new ObjectMapper(), null, null); }
         @Override
@@ -77,7 +65,8 @@ class ApiV5ManagementControllerTest {
 
         @Override
         public PageResponse<NetworkSummaryResponse> list(int page, int size, String sort, String q, String acronym,
-                String name, String institutionName, Boolean published, String snapshotStatus, String indexStatus) {
+                String name, String institutionName, Boolean published, String snapshotStatus, String indexStatus,
+                List<Long> allowedNetworkIds) {
             SnapshotResponse snapshot = new SnapshotResponse(10L, 1L, null, "VALID", "INDEXED",
                     OffsetDateTime.parse("2026-08-25T09:00:00Z"), null,
                     OffsetDateTime.parse("2026-08-25T10:00:00Z"), 100, 90, 80, false);

@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 public class ApiV5WorkerConfigurationController {
     private final ApiV5WorkerConfigurationService service;
     public ApiV5WorkerConfigurationController(ApiV5WorkerConfigurationService service) { this.service = service; }
-    @GetMapping @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public List<WorkerConfigurationResponse> list() { return service.list(); }
-    @GetMapping("/{workerKey}") @PreAuthorize("hasAnyRole('VIEWER','ADMIN')") public WorkerConfigurationResponse get(@PathVariable String workerKey) { return service.get(workerKey); }
+    @GetMapping @PreAuthorize("hasRole('ADMIN')") public List<WorkerConfigurationResponse> list() { return service.list(); }
+    @GetMapping("/{workerKey}") @PreAuthorize("hasRole('ADMIN')") public WorkerConfigurationResponse get(@PathVariable String workerKey) { return service.get(workerKey); }
     @PutMapping("/{workerKey}") @PreAuthorize("hasRole('ADMIN')") public WorkerConfigurationResponse replace(@PathVariable String workerKey, @Valid @RequestBody WorkerConfigurationRequest request, Authentication authentication) { return service.replace(workerKey, request, authentication.getName()); }
 }

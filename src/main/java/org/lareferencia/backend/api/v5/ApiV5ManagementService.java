@@ -118,6 +118,14 @@ public class ApiV5ManagementService {
                 result.getTotalElements(), result.getTotalPages());
     }
 
+    public PageResponse<NetworkResponse> listNetworks(int page, int size, List<Long> allowedIds) {
+        if (allowedIds == null) return listNetworks(page, size);
+        if (allowedIds.isEmpty()) return new PageResponse<>(List.of(), page, size, 0, 0);
+        Page<Network> result = networks.findByIdIn(allowedIds, PageRequest.of(page, size));
+        return new PageResponse<>(result.map(this::networkResponse).toList(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
     public NetworkResponse network(Long id) { return networkResponse(requireNetwork(id)); }
 
     /**

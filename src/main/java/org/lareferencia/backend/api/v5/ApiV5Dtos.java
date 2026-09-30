@@ -189,7 +189,7 @@ public final class ApiV5Dtos {
     public record PropertyResponse(String name, String description) {
     }
 
-    public record CurrentUserResponse(String username, String displayName, List<String> roles, String authMode) {
+    public record CurrentUserResponse(String username, String displayName, List<String> roles) {
     }
 
     public record UserResponse(String username, List<String> roles) {}
