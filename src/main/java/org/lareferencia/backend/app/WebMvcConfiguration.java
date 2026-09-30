@@ -31,22 +31,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 //@EnableWebMvc
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
-    @Value("${frontend.static-directory:static}")
-    private String staticDirectory;
+    @Value("${frontend.admin-static-directory:admin-static}")
+    private String adminStaticDirectory;
 
-    @Value("${frontend.legacy-static-directory:static-legacy}")
-    private String legacyStaticDirectory;
+    @Value("${frontend.dashboard-static-directory:dashboard-static}")
+    private String dashboardStaticDirectory;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/legacy/**")
-                .addResourceLocations(fileLocation(legacyStaticDirectory));
-
-        // The generated React application has priority. Keeping the legacy
-        // directory as a second location preserves the old root as a fallback
-        // when static/index.html has not been generated yet.
-        registry.addResourceHandler("/**")
-                .addResourceLocations(fileLocation(staticDirectory), fileLocation(legacyStaticDirectory));
+        registry.addResourceHandler("/admin/**")
+                .addResourceLocations(fileLocation(adminStaticDirectory));
+        registry.addResourceHandler("/dashboard/**")
+                .addResourceLocations(fileLocation(dashboardStaticDirectory));
     }
 
     private String fileLocation(String directory) {

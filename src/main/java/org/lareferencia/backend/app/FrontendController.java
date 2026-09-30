@@ -1,33 +1,48 @@
 package org.lareferencia.backend.app;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
- * Routes browser navigation to the generated React application while keeping
- * the former AngularJS administration application available under /legacy.
+ * Routes browser navigation to the generated frontend applications.
  */
 @Controller
 public class FrontendController {
 
-    private final Path frontendIndex;
-
-    public FrontendController(@Value("${frontend.static-directory:static}") String staticDirectory) {
-        this.frontendIndex = Path.of(staticDirectory).resolve("index.html");
+    @GetMapping("/")
+    public RedirectView root() {
+        return new RedirectView("/admin/");
     }
 
-    @GetMapping({ "/", "/login", "/networks", "/networks/**", "/validators", "/validators/**",
-            "/transformers", "/transformers/**", "/actions", "/actions/**", "/runtime", "/runtime/**" })
-    public String frontend() {
-        return Files.isRegularFile(frontendIndex) ? "forward:/index.html" : "redirect:/legacy/index.html";
+    @GetMapping({ "/admin", "/admin/", "/admin/login", "/admin/networks", "/admin/networks/**",
+            "/admin/validators", "/admin/validators/**", "/admin/transformers", "/admin/transformers/**",
+            "/admin/actions", "/admin/actions/**", "/admin/runtime", "/admin/runtime/**", "/admin/dark",
+            "/admin/dark/**", "/admin/users", "/admin/users/**", "/admin/forbidden" })
+    public String adminFrontend() {
+        return "forward:/admin/index.html";
     }
 
-    @GetMapping({ "/legacy", "/legacy/" })
-    public String legacy() {
-        return "redirect:/legacy/index.html";
+    @GetMapping({ "/dashboard", "/dashboard/" })
+    public RedirectView dashboardRoot() {
+        return new RedirectView("/dashboard/es/");
+    }
+
+    @GetMapping({ "/dashboard/en", "/dashboard/en/", "/dashboard/en/login", "/dashboard/en/user/**",
+            "/dashboard/en/statistics/**", "/dashboard/en/*/validation/**", "/dashboard/en/*/harvesting/**" })
+    public String dashboardEnglish() {
+        return "forward:/dashboard/en/index.html";
+    }
+
+    @GetMapping({ "/dashboard/es", "/dashboard/es/", "/dashboard/es/login", "/dashboard/es/user/**",
+            "/dashboard/es/statistics/**", "/dashboard/es/*/validation/**", "/dashboard/es/*/harvesting/**" })
+    public String dashboardSpanish() {
+        return "forward:/dashboard/es/index.html";
+    }
+
+    @GetMapping({ "/dashboard/pt", "/dashboard/pt/", "/dashboard/pt/login", "/dashboard/pt/user/**",
+            "/dashboard/pt/statistics/**", "/dashboard/pt/*/validation/**", "/dashboard/pt/*/harvesting/**" })
+    public String dashboardPortuguese() {
+        return "forward:/dashboard/pt/index.html";
     }
 }

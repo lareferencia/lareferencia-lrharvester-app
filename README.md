@@ -19,8 +19,8 @@ Elasticsearch/OpenSearch indexing for search and entity relationship tracking (s
 
 ### Web Interface
 - **React Admin Web** (from `lareferencia-lrharvester-admin-web`) is served at the root of port `8090` (built into `static/`).
-- **AngularJS legacy UI** remains available at `/legacy/` (sources in `static-legacy/`), login at `/legacy/login.html`.
-- **API v5** under `/api/v5` (OpenAPI at `/api/v5/openapi`, Swagger at `/api/v5/docs`); Spring Data REST at `/rest`.
+- **API v5** under `/api/v5` (OpenAPI at `/api/v5/openapi`, Swagger at `/api/v5/docs`). React is the only web UI; legacy UI and Spring Data REST are not exposed.
+- **Identity**: local PostgreSQL users, JDBC web sessions with CSRF, and revocable repository-scoped Bearer tokens for service accounts. Bootstrap the first admin from `lareferencia-shell` after `database_migrate`; see the [authentication runbook](../docs/AUTHENTICATION.md).
 - Multi-language UI: Spanish, English and Portuguese (`config/i18n/messages_*.properties`).
 
 ## 📄 License
