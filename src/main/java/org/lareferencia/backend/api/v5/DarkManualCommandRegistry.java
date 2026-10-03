@@ -59,16 +59,28 @@ public class DarkManualCommandRegistry {
         boolean running = false;
         boolean cancelled = false;
         boolean failures = false;
+        boolean executionFailures = false;
         for (IWorker<?> worker : entry.workers()) {
-            var future = worker.getScheduledFuture();
-            if (future == null) queued = true;
-            else if (future.isCancelled()) cancelled = true;
-            else if (!future.isDone()) running = true;
+            var execution = taskManager.getWorkerSnapshot(worker);
+            if (execution.isPresent()) {
+                switch (execution.get().state()) {
+                    case QUEUED -> queued = true;
+                    case DISPATCHED, RUNNING, CANCEL_REQUESTED -> running = true;
+                    case CANCELLED -> cancelled = true;
+                    case FAILED -> executionFailures = true;
+                    default -> { }
+                }
+            } else {
+                var future = worker.getScheduledFuture();
+                if (future == null) queued = true;
+                else if (future.isCancelled()) cancelled = true;
+                else if (!future.isDone()) running = true;
+            }
             failures |= progress(worker).failed() > 0;
         }
         if (running) return "RUNNING";
-        if (queued && !taskManager.getQueuedTasksByRunningContextID(entry.context().getId()).isEmpty()) return "QUEUED";
-        if (cancelled) return "FAILED";
+        if (queued) return "QUEUED";
+        if (cancelled || executionFailures) return "FAILED";
         return failures ? "PARTIAL" : "SUCCEEDED";
     }
 

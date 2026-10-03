@@ -151,6 +151,10 @@ public class ApiV5ManagementController {
         return service.latestSnapshot(id, status);
     }
 
+    @GetMapping("/runtime/executions")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<org.lareferencia.core.task.TaskManager.ExecutionSnapshot> executions() { return service.executions(); }
+
     @GetMapping("/networks/{id}/runtime")
     @PreAuthorize("hasRole('ADMIN')")
     public List<RuntimeProcessResponse> networkRuntime(@PathVariable Long id) { return service.networkRuntime(id); }

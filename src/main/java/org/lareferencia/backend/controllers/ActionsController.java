@@ -59,6 +59,11 @@ import lombok.Setter;
 @RestController
 public class ActionsController {
 
+    @org.springframework.web.bind.annotation.ExceptionHandler(org.lareferencia.core.task.TaskSubmissionRejectedException.class)
+    public ResponseEntity<SimpleResponse> admissionRejected(org.lareferencia.core.task.TaskSubmissionRejectedException failure) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new SimpleResponse(failure.getReason()));
+    }
+
 	private static Logger logger = LogManager.getLogger(ActionsController.class);
 
 	@Autowired

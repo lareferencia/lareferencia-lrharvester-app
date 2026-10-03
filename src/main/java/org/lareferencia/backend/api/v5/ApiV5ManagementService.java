@@ -29,6 +29,10 @@ import org.lareferencia.core.repository.jpa.ValidatorRepository;
 import org.lareferencia.core.repository.jpa.ValidatorRuleRepository;
 import org.lareferencia.core.task.NetworkAction;
 import org.lareferencia.core.task.ApplicationActionPolicyException;
+import org.lareferencia.core.task.TaskSubmission;
+import org.lareferencia.core.task.TaskSubmissionRejectedException;
+import org.lareferencia.core.task.TaskManager;
+import org.lareferencia.core.task.LegacyNetworkActionExecutor;
 import org.lareferencia.core.task.ApplicationActionCatalogService;
 import org.lareferencia.core.task.NetworkActionkManager;
 import org.lareferencia.core.task.NetworkProperty;
@@ -196,8 +200,12 @@ public class ApiV5ManagementService {
             throw new ApiV5Exception(HttpStatus.CONFLICT, "DELETE_ACTION_UNAVAILABLE",
                     "NETWORK_DELETE_ACTION is not configured in this installation");
         }
-        actions.executeAction("NETWORK_DELETE_ACTION", false, network);
-        return receipt(id, CommandType.RUN_ACTION, "ACCEPTED", "Network deletion was submitted");
+        try {
+            TaskSubmission submission = actions.submitAction("NETWORK_DELETE_ACTION", false, network).requireAccepted();
+            return admissionReceipt(id, CommandType.RUN_ACTION, submission);
+        } catch (TaskSubmissionRejectedException failure) {
+            throw admissionFailure(failure);
+        }
     }
 
     public PageResponse<ValidatorResponse> listValidators(int page, int size) {
@@ -526,30 +534,34 @@ public class ApiV5ManagementService {
 
     public RuntimeSummaryResponse runtime() {
         List<RuntimeProcessResponse> processes = actions.listRunning().stream().map(this::runtimeResponse).toList();
-        String engine = processes.stream().map(RuntimeProcessResponse::engineType).filter(java.util.Objects::nonNull).findFirst().orElse("configured");
+        String engine = actions.getEngineType();
         return new RuntimeSummaryResponse(engine, actions.getRunningCount(), actions.getQueuedCount(), processes);
     }
 
     public List<RuntimeProcessResponse> networkRuntime(Long id) {
         Network network = requireNetwork(id); String context = NetworkRunningContext.buildID(network);
-        return actions.listRunning().stream().filter(p -> context.equals(p.getProcessId()) || network.getAcronym().equals(p.getNetworkAcronym()))
+        return actions.listRunning().stream().filter(p -> context.equals(p.getProcessId()) || p.getVariables() != null && context.equals(p.getVariables().get("contextId"))
+                        || network.getAcronym().equals(p.getNetworkAcronym()))
                 .map(this::runtimeResponse).toList();
     }
 
     public CommandReceipt command(Long id, CommandRequest request) {
         Network network = requireNetwork(id);
         try {
+            TaskSubmission submission = null;
             switch (request.type()) {
                 case RUN_ACTION -> {
                     if (request.actionName() == null || request.actionName().isBlank()) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "ACTION_REQUIRED", "actionName is required");
                     if (actions.getActions().stream().noneMatch(a -> request.actionName().equals(a.getName()))) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "ACTION_NOT_FOUND", "Action is not configured");
-                    actions.executeAction(request.actionName(), Boolean.TRUE.equals(request.incremental()), network);
+                    submission = actions.submitAction(request.actionName(), Boolean.TRUE.equals(request.incremental()), network).requireAccepted();
                 }
-                case RUN_ENABLED_ACTIONS -> actions.executeActions(network);
+                case RUN_ENABLED_ACTIONS -> submission = actions.submitActions(network).requireAccepted();
                 case CANCEL_ALL -> actions.killAndUnqueueActions(network);
                 case RESCHEDULE -> actions.rescheduleNetwork(network);
             }
-            return receipt(id, request.type(), "ACCEPTED", "Command submitted to the configured workflow engine");
+            return submission != null ? admissionReceipt(id, request.type(), submission)
+                    : receipt(id, request.type(), "ACCEPTED", "Command submitted to the configured workflow engine");
+        } catch (TaskSubmissionRejectedException failure) { throw admissionFailure(failure);
         } catch (ApiV5Exception | ApplicationActionPolicyException exception) { throw exception;
         } catch (RuntimeException exception) { throw new ApiV5Exception(HttpStatus.CONFLICT, "COMMAND_REJECTED", exception.getMessage()); }
     }
@@ -769,7 +781,23 @@ public class ApiV5ManagementService {
     private RuleResponse transformerRuleResponse(TransformerRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), null, null, r.getRunorder(), r.getJsonserialization(), "transformer"); }
     private RuleResponse ruleResponse(Long id, String name, String description, Boolean mandatory, String quantifier, Integer order, String json, String kind) { try { ObjectNode node = (ObjectNode) objectMapper.readTree(json); String className = node.remove("@class").asText(); return new RuleResponse(id, typeId(kind, className), className, name, description, mandatory, quantifier, order, node); } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.INTERNAL_SERVER_ERROR, "RULE_SERIALIZATION_INVALID", "Stored rule cannot be represented"); } }
     private SnapshotResponse snapshotResponse(NetworkSnapshot s) { return new SnapshotResponse(s.getId(), s.getNetwork() == null ? null : s.getNetwork().getId(), s.getPreviousSnapshotId(), s.getStatus().name(), s.getIndexStatus().name(), ApiV5NetworkSummaryService.utc(s.getStartTime()), ApiV5NetworkSummaryService.utc(s.getLastIncrementalTime()), ApiV5NetworkSummaryService.utc(s.getEndTime()), s.getSize(), s.getValidSize(), s.getTransformedSize(), s.isDeleted()); }
-    private RuntimeProcessResponse runtimeResponse(RunningProcessInfo p) { return new RuntimeProcessResponse(p.getProcessId(), p.getNetworkAcronym(), p.getActionType(), p.getStatus(), ApiV5NetworkSummaryService.utc(p.getStartTime()), p.getIncremental(), p.getVariables(), p.getEngineType(), "legacy".equals(p.getEngineType()) ? "NETWORK" : "PROCESS"); }
+    public List<TaskManager.ExecutionSnapshot> executions() {
+        return actions.getExecutor() instanceof LegacyNetworkActionExecutor legacy
+                ? legacy.getExecutionSnapshots() : List.of();
+    }
+
+    private ApiV5Exception admissionFailure(TaskSubmissionRejectedException failure) {
+        return new ApiV5Exception(HttpStatus.SERVICE_UNAVAILABLE, failure.getReason(), failure.getMessage());
+    }
+
+    private CommandReceipt admissionReceipt(Long networkId, CommandType command, TaskSubmission submission) {
+        return new CommandReceipt(submission.groupId(), networkId, command, "ACCEPTED", OffsetDateTime.now(ZoneOffset.UTC),
+                "/api/v5/networks/" + networkId + "/runtime", "Plan admitted to " + actions.getEngineType()
+                        + ("legacy".equals(actions.getEngineType()) ? "; " + submission.executionIds().size() + " workers" : "")
+                        + " (completion is asynchronous)");
+    }
+
+    private RuntimeProcessResponse runtimeResponse(RunningProcessInfo p) { return new RuntimeProcessResponse(p.getProcessId(), p.getNetworkAcronym(), p.getActionType(), p.getStatus(), ApiV5NetworkSummaryService.utc(p.getStartTime()), p.getIncremental(), p.getVariables(), p.getEngineType(), "PROCESS"); }
     private CommandReceipt receipt(Long id, CommandType type, String result, String message) { return new CommandReceipt(UUID.randomUUID().toString(), id, type, result, OffsetDateTime.now(ZoneOffset.UTC), "/api/v5/networks/" + id + "/runtime", message); }
     private Network requireNetwork(Long id) { return networks.findById(id).orElseThrow(() -> notFound("NETWORK_NOT_FOUND", "Network " + id + " was not found")); }
     private Validator requireValidator(Long id) { return validators.findById(id).orElseThrow(() -> notFound("VALIDATOR_NOT_FOUND", "Validator " + id + " was not found")); }
