@@ -3,6 +3,7 @@ package org.lareferencia.backend.api.v5;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import org.lareferencia.core.domain.IndexingResult;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -110,7 +111,13 @@ public final class ApiV5Dtos {
             @JsonFormat(shape = JsonFormat.Shape.STRING) OffsetDateTime startTime,
             @JsonFormat(shape = JsonFormat.Shape.STRING) OffsetDateTime lastIncrementalTime,
             @JsonFormat(shape = JsonFormat.Shape.STRING) OffsetDateTime endTime, Integer size,
-            Integer validSize, Integer transformedSize, boolean deleted) {
+            Integer validSize, Integer transformedSize, boolean deleted, Map<String, IndexingResult> indexingResults) {
+        public SnapshotResponse(Long id, Long networkId, Long previousSnapshotId, String status, String indexStatus,
+                OffsetDateTime startTime, OffsetDateTime lastIncrementalTime, OffsetDateTime endTime, Integer size,
+                Integer validSize, Integer transformedSize, boolean deleted) {
+            this(id, networkId, previousSnapshotId, status, indexStatus, startTime, lastIncrementalTime, endTime,
+                    size, validSize, transformedSize, deleted, Map.of());
+        }
     }
 
     public record LogEntryResponse(String timestamp, String message) {
