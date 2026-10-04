@@ -66,14 +66,14 @@ class ApiV5ManagementControllerTest {
         @Override
         public PageResponse<NetworkSummaryResponse> list(int page, int size, String sort, String q, String acronym,
                 String name, String institutionName, Boolean published, String snapshotStatus, String indexStatus,
-                List<Long> allowedNetworkIds) {
+                List<Long> allowedNetworkIds, List<String> tags, String tagMode) {
             SnapshotResponse snapshot = new SnapshotResponse(10L, 1L, null, "VALID", "INDEXED",
                     OffsetDateTime.parse("2026-08-25T09:00:00Z"), null,
                     OffsetDateTime.parse("2026-08-25T10:00:00Z"), 100, 90, 80, false);
             RuntimeStateResponse runtime = new RuntimeStateResponse(1, 0, 1, List.of("harvesting"), List.of(),
                     List.of("scheduled"));
             NetworkSummaryResponse item = new NetworkSummaryResponse(1L, true, "TEST", "Test network",
-                    "Institution", "INST", snapshot, 10L, snapshot.endTime(), runtime);
+                    "Institution", "INST", snapshot, 10L, snapshot.endTime(), runtime, List.of("proyecto:piloto"));
             return new PageResponse<>(List.of(item), page, size, 1, 1);
         }
     }

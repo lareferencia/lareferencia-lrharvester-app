@@ -58,16 +58,37 @@ public class ApiV5ManagementController {
         this(service, objectMapper, summaries, attributeProfiles, requestValidator, null);
     }
 
-    @Autowired
     public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper,
             ApiV5NetworkSummaryService summaries, ApiV5AttributeProfileService attributeProfiles,
             Validator requestValidator, LocalAuthorizationService authorization) {
+        this(service, objectMapper, summaries, attributeProfiles, requestValidator, authorization, null);
+    }
+
+    @Autowired
+    public ApiV5ManagementController(ApiV5ManagementService service, ObjectMapper objectMapper,
+            ApiV5NetworkSummaryService summaries, ApiV5AttributeProfileService attributeProfiles,
+            Validator requestValidator, LocalAuthorizationService authorization, ApiV5NetworkTagQueryService tagQueries) {
+        this.tagQueries = tagQueries;
         this.service = service;
         this.objectMapper = objectMapper;
         this.summaries = summaries;
         this.attributeProfiles = attributeProfiles;
         this.requestValidator = requestValidator;
         this.authorization = authorization;
+    }
+
+    private final ApiV5NetworkTagQueryService tagQueries;
+
+    @GetMapping("/network-tags")
+    @PreAuthorize("isAuthenticated()")
+    public List<String> networkTags(Authentication authentication) {
+        return tagQueries.vocabulary(authorization == null ? null : authorization.readableNetworkIds(authentication));
+    }
+
+    @GetMapping("/network-indexers")
+    @PreAuthorize("isAuthenticated()")
+    public List<String> networkIndexers(Authentication authentication) {
+        return summaries.indexers(authorization == null ? null : authorization.readableNetworkIds(authentication));
     }
 
     @GetMapping("/capabilities")
@@ -77,9 +98,11 @@ public class ApiV5ManagementController {
     @GetMapping("/networks")
     @PreAuthorize("isAuthenticated()")
     public PageResponse<NetworkResponse> networks(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "25") int size,
-            Authentication authentication) {
+            @RequestParam(required = false, name = "tag") List<String> tags,
+            @RequestParam(required = false) String tagMode, Authentication authentication) {
         List<Long> allowed = authorization == null ? null : authorization.readableNetworkIds(authentication);
-        return service.listNetworks(validPage(page), validSize(size), allowed);
+        return tags == null && tagMode == null ? service.listNetworks(validPage(page), validSize(size), allowed)
+                : tagQueries.list(validPage(page), validSize(size), allowed, tags, tagMode);
     }
 
     @GetMapping("/network-summaries")
@@ -89,10 +112,18 @@ public class ApiV5ManagementController {
             @RequestParam(required = false) String q, @RequestParam(required = false) String acronym,
             @RequestParam(required = false) String name, @RequestParam(required = false) String institutionName,
             @RequestParam(required = false) Boolean published, @RequestParam(required = false) String snapshotStatus,
-            @RequestParam(required = false) String indexStatus, Authentication authentication) {
+            @RequestParam(required = false) String indexStatus, @RequestParam(required = false, name = "tag") List<String> tags,
+            @RequestParam(required = false) String tagMode,
+            @RequestParam(required = false) List<String> harvestState, @RequestParam(required = false) List<String> indexState,
+            @RequestParam(required = false) String validHarvest, @RequestParam(required = false) String indexer,
+            @RequestParam(defaultValue = "false") boolean failuresOnly, Authentication authentication) {
         List<Long> allowed = authorization == null ? null : authorization.readableNetworkIds(authentication);
+        if (harvestState != null || indexState != null || validHarvest != null || indexer != null || failuresOnly)
+            return summaries.list(validPage(page), validSize(size), sort, q, acronym, name, institutionName, published,
+                    snapshotStatus, indexStatus, allowed, tags, tagMode,
+                    new ApiV5NetworkSummaryQuery.Filters(harvestState, indexState, validHarvest, indexer, failuresOnly));
         return summaries.list(validPage(page), validSize(size), sort, q, acronym, name, institutionName, published,
-                snapshotStatus, indexStatus, allowed);
+                snapshotStatus, indexStatus, allowed, tags, tagMode);
     }
 
 

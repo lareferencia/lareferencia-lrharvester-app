@@ -60,7 +60,7 @@ public class ApiV5NetworkTransferService {
     static final List<String> COLUMNS = List.of("sourceId", "acronym", "name", "institutionName",
             "institutionAcronym", "published", "originUrl", "metadataPrefix", "metadataStoreSchema",
             "scheduleCronExpression", "attributeProfile", "attributesJson", "setsJson", "propertiesJson",
-            "prevalidatorRef", "validatorRef", "transformerRef", "secondaryTransformerRef", "actionsJson");
+            "prevalidatorRef", "validatorRef", "transformerRef", "secondaryTransformerRef", "actionsJson", "tagsJson");
     private static final int MAX_ROWS = 10_000;
     private static final int MAX_FILE_BYTES = 10 * 1024 * 1024;
 
@@ -83,6 +83,7 @@ public class ApiV5NetworkTransferService {
         this.actionCatalog = actionCatalog; this.actionManager = actionManager; this.json = json;
     }
 
+    @Transactional(readOnly = true)
     public byte[] exportXlsx() {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet(SHEET);
@@ -98,6 +99,7 @@ public class ApiV5NetworkTransferService {
                 values.put("metadataStoreSchema", network.getMetadataStoreSchema()); values.put("scheduleCronExpression", network.getScheduleCronExpression());
                 values.put("attributeProfile", profileType(network));
                 values.put("attributesJson", json.writeValueAsString(defaultMap(network.getAttributes())));
+                values.put("tagsJson", json.writeValueAsString(network.getTags().stream().sorted().toList()));
                 values.put("setsJson", json.writeValueAsString(network.getSets() == null ? List.of() : network.getSets()));
                 values.put("propertiesJson", json.writeValueAsString(defaultMap(network.getProperties())));
                 values.put("prevalidatorRef", validatorName(network.getPrevalidator())); values.put("validatorRef", validatorName(network.getValidator()));
@@ -181,7 +183,7 @@ public class ApiV5NetworkTransferService {
         return new NetworkRequest(row.acronym(), row.name(), row.institutionName(), blankToNull(row.institutionAcronym()), row.published(), row.originUrl(),
                 blankToNull(row.metadataPrefix()), blankToNull(row.metadataStoreSchema()), row.sets(), attributes, row.properties(),
                 blankToNull(row.scheduleCronExpression()), validatorId(row.prevalidatorRef()), validatorId(row.validatorRef()),
-                transformerId(row.transformerRef()), transformerId(row.secondaryTransformerRef()));
+                transformerId(row.transformerRef()), transformerId(row.secondaryTransformerRef()), row.tags());
     }
 
     private List<SourceRow> read(MultipartFile file) {
@@ -226,10 +228,22 @@ public class ApiV5NetworkTransferService {
                     cell(row, columns, "metadataPrefix", formatter), cell(row, columns, "metadataStoreSchema", formatter),
                     cell(row, columns, "scheduleCronExpression", formatter), profile, attributes, sets, properties,
                     cell(row, columns, "prevalidatorRef", formatter), cell(row, columns, "validatorRef", formatter),
-                    cell(row, columns, "transformerRef", formatter), cell(row, columns, "secondaryTransformerRef", formatter), actions, null);
+                    cell(row, columns, "transformerRef", formatter), cell(row, columns, "secondaryTransformerRef", formatter), actions, null, columns.containsKey("tagsJson") ? readTags(cell(row, columns, "tagsJson", formatter)) : null);
         } catch (Exception error) {
-            return new SourceRow(rowNumber, cell(row, columns, "acronym", formatter), "", "", "", false, "", "", "", "", "", Map.of(), List.of(), Map.of(), "", "", "", "", List.of(), "Invalid row: " + error.getMessage());
+            return new SourceRow(rowNumber, cell(row, columns, "acronym", formatter), "", "", "", false, "", "", "", "", "", Map.of(), List.of(), Map.of(), "", "", "", "", List.of(), "Invalid row: " + error.getMessage(), null);
         }
+    }
+
+    private List<String> readTags(String value) throws IOException {
+        if (blank(value)) return List.of();
+        JsonNode node = json.readTree(value);
+        if (node == null || !node.isArray()) throw new IllegalArgumentException("tagsJson must be an array of strings");
+        List<String> tags = new ArrayList<>();
+        for (JsonNode tag : node) {
+            if (!tag.isTextual()) throw new IllegalArgumentException("tagsJson must be an array of strings");
+            tags.add(tag.textValue());
+        }
+        return ApiV5NetworkTags.normalize(tags);
     }
 
     private String cell(Row row, Map<String, Integer> columns, String name, DataFormatter formatter) {
@@ -268,5 +282,5 @@ public class ApiV5NetworkTransferService {
     record SourceRow(int row, String acronym, String name, String institutionName, String institutionAcronym, boolean published,
             String originUrl, String metadataPrefix, String metadataStoreSchema, String scheduleCronExpression, String profileType,
             Map<String, Object> attributes, List<String> sets, Map<String, Boolean> properties, String prevalidatorRef,
-            String validatorRef, String transformerRef, String secondaryTransformerRef, List<ActionRow> actions, String parseError) { }
+            String validatorRef, String transformerRef, String secondaryTransformerRef, List<ActionRow> actions, String parseError, List<String> tags) { }
 }

@@ -28,13 +28,13 @@ public final class ApiV5Dtos {
             String institutionAcronym, String originUrl, String metadataPrefix, String metadataStoreSchema,
             List<String> sets, Map<String, Object> attributes, Map<String, Boolean> properties,
             String scheduleCronExpression, Long prevalidatorId, Long validatorId, Long transformerId,
-            Long secondaryTransformerId) {
+            Long secondaryTransformerId, List<String> tags) {
     }
 
     public record NetworkSummaryResponse(Long id, boolean published, String acronym, String name,
             String institutionName, String institutionAcronym, SnapshotResponse latestSnapshot,
             Long lastValidSnapshotId, @JsonFormat(shape = JsonFormat.Shape.STRING) OffsetDateTime lastValidSnapshotAt,
-            RuntimeStateResponse runtime) {
+            RuntimeStateResponse runtime, List<String> tags) {
     }
 
     public record RuntimeStateResponse(int runningCount, int queuedCount, int scheduledCount,
@@ -47,7 +47,16 @@ public final class ApiV5Dtos {
             String institutionAcronym, Boolean published, @NotBlank String originUrl, String metadataPrefix,
             String metadataStoreSchema, List<String> sets, Map<String, Object> attributes,
             Map<String, Boolean> properties, String scheduleCronExpression, Long prevalidatorId, Long validatorId,
-            Long transformerId, Long secondaryTransformerId) {
+            Long transformerId, Long secondaryTransformerId, List<String> tags) {
+        public NetworkRequest(String acronym, String name, String institutionName, String institutionAcronym,
+                Boolean published, String originUrl, String metadataPrefix, String metadataStoreSchema,
+                List<String> sets, Map<String, Object> attributes, Map<String, Boolean> properties,
+                String scheduleCronExpression, Long prevalidatorId, Long validatorId, Long transformerId,
+                Long secondaryTransformerId) {
+            this(acronym, name, institutionName, institutionAcronym, published, originUrl, metadataPrefix,
+                metadataStoreSchema, sets, attributes, properties, scheduleCronExpression, prevalidatorId,
+                validatorId, transformerId, secondaryTransformerId, null);
+        }
     }
 
     public record RuleRequest(@Positive Long id, String typeId, String className, @NotBlank String name, String description,

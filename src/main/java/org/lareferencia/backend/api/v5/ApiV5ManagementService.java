@@ -116,12 +116,14 @@ public class ApiV5ManagementService {
                 ruleSchemas, ruleSerializer, objectMapper, metadataFormats, attributeProfiles, null, null);
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<NetworkResponse> listNetworks(int page, int size) {
         Page<Network> result = networks.findAll(PageRequest.of(page, size));
         return new PageResponse<>(result.map(this::networkResponse).toList(), result.getNumber(), result.getSize(),
                 result.getTotalElements(), result.getTotalPages());
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<NetworkResponse> listNetworks(int page, int size, List<Long> allowedIds) {
         if (allowedIds == null) return listNetworks(page, size);
         if (allowedIds.isEmpty()) return new PageResponse<>(List.of(), page, size, 0, 0);
@@ -130,6 +132,7 @@ public class ApiV5ManagementService {
                 result.getTotalElements(), result.getTotalPages());
     }
 
+    @Transactional(readOnly = true)
     public NetworkResponse network(Long id) { return networkResponse(requireNetwork(id)); }
 
     /**
@@ -595,6 +598,7 @@ public class ApiV5ManagementService {
         }
         try { URI uri = URI.create(request.originUrl()); if (uri.getScheme() == null || uri.getHost() == null) throw new IllegalArgumentException(); }
         catch (IllegalArgumentException exception) { throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "ORIGIN_URL_INVALID", "originUrl must be an absolute URL"); }
+        if (request.tags() != null) network.setTags(new java.util.LinkedHashSet<>(ApiV5NetworkTags.normalize(request.tags())));
         network.setAcronym(request.acronym()); network.setName(request.name()); network.setInstitutionName(request.institutionName());
         network.setInstitutionAcronym(request.institutionAcronym()); network.setPublished(Boolean.TRUE.equals(request.published()));
         network.setOriginURL(request.originUrl()); network.setMetadataPrefix(defaultValue(request.metadataPrefix(), "oai_dc"));
@@ -774,7 +778,7 @@ public class ApiV5ManagementService {
     }
     private String typeId(String kind, String className) { return kind + "--" + className.substring(className.lastIndexOf('.') + 1).replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase(); }
 
-    private NetworkResponse networkResponse(Network n) { return new NetworkResponse(n.getId(), Boolean.TRUE.equals(n.getPublished()), n.getAcronym(), n.getName(), n.getInstitutionName(), n.getInstitutionAcronym(), n.getOriginURL(), n.getMetadataPrefix(), n.getMetadataStoreSchema(), n.getSets(), n.getAttributes(), n.getProperties(), n.getScheduleCronExpression(), id(n.getPrevalidator()), id(n.getValidator()), id(n.getTransformer()), id(n.getSecondaryTransformer())); }
+    NetworkResponse networkResponse(Network n) { return new NetworkResponse(n.getId(), Boolean.TRUE.equals(n.getPublished()), n.getAcronym(), n.getName(), n.getInstitutionName(), n.getInstitutionAcronym(), n.getOriginURL(), n.getMetadataPrefix(), n.getMetadataStoreSchema(), n.getSets(), n.getAttributes(), n.getProperties(), n.getScheduleCronExpression(), id(n.getPrevalidator()), id(n.getValidator()), id(n.getTransformer()), id(n.getSecondaryTransformer()), n.getTags().stream().sorted().toList()); }
     private ValidatorResponse validatorResponse(Validator v) { return new ValidatorResponse(v.getId(), v.getName(), v.getDescription(), v.getRules().stream().map(this::validatorRuleResponse).toList()); }
     private TransformerResponse transformerResponse(Transformer t) { return new TransformerResponse(t.getId(), t.getName(), t.getDescription(), t.getRules().stream().map(this::transformerRuleResponse).toList()); }
     private RuleResponse validatorRuleResponse(ValidatorRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), r.getMandatory(), r.getQuantifier() == null ? null : r.getQuantifier().name(), null, r.getJsonserialization(), "validator"); }
