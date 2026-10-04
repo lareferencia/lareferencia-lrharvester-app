@@ -58,7 +58,7 @@
 							<property name="name" value="fetchIdentifyParameters" />
 							<property name="description" value="Consultar parámetros Identify antes de cosechar" />
 							<property name="type" value="boolean" />
-							<property name="defaultValue" value="false" />
+							<property name="defaultValue" value="true" />
 						</bean>
 					</list></property>
 				</bean>
@@ -85,7 +85,7 @@
 
 	<!-- Harvesting workers -->
 	<bean id="harvestingWorker" class="org.lareferencia.core.worker.harvesting.HarvestingWorker" scope="prototype">
-		<property name="fetchIdentifyParameters" value="false"></property>
+		<property name="fetchIdentifyParameters" value="true"></property>
 	</bean>
 
 

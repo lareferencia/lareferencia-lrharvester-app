@@ -68,7 +68,7 @@ final class ApiV5NetworkSummaryQuery {
             case "any" -> "v.id is not null";
             default -> throw invalid("VALID_HARVEST_INVALID", "Unknown valid harvest selection");
         });
-        String harvestFailure="s.status="+SnapshotStatus.HARVESTING_FINISHED_ERROR.ordinal();
+        String harvestFailure="s.status in ("+SnapshotStatus.HARVESTING_FINISHED_ERROR.ordinal()+","+SnapshotStatus.VALIDATION_FINISHED_ERROR.ordinal()+")";
         String indexFailure="("+globalIndex+"='FAILED' or s.status="+SnapshotStatus.INDEXING_FINISHED_ERROR.ordinal()+")";
         if (filters.failuresOnly()) where.append(" and (").append(harvestFailure).append(" or ").append(indexFailure).append(")");
         String[] sorting = (sort == null || sort.isBlank() ? "acronym,asc" : sort).split(",",-1);
@@ -87,14 +87,15 @@ final class ApiV5NetworkSummaryQuery {
             case "indexStatus" -> "case when "+index+"='FAILED' then 0 when "+index+"='UNKNOWN' then 1 else 2 end";
             case "snapshotStatus" -> snapshotOrder();
             case "attention" -> "case when "+harvestFailure+" and v.id is null then 0 when "+harvestFailure+" then 1 when "+indexFailure
-                    + " then 2 when s.status="+SnapshotStatus.HARVESTING_STOPPED.ordinal()+" then 3 when v.id is null then 4 else 5 end";
+                    + " then 2 when s.status in ("+SnapshotStatus.HARVESTING_STOPPED.ordinal()+","+SnapshotStatus.VALIDATION_STOPPED.ordinal()+") then 3 when v.id is null then 4 else 5 end";
             default -> throw invalid("SORT_INVALID", "Unsupported source sort field");
         };
         order=" order by "+expression+" "+direction+" nulls last, lower(n.acronym) asc, n.id asc";
     }
     private static String snapshotOrder() {
         List<SnapshotStatus> states = List.of(SnapshotStatus.HARVESTING_FINISHED_ERROR,
-                SnapshotStatus.INDEXING_FINISHED_ERROR, SnapshotStatus.HARVESTING_STOPPED,
+                SnapshotStatus.INDEXING_FINISHED_ERROR, SnapshotStatus.VALIDATION_FINISHED_ERROR,
+                SnapshotStatus.HARVESTING_STOPPED, SnapshotStatus.VALIDATION_STOPPED, SnapshotStatus.VALIDATING,
                 SnapshotStatus.RETRYING, SnapshotStatus.HARVESTING, SnapshotStatus.INDEXING,
                 SnapshotStatus.INITIALIZED, SnapshotStatus.UNKNOWN, SnapshotStatus.HARVESTING_FINISHED_VALID,
                 SnapshotStatus.EMPTY_INCREMENTAL, SnapshotStatus.VALID, SnapshotStatus.INDEXING_FINISHED_VALID);
@@ -105,9 +106,9 @@ final class ApiV5NetworkSummaryQuery {
     private String harvestState(String value) {
         return switch(value) {
             case "valid" -> "s.status="+SnapshotStatus.VALID.ordinal();
-            case "error" -> "s.status="+SnapshotStatus.HARVESTING_FINISHED_ERROR.ordinal();
-            case "running" -> "s.status in ("+SnapshotStatus.HARVESTING.ordinal()+","+SnapshotStatus.RETRYING.ordinal()+")";
-            case "stopped" -> "s.status="+SnapshotStatus.HARVESTING_STOPPED.ordinal();
+            case "error" -> "s.status in ("+SnapshotStatus.HARVESTING_FINISHED_ERROR.ordinal()+","+SnapshotStatus.VALIDATION_FINISHED_ERROR.ordinal()+")";
+            case "running" -> "s.status in ("+SnapshotStatus.HARVESTING.ordinal()+","+SnapshotStatus.RETRYING.ordinal()+","+SnapshotStatus.VALIDATING.ordinal()+")";
+            case "stopped" -> "s.status in ("+SnapshotStatus.HARVESTING_STOPPED.ordinal()+","+SnapshotStatus.VALIDATION_STOPPED.ordinal()+")";
             case "finished" -> "s.status="+SnapshotStatus.HARVESTING_FINISHED_VALID.ordinal();
             case "none" -> "s.id is null";
             default -> "s.status="+parse(SnapshotStatus.class,value).ordinal();
