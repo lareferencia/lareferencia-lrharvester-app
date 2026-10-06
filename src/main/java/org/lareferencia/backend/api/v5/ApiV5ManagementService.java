@@ -166,7 +166,9 @@ public class ApiV5ManagementService {
         }
         Network network = new Network();
         apply(network, request);
-        return networkResponse(networks.save(network));
+        Network saved = networks.save(network);
+        actions.reconcileNetwork(saved);
+        return networkResponse(saved);
     }
 
     @Transactional

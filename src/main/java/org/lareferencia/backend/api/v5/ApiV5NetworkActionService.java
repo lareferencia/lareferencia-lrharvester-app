@@ -27,17 +27,21 @@ public class ApiV5NetworkActionService {
         this.networks = networks; this.configurations = configurations; this.catalog = catalog; this.manager = manager;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<NetworkActionResponse> list(Long networkId) {
-        return configurations.list(network(networkId)).stream()
+        Network network = network(networkId);
+        manager.reconcileNetwork(network);
+        return configurations.list(network).stream()
                 .sorted(Comparator.comparingInt((NetworkActionConfiguration row) -> row.getApplicationAction().getExecutionOrder())
                         .thenComparing(row -> row.getApplicationAction().getActionKey()))
                 .map(this::response).toList();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public NetworkActionResponse get(Long networkId, String actionKey) {
-        return response(configurations.require(network(networkId), manager.getEngineType(), actionKey));
+        Network network = network(networkId);
+        manager.reconcileNetwork(network);
+        return response(configurations.require(network, manager.getEngineType(), actionKey));
     }
 
     public NetworkActionResponse replace(Long networkId, String actionKey, NetworkActionRequest request, String username) {
