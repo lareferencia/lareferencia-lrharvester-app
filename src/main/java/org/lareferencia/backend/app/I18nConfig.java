@@ -15,6 +15,9 @@ public class I18nConfig {
         // Read from ${app.config.dir}/i18n/messages
         messageSource.setBasename("file:" + ConfigPathResolver.resolve("i18n/messages"));
         messageSource.setDefaultEncoding("UTF-8");
+        // Spanish lives in the base bundle; never prefer the server JVM locale
+        // over the language requested by the admin UI.
+        messageSource.setFallbackToSystemLocale(false);
         messageSource.setCacheSeconds(3600); // Cache for 1 hour
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
