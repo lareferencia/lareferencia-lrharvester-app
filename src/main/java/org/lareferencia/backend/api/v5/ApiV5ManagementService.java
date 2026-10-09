@@ -491,6 +491,9 @@ public class ApiV5ManagementService {
         Transformer transformer = requireTransformer(transformerId);
         if (transformer.getRules().size() != request.ruleIds().size()) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ORDER_INVALID", "Every transformer rule must be included exactly once");
         Map<Long, TransformerRule> byId = transformer.getRules().stream().collect(java.util.stream.Collectors.toMap(TransformerRule::getId, rule -> rule));
+        if (request.ruleIds().stream().distinct().count() != byId.size() || !byId.keySet().containsAll(request.ruleIds())) {
+            throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ORDER_INVALID", "Every transformer rule must be included exactly once");
+        }
         for (int index = 0; index < request.ruleIds().size(); index++) {
             TransformerRule rule = byId.get(request.ruleIds().get(index));
             if (rule == null) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_ORDER_INVALID", "Rule ids are invalid or duplicated");
@@ -782,7 +785,7 @@ public class ApiV5ManagementService {
 
     NetworkResponse networkResponse(Network n) { return new NetworkResponse(n.getId(), Boolean.TRUE.equals(n.getPublished()), n.getAcronym(), n.getName(), n.getInstitutionName(), n.getInstitutionAcronym(), n.getOriginURL(), n.getMetadataPrefix(), n.getMetadataStoreSchema(), n.getSets(), n.getAttributes(), n.getProperties(), n.getScheduleCronExpression(), id(n.getPrevalidator()), id(n.getValidator()), id(n.getTransformer()), id(n.getSecondaryTransformer()), n.getTags().stream().sorted().toList()); }
     private ValidatorResponse validatorResponse(Validator v) { return new ValidatorResponse(v.getId(), v.getName(), v.getDescription(), v.getRules().stream().map(this::validatorRuleResponse).toList()); }
-    private TransformerResponse transformerResponse(Transformer t) { return new TransformerResponse(t.getId(), t.getName(), t.getDescription(), t.getRules().stream().map(this::transformerRuleResponse).toList()); }
+    private TransformerResponse transformerResponse(Transformer t) { return new TransformerResponse(t.getId(), t.getName(), t.getDescription(), t.getRules().stream().sorted(Comparator.comparing(TransformerRule::getRunorder)).map(this::transformerRuleResponse).toList()); }
     private RuleResponse validatorRuleResponse(ValidatorRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), r.getMandatory(), r.getQuantifier() == null ? null : r.getQuantifier().name(), null, r.getJsonserialization(), "validator"); }
     private RuleResponse transformerRuleResponse(TransformerRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), null, null, r.getRunorder(), r.getJsonserialization(), "transformer"); }
     private RuleResponse ruleResponse(Long id, String name, String description, Boolean mandatory, String quantifier, Integer order, String json, String kind) { try { ObjectNode node = (ObjectNode) objectMapper.readTree(json); String className = node.remove("@class").asText(); return new RuleResponse(id, typeId(kind, className), className, name, description, mandatory, quantifier, order, node); } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.INTERNAL_SERVER_ERROR, "RULE_SERIALIZATION_INVALID", "Stored rule cannot be represented"); } }
