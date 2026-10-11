@@ -22,7 +22,6 @@
     <xsl:variable name="driverPrefix" as="xs:string" select="'info:eu-repo/semantics/'"/>
     <xsl:variable name="repositoryNamePrefix" as="xs:string" select="'reponame:'"/>
     <xsl:variable name="institutionNamePrefix" as="xs:string" select="'instname:'"/>
-    <xsl:variable name="institutionAcronymPrefix" as="xs:string" select="'instacron:'"/>
 
     <xsl:variable name="typeList" as="xs:string*" select="(
         'info:eu-repo/semantics/article',
@@ -300,22 +299,13 @@
                 <field name="publisher"><xsl:value-of select="."/></field>
             </xsl:for-each>
 
-            <xsl:for-each select="$sourceValues[starts-with(., $institutionAcronymPrefix)]">
+            <xsl:for-each select="$sourceValues[starts-with(., $institutionNamePrefix)]">
                 <xsl:if test="position() = 1">
                     <field name="institution">
-                        <xsl:value-of select="substring-after(., $institutionAcronymPrefix)"/>
+                        <xsl:value-of select="substring-after(., $institutionNamePrefix)"/>
                     </field>
                 </xsl:if>
             </xsl:for-each>
-            <xsl:if test="not(exists($sourceValues[starts-with(., $institutionAcronymPrefix)]))">
-                <xsl:for-each select="$sourceValues[starts-with(., $institutionNamePrefix)]">
-                    <xsl:if test="position() = 1">
-                        <field name="institution">
-                            <xsl:value-of select="substring-after(., $institutionNamePrefix)"/>
-                        </field>
-                    </xsl:if>
-                </xsl:for-each>
-            </xsl:if>
 
             <xsl:for-each select="$sourceValues[starts-with(., $repositoryNamePrefix)]">
                 <xsl:if test="position() = 1">
