@@ -45,3 +45,6 @@ config/application.properties.d/99-docker.properties
 /dashboard-static/*
 !/dashboard-static/.gitkeep
 **/.DS_Store
+
+# Server signing credentials
+/data/dark/keys/
