@@ -313,7 +313,7 @@
         </xsl:element>
     </xsl:template>
     <!-- datacite.alternateIdentifier[tid] -->
-    <xsl:template match="datacite:alternateIdentifier[@alternateIdentifierType='tid']">
+    <xsl:template match="datacite:alternateIdentifier[lower-case(@alternateIdentifierType)='tid']">
         <xsl:element name="element">
             <xsl:attribute name="name">
             <xsl:text>alternateIdentifier</xsl:text>
