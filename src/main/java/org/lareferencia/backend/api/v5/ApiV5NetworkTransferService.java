@@ -146,7 +146,7 @@ public class ApiV5NetworkTransferService {
         for (SourceRow row : rows) {
             List<String> errors = new ArrayList<>(), warnings = new ArrayList<>();
             if (row.parseError() != null) errors.add(row.parseError());
-            if (blank(row.acronym()) || !row.acronym().matches("^[A-Za-z0-9][A-Za-z0-9._-]*$") || row.acronym().length() > 10) errors.add("acronym is invalid");
+            if (blank(row.acronym()) || !row.acronym().matches("^[A-Za-z0-9][A-Za-z0-9_-]*$") || row.acronym().length() < 2 || row.acronym().length() > 20) errors.add("acronym is invalid");
             if (!blank(row.acronym()) && !seen.add(row.acronym())) errors.add("acronym appears more than once in this XLSX");
             Network existing = blank(row.acronym()) ? null : networks.findByAcronym(row.acronym());
             if (mode == ImportMode.CREATE_ONLY && existing != null) errors.add("source already exists");
