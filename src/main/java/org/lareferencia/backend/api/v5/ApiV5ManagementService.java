@@ -598,6 +598,10 @@ public class ApiV5ManagementService {
     }
 
     private void apply(Network network, NetworkRequest request) {
+        if (request.acronym() == null || !request.acronym().matches("^[A-Za-z0-9][A-Za-z0-9_-]{1,19}$")) {
+            throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "NETWORK_ACRONYM_INVALID",
+                    "acronym must have 2–20 characters, start with a letter or digit, and contain only letters, digits, underscore or hyphen");
+        }
         if (request.scheduleCronExpression() != null && !request.scheduleCronExpression().isBlank() && !CronExpression.isValidExpression(request.scheduleCronExpression())) {
             throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "CRON_INVALID", "scheduleCronExpression is invalid");
         }

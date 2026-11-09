@@ -41,8 +41,8 @@ public final class ApiV5Dtos {
             List<String> running, List<String> queued, List<String> scheduled) {
     }
 
-    public record NetworkRequest(@NotBlank @Size(min = 2, max = 10)
-            @Pattern(regexp = "^[A-Za-z0-9][A-Za-z0-9._-]*$", message = "must contain only letters, digits, dot, underscore or hyphen") String acronym,
+    public record NetworkRequest(@NotBlank @Size(min = 2, max = 20)
+            @Pattern(regexp = "^[A-Za-z0-9][A-Za-z0-9_-]*$", message = "must contain only letters, digits, underscore or hyphen") String acronym,
             @NotBlank String name, @NotBlank String institutionName,
             String institutionAcronym, Boolean published, @NotBlank String originUrl, String metadataPrefix,
             String metadataStoreSchema, List<String> sets, Map<String, Object> attributes,
