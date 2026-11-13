@@ -25,6 +25,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:solr="http://www.springframework.org/schema/data/solr"
 	xmlns:task="http://www.springframework.org/schema/task"
 	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -36,26 +37,22 @@
 
 	<!-- Include all actions beans here -->
 	<import resource="harvesting.actions.xml" />
-
-	<import resource="dark.actions.xml" /> 
-
 	<import resource="cleaning.actions.xml" />
 	<import resource="validation.actions.xml" />
 	
 	<import resource="index.frontend.actions.xml" /> <!-- OTHER THAN RCAPP -->
-	<!--import resource="index.frontend.semantic.xml" /--> <!-- SEMANTIC SEARCH INDEXING -->
 	<!--import resource="index.thesis.actions.xml" /--> <!-- IBICT ONLY -->
 	
 	<import resource="xoai.actions.xml" />
+	<import resource="fulltext.actions.xml" />
 
 	<!--import resource="historic.actions.xml" /-->
 	<!--import resource="network.actions.xml" /-->
 	<!--import resource="project.actions.xml" /-->
 	<!--import resource="lr.entity.actions.xml" /-->
-
-
+	
 	<!-- Append bean references inside networkActionManager actions list -->
-	<bean id="networkActionManager" class="org.lareferencia.core.task.NetworkActionkManager"
+	<bean id="networkActionManager" class="org.lareferencia.backend.taskmanager.NetworkActionkManager"
 		scope="singleton">
 		<property name="actions">
 			<list>
@@ -65,10 +62,6 @@
 
 				<!-- Validation Actions -->
 				<ref bean="validationNetworkAction" />
-
-				<!-- DARK Actions -->
-				<ref bean="darkStageNetworkAction" />
-				<ref bean="darkReconcileNetworkAction" />
 				
 				<!--ref bean="entityExtractionAction" /-->
 				<!--ref bean="entityIndexingAction" /-->
@@ -76,10 +69,6 @@
 				<!-- Indexing Actions --> 
 				<ref bean="frontendIndexingNetworkAction" />
 				<ref bean="frontendDeleteAction" />
-				
-				<!-- Semantic Indexing Actions -->
-				<!--ref bean="semanticIndexingNetworkAction" /-->
-				<!--ref bean="semanticDeleteAction" /-->
 				
 				<!--ref bean="thesisIndexingNetworkAction" /-->
 				<!--ref bean="thesisDeleteAction" /-->

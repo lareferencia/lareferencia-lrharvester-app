@@ -20,72 +20,91 @@
 
 package org.lareferencia.backend.app;
 
-import org.lareferencia.core.util.ConfigPathResolver;
-import org.lareferencia.core.util.PropertiesDirectoryListener;
 
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.lareferencia.core.metadata.IMetadataRecordStoreService;
+import org.lareferencia.core.metadata.MetadataRecordStoreServiceImpl;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.security.web.firewall.HttpFirewall;
-import org.springframework.security.web.firewall.StrictHttpFirewall;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.data.solr.core.SolrTemplate;
+import org.springframework.data.solr.repository.config.EnableSolrRepositories;
+
 
 @SpringBootApplication
 
-@EntityScan(basePackages = { "org.lareferencia.core.domain",
-        "org.lareferencia.core.entity.domain" })
+@EntityScan( basePackages= { "org.lareferencia.backend.domain", 
+							 "org.lareferencia.core.entity.domain" } )
 
-@EnableJpaRepositories(basePackages = {
-        "org.lareferencia.core.repository.jpa",
-        "org.lareferencia.core.entity.repositories.jpa" })
+@EnableJpaRepositories( basePackages={ 
+							"org.lareferencia.backend.repositories.jpa", 
+							"org.lareferencia.core.entity.repositories.jpa" } )
 
-@EnableTransactionManagement
+@EnableSolrRepositories( basePackages= { 
+							"org.lareferencia.backend.repositories.solr",  
+							"org.lareferencia.core.entity.repositories.solr"} )
 
-// Exclude UserDetailsServiceAutoConfiguration to prevent Spring from creating a
-// default user
-// (We provide our own FileBasedUserDetailsService in WebSecurityConfig)
-@EnableAutoConfiguration(exclude = {
-        UserDetailsServiceAutoConfiguration.class,
-        ElasticsearchDataAutoConfiguration.class })
+@EnableAutoConfiguration( exclude = { org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class })
 
 @Configuration
-@ComponentScan(basePackages = { "org.lareferencia.backend", "org.lareferencia.core" })
-@ImportResource({ "classpath*:application-context.xml" })
+@ComponentScan(basePackages =  {"org.lareferencia.backend", "org.lareferencia.core" })
+@ImportResource({"classpath*:application-context.xml"})
 public class MainApp {
 
-    public static void main(String[] args) {
-        // Export config directory as system property for XML context files
-        // Must be set BEFORE Spring starts to be available for ${app.config.dir} in XML
-        System.setProperty(ConfigPathResolver.CONFIG_DIR_PROPERTY, ConfigPathResolver.getConfigDir());
-
-        System.setProperty("spring.shell.interactive.enabled", "false");
-        System.setProperty("spring.shell.script.enabled", "false");
-
-        SpringApplicationBuilder builder = new SpringApplicationBuilder(MainApp.class);
-        builder.initializers(new MainAppContextInitializer());
-        builder.listeners(new ApplicationFailureHandler());
-
-        // Load properties from directory (using shared listener from core-lib)
-        builder.listeners(new PropertiesDirectoryListener());
-
-        builder.run(args);
+	public static void main(String[] args) {
+		
+		SpringApplicationBuilder builder =  new SpringApplicationBuilder(MainApp.class);
+		builder.initializers(new MainAppContextInitializer());
+		builder.run(args);
+	}
+	
+	/** Metadata Store Service  */
+	@Bean(name="metadataStoreService")
+	@Scope("prototype")
+	public IMetadataRecordStoreService metadaStoreService() {
+        return new MetadataRecordStoreServiceImpl();
     }
+	
 
-    @Bean
-    public HttpFirewall looseHttpFirewall() {
-        StrictHttpFirewall firewall = new StrictHttpFirewall();
-        firewall.setAllowUrlEncodedSlash(true);
-        firewall.setAllowBackSlash(true);
-        firewall.setAllowUrlEncodedPercent(true);
-        firewall.setAllowUrlEncodedPeriod(true);
-        return firewall;
+	/** Configurations beans for solr services */
+	@Bean(name="solrClient")
+    public SolrClient solrClient(@Value("${default.solr.server}") String solrHost) {
+        return new HttpSolrClient.Builder(solrHost).build();
     }
+	
+	@Bean(name="validationSolrClient")
+    public SolrClient validationSolrClient(@Value("${vstats.solr.server}") String solrHost) {
+        return new HttpSolrClient.Builder(solrHost).build();
+    }
+	
+	@Bean(name="solrTemplate")
+    public SolrTemplate solrTemplate(@Qualifier("solrClient") SolrClient client) throws Exception {
+        return new SolrTemplate(client);
+    }	
+
+    @Bean(name="validationSolrTemplate")
+    public SolrTemplate validationSolrTemplate(@Qualifier("validationSolrClient") SolrClient solrClient) throws Exception {
+        return new SolrTemplate(solrClient);
+    }	
+    
+    @Bean(name="validationSolrCoreName")
+    public String validationSolrCoreName(@Value("${vstats.solr.core}") String validationSolrCoreName) throws Exception {
+        return validationSolrCoreName;
+    }	
+    
+    
+   
+	
+
 }

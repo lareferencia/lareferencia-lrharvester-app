@@ -267,8 +267,11 @@ mod_diagnose.controller('RecordDiagnoseCtrl', ['$scope', '$uibModalInstance', 'R
 	$scope.record = record;
 	$scope.rulesMap = rulesMap; 
 	
-	DataSrv.callRestXMLWS( RestURLHelper.recordMetadataURLByIdentifier(record.snapshotID, record.identifier), function(response) {	
+	DataSrv.callRestXMLWS( RestURLHelper.recordMetadataURLByID(record.id), function(response) {	
+		
 		$scope.recordMetadata = vkbeautify.xml(response.data);
+		
+    
 	});
 	
 	

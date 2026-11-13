@@ -44,7 +44,6 @@ angular.module('app', [
 			case "HARVESTING_STOPPED": return "Cosecha cancelada";
 			case "RETRYING": return "REITENTANDO ...";
 			case "INDEXING": return "INDEXANDO ...";
-			case "EMPTY_INCREMENTAL": return "Cosecha incremental sin cambios";
 
 			default:
 				return "No existen cosechas";
@@ -57,7 +56,6 @@ angular.module('app', [
 		return function(input) {
 			
 			switch (input) {
-
 			case "VALID": return "V";
 			case "HARVESTING_FINISHED_ERROR": return "E";
 			case "HARVESTING_FINISHED_VALID": return "F";
@@ -66,7 +64,6 @@ angular.module('app', [
 			case "HARVESTING_STOPPED": return "S";
 			case "RETRYING": return "R";
 			case "INDEXING": return "I";
-            case "EMPTY_INCREMENTAL": return "0";
 
 			default:
 				return "?";

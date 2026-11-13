@@ -1,203 +1,126 @@
-# ==============================================================================
-# LA REFERENCIA LRHARVESTER - APPLICATION CONFIGURATION TEMPLATE
-# ==============================================================================
-# This file serves as a template for configuring the LA Referencia LRHarvester
-# application. Copy this file to 'application.properties' and adjust the values
-# according to your environment.
-#
-# Sections:
-# 1. General Configuration
-# 2. Database Settings
-# 3. Security
-# 4. Storage
-# 5. Search Engine (Solr)
-# 6. Integration Services
-# ==============================================================================
-
-
-# ==============================================================================
-# 1. GENERAL CONFIGURATION
-# ==============================================================================
-
-# Application configuration directory path
-# Default: config
-config.dir.path=config
-
-# Action beans configuration filename
-# Default: actions.xml
-actions.beans.filename=actions.xml
-
-
-# ==============================================================================
-# 2. DATABASE SETTINGS
-# ==============================================================================
-
-# PostgreSQL connection URL
-# Format: jdbc:postgresql://<host>:<port>/<database>
-# Default: jdbc:postgresql://localhost:5432/lrharvester
+## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
 spring.datasource.url=jdbc:postgresql://localhost:5432/lrharvester
-spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
-
-# Database credentials
-# Default: lrharvester
 spring.datasource.username=lrharvester
 spring.datasource.password=lrharvester
 
-# ------------------------------------------------------------------------------
-# Alternative Database Configurations (Uncomment to use)
-# ------------------------------------------------------------------------------
+# minimum number of idle connections maintained by HikariCP in a connection pool
+spring.datasource.hikari.minimum-idle=10
+# maximum pool size
+spring.datasource.hikari.maximum-pool-size=50
 
-# H2 Database
-# spring.datasource.url=jdbc:h2:file:${store.basepath}/lrharvester;DB_CLOSE_DELAY=-1
-# spring.datasource.username=sa
-# spring.datasource.password=
-# spring.datasource.driver-class-name=org.h2.Driver
-# spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+#rest port
+server.port=8090
+# UNCOMMENT if you use a Apache proxy pass and need Spring to handle request types
+# server.forward-headers-strategy = framework
+# server.servlet.context-path = /
+spring.data.rest.basePath=/rest
 
-# SQLite Database
-# spring.datasource.url=jdbc:sqlite:${store.basepath}/lrharvester.db
-# spring.datasource.username=
-# spring.datasource.password=
-# spring.datasource.driver-class-name=org.sqlite.JDBC
-# spring.jpa.database-platform=org.hibernate.community.dialect.SQLiteDialect
+spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults = false
+spring.jackson.serialization.fail-on-empty-beans=false
 
+# The SQL dialect makes Hibernate generate better SQL for the chosen database
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
-# ==============================================================================
-# 3. SECURITY
-# ==============================================================================
+#spring.jpa.show-sql=true
+#spring.jpa.properties.hibernate.format_sql=true
+#
 
-# Default admin user credentials
-# WARNING: Change these values in production environments
+# metadata store
+metadata.store.class = MetadataStoreSQLImpl
+
+# hashing method used by metadata store: MD5Hashing, XXHash64Hashing 
+hashing.algorithm.class = MD5Hashing
+
+# spring security
+
+# # comment this to turn on security
+# spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 spring.security.user.name=admin
 spring.security.user.password=admin
+spring.security.user.roles=USER
 
-# To disable Spring Security, uncomment the following line:
-# spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+# Hibernate ddl auto (create, create-drop, validate, update)
+spring.jpa.hibernate.ddl-auto = none
 
-# ==============================================================================
-# 4. STORAGE
-# ==============================================================================
+config.dir.path = config
+# you can specify the location for the index config file
+entity.indexing.configfile = config/entity-indexing-config.xml
+# you can specify which entities should be indexed (remember to separate them using commas) 
+entity.indexing.entities=Person,Publication 
+actions.beans.filename=actions.xml
 
-# Base directory for data storage
-# This directory will contain OAI records catalog and validation statistics
-# Default: /tmp/data/
-store.basepath=/tmp/data/
+downloaded.files.path=/tmp
 
-# ==============================================================================
-# 5. SEARCH ENGINE (SOLR)
-# ==============================================================================
+default.solr.server = http://localhost:8983/solr
 
-# Default Solr server URL
-# Default: http://localhost:8983/solr
-default.solr.server=http://localhost:8983/solr
+# metadata store format (xoai)
+metadata.store.format = xoai
 
-# Frontend indexer configuration
+# frontend indexer config
 frontend.solr.url=http://localhost:8983/solr/biblio
 thesis.solr.url=http://localhost:8983/solr/biblio
 
-# OAI indexer configuration
+# XOAI indexer config
 xoai.solr.url=http://localhost:8983/solr/oai
 
+# Validation Stats config
+vstats.solr.server=http://localhost:8983/solr/
+vstats.solr.core=vstats
 
-# ==============================================================================
-# 6. INTEGRATION SERVICES
-# ==============================================================================
+#harvester config
+harvester.max.retries = 10
+harvester.retry.seconds = 3
+harvester.retry.factor = 2
 
-# DARK PID Minter service
-# URL for generating persistent identifiers
-dark.minter.url=http://minter.dark-pid.net/load
+# set sizes according to #repositories
+scheduler.pool.size = 10
+taskexecutor.pool.size = 10
 
+#tiempo de limpieza de procesos terminados en milisegundos
+taskmanager.clean.interval = 60000
+taskmanager.concurrent.tasks = 4
+taskmanager.max_queuded.tasks = 32
 
-# ==============================================================================
-# 7. WORKFLOW CONFIGURATION
-# ==============================================================================
+#reponame e instname
+reponame.fieldname=dc:source
+reponame.prefix=reponame:
 
-# Maximum number of processes that can be queued globally
-workflow.max-queued-processes=32
+instname.fieldname=dc:source
+instname.prefix=instname:
 
-# ------------------------------------------------------------------------------
-# Process Lane Configuration
-# Lanes control how processes are queued:
-#   - null or -1: Network queue (one process per network at a time)
-#   - 0: Global serial lane (all processes wait for each other)
-#   - >0: Specific serial lane (processes in same lane wait)
-# ------------------------------------------------------------------------------
+# DEBUG
 
-# Network processing - uses network queue (one per network)
-workflow.processes.networkProcessing.lane=
+# uncomment the following setting to activade logging debugging mode
+# for root class level
+#logging.level.root=DEBUG
 
-# Harvesting only - uses network queue
-workflow.processes.harvestingOnly.lane=
+# uncomment the following setting to activade logging debugging mode
+# for oai harvester
+#logging.level.org.oclc.oai.harvester2=DEBUG
 
-# Validation only - uses network queue
-workflow.processes.validationOnly.lane=
+############################ RCAAP ##################################
 
-# Frontend indexing - uses global serial lane (lane 0)
-workflow.processes.frontendIndexing.lane=0
-
-# Solr reindex - uses serial lane 1
-workflow.processes.solrReindex.lane=1
-
-# ------------------------------------------------------------------------------
-# Lane Configuration
-# ------------------------------------------------------------------------------
-
-# Global serial lane (lane 0)
-workflow.lanes[0].name=Global
-workflow.lanes[0].max-queued=10
-
-# Solr operations lane (lane 1)
-workflow.lanes[1].name=Solr Operations
-workflow.lanes[1].max-queued=5
-
-# Entity operations lane (lane 2)
-workflow.lanes[2].name=Entity Operations
-workflow.lanes[2].max-queued=5
-
-
-# Embedding model configuration
-embedding.api.url=http://localhost:8989/api/v1/embeddings
-embedding.model.name=bge-m3
-embedding.model.dimension=1024
-embedding.api.timeout.seconds=60
-# The maximum size of the segment, defined in tokens.
-embedding.max.segment.size.tokens=128
-# The maximum overlap between adjacent generated chunks/segments, defined in tokens.
-# Must be less than or equal to embedding.max.segment.size.tokens.
-embedding.max.overlap.size.tokens=0
-# The maximum number of chunks to generate for a document. If the document is too large, it will be truncated to fit this limit.
-embedding.max.chunks.size=5
-# OpenAI API key for embedding model (if using OpenAI) or other API key if required by the embedding service.
-#embedding.api.key=
-#embedding.model.datatype=float
-embedding.title.standalone.indexing.min.words=5
-embedding.title.field=dc.title.*
-embedding.abstract.field=dc.description.*
-embedding.vector.field.name=vector_multivalued
-embedding.use.multivalued.vector=true
-
-
-# ==============================================================================
-# ADDITIONAL CONFIGURATION
-# ==============================================================================
-# Solr core per entity
-publication.solr.url=http://localhost:8983/solr/publication
-person.solr.url=http://localhost:8983/solr/person
-organization.solr.url=http://localhost:8983/solr/organization
-service.solr.url=http://localhost:8983/solr/biblio
-
-# RCAAP Historic Stats config
+# Historic Stats config
 historic.solr.server=http://localhost:8983/solr/
 historic.solr.core=historic
 
-# RCAAP projects indexer config (legacy)
-projects.solr.server=http://localhost:8983/solr
-projects.solr.core=projects
+network.solr.server=http://localhost:8983/solr/
+network.solr.core=network
 
-#project upload (legacy)
-projects.file.path = /etc/lrharvester/project/projects.xlsx
+# projects indexer config
+project.solr.server=http://localhost:8983/solr
+project.solr.core=projects
 
+#project
+project.file.path = /etc/lrharvester/project/projects.xlsx
 
-# ==============================================================================
-# END OF CONFIGURATION
-# ==============================================================================
+#historic
+historic.access.field=dc.rights.access.*
+historic.access.open=http://purl.org/coar/access_right/c_abf2
+historic.access.restricted=http://purl.org/coar/access_right/c_16ec
+historic.access.embargoed=http://purl.org/coar/access_right/c_f1cf
+historic.access.metadataonly=http://purl.org/coar/access_right/c_14cb
+
+#entity
+entity.solr.url = http://localhost:8983/solr/entity

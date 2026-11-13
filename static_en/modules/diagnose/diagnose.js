@@ -48,21 +48,21 @@ mod_diagnose.config(['$stateProvider', function ($stateProvider) {
 		};
 	})
 	
-    .filter('yesNo', function() {
+    .filter('siNo', function() {
     	return function(input) {
-    		return input ? 'Yes' : 'No';
+    		return input ? 'Si' : 'No';
     	};
     })
     
     .filter('isValid', function() {
     	return function(input) {
-    		return input ? 'Valid' : 'Invalid';
+    		return input ? 'Válido' : 'Inválido';
     	};
     })
     
     .filter('isTransformed', function() {
     	return function(input) {
-    		return input ? ' | Transformed' : '';
+    		return input ? ' | Transformado' : '';
     	};
     })
    
@@ -267,8 +267,11 @@ mod_diagnose.controller('RecordDiagnoseCtrl', ['$scope', '$uibModalInstance', 'R
 	$scope.record = record;
 	$scope.rulesMap = rulesMap; 
 	
-	DataSrv.callRestXMLWS( RestURLHelper.recordMetadataURLByIdentifier(record.snapshotID, record.identifier), function(response) {	
+	DataSrv.callRestXMLWS( RestURLHelper.recordMetadataURLByID(record.id), function(response) {	
+		
 		$scope.recordMetadata = vkbeautify.xml(response.data);
+		
+    
 	});
 	
 	

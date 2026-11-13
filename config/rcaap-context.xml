@@ -37,7 +37,7 @@
     http://www.springframework.org/schema/util/spring-util.xsd
     ">
 
-    <context:component-scan base-package="org.lareferencia.contrib.rcaap.configuration.backend, org.lareferencia.contrib.rcaap.search.server, org.lareferencia.contrib.rcaap.configuration.server, org.lareferencia.contrib.rcaap.search.services, org.lareferencia.contrib.rcaap.search.merge"/>
+    <context:component-scan base-package="org.lareferencia.contrib.rcaap.configuration.backend"/>
 
 	<!--
     <util:properties id="appProperties" ignore-resource-not-found="true"
