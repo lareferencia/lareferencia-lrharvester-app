@@ -176,7 +176,7 @@
                         <executions>
                             <execution>
                                 <id>copy-third-party-context</id>
-                                <phase>package</phase>
+                                <phase>initialize</phase>
                                 <configuration>
                                     <target>
                                         <copy overwrite="true" file="config/lareferencia-context.xml" tofile="config/third-party-context.xml" />
@@ -222,7 +222,7 @@
                         <executions>
                             <execution>
                                 <id>copy-third-party-context</id>
-                                <phase>package</phase>
+                                <phase>initialize</phase>
                                 <configuration>
                                     <target>
                                         <copy overwrite="true" file="config/rcaap-context.xml" tofile="config/third-party-context.xml" />
@@ -268,7 +268,7 @@
                         <executions>
                             <execution>
                                 <id>copy-third-party-context</id>
-                                <phase>package</phase>
+                                <phase>initialize</phase>
                                 <configuration>
                                     <target>
                                         <copy overwrite="true" file="config/ibict-context.xml" tofile="config/third-party-context.xml" />
@@ -315,7 +315,7 @@
 					</execution>
 					<execution>
                         <id>copy-third-party-context</id>
-                        <phase>package</phase>
+                        <phase>initialize</phase>
                         <configuration>
                             <target>
                                 <copy overwrite="true" file="config/empty-context.xml" tofile="config/third-party-context.xml" />
