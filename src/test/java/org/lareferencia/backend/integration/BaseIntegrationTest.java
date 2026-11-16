@@ -1,7 +1,6 @@
 package org.lareferencia.backend.integration;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 
 import org.junit.jupiter.api.io.TempDir;
@@ -10,15 +9,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.SolrContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 @Testcontainers
+@TestPropertySource(locations = "file:config/application.properties.model")
 public abstract class BaseIntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseIntegrationTest.class);
@@ -32,10 +32,6 @@ public abstract class BaseIntegrationTest {
 
     @Container
     protected static SolrContainer solr = new SolrContainer(DockerImageName.parse("solr:9.5.0"))
-            .withCopyFileToContainer(
-                MountableFile.forHostPath(Paths.get("../lareferencia-solr-cores/biblio/conf").toAbsolutePath()),
-                "/opt/solr/server/solr/configsets/biblio/conf"
-            )
             .withCollection("biblio")
             .withStartupTimeout(Duration.ofSeconds(120))
             .withLogConsumer(new Slf4jLogConsumer(logger));
@@ -47,10 +43,14 @@ public abstract class BaseIntegrationTest {
 
         // Desabilita o Liquibase para o teste
         registry.add("spring.liquibase.enabled", () -> "false");
+        registry.add("spring.flyway.enabled", () -> "false");
         
         // Garante que o Hibernate crie as tabelas no container vazio
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
-        registry.add("spring.jpa.show-sql", () -> "true");
+        registry.add("spring.jpa.show-sql", () -> "false");
+        // Match the historical production table/column names used by native queries.
+        registry.add("spring.jpa.hibernate.naming.physical-strategy",
+                () -> "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
 
         // Solr e Basepath
         registry.add("frontend.solr.url", () -> "http://" + solr.getHost() + ":" + solr.getMappedPort(8983) + "/solr/biblio");
@@ -66,6 +66,8 @@ public abstract class BaseIntegrationTest {
         registry.add("embedding.model.name", () -> "test-model");
         registry.add("embedding.model.datatype", () -> "float32");
         registry.add("embedding.model.dimension", () -> "768");
+        registry.add("embedding.vector.field.name", () -> "test_vector");
+        registry.add("embedding.use.multivalued.vector", () -> "false");
         registry.add("embedding.model.applicationId", () -> "test-app");
         registry.add("embedding.api.url", () -> "http://mock-api:5000");
 
