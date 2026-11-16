@@ -18,8 +18,9 @@ Validation rule engine, field transformation, entity extraction, and SQLite-back
 Elasticsearch/OpenSearch indexing for search and entity relationship tracking (see [`docs/ENTITY_INDEXING_ARCHITECTURE.md`](../docs/ENTITY_INDEXING_ARCHITECTURE.md)).
 
 ### Web Interface
-- **React Admin Web** (from `lareferencia-lrharvester-admin-web`) is served at the root of port `8090` (built into `static/`).
-- **API v5** under `/api/v5` (OpenAPI at `/api/v5/openapi`, Swagger at `/api/v5/docs`). React is the only web UI; legacy UI and Spring Data REST are not exposed.
+- **React Admin Web** (from `lareferencia-lrharvester-admin-web`) is served at `/admin/` from `admin-static/`.
+- **Repository Dashboard** (Angular, read-only) is served at `/dashboard/{en,es,pt}/` from `dashboard-static/`. Standard Compose exposes the harvester on loopback port `8090`; isolated Docker Dev uses `8190`.
+- **API v5** under `/api/v5` (OpenAPI at `/api/v5/openapi`, Swagger at `/api/v5/docs`). Admin and Dashboard have separate routes; legacy UI and Spring Data REST are not exposed.
 - **Identity**: local PostgreSQL users, JDBC web sessions with CSRF, and revocable repository-scoped Bearer tokens for service accounts. Bootstrap the first admin from `lareferencia-shell` after `database_migrate`; see the [authentication runbook](../docs/AUTHENTICATION.md).
 - Multi-language UI: Spanish, English and Portuguese (`config/i18n/messages_*.properties`).
 
@@ -35,4 +36,4 @@ See [LICENSE.txt](../LICENSE.txt) for complete terms.
 ---
 
 **LA Referencia** - Red Latinoamericana y de España de Ciencia Abierta  
-Part of the LA Referencia Platform 5.0.0-rc3
+Part of the LA Referencia Platform; Maven version inherited from `lareferencia-parent`.
