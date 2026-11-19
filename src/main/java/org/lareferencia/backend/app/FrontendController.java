@@ -29,19 +29,19 @@ public class FrontendController {
     }
 
     @GetMapping({ "/dashboard/en", "/dashboard/en/", "/dashboard/en/login", "/dashboard/en/user/**",
-            "/dashboard/en/statistics/**", "/dashboard/en/*/validation/**", "/dashboard/en/*/harvesting/**" })
+            "/dashboard/en/statistics/**", "/dashboard/en/*/statistics", "/dashboard/en/*/validation/**", "/dashboard/en/*/harvesting/**" })
     public String dashboardEnglish() {
         return "forward:/dashboard/en/index.html";
     }
 
     @GetMapping({ "/dashboard/es", "/dashboard/es/", "/dashboard/es/login", "/dashboard/es/user/**",
-            "/dashboard/es/statistics/**", "/dashboard/es/*/validation/**", "/dashboard/es/*/harvesting/**" })
+            "/dashboard/es/statistics/**", "/dashboard/es/*/statistics", "/dashboard/es/*/validation/**", "/dashboard/es/*/harvesting/**" })
     public String dashboardSpanish() {
         return "forward:/dashboard/es/index.html";
     }
 
     @GetMapping({ "/dashboard/pt", "/dashboard/pt/", "/dashboard/pt/login", "/dashboard/pt/user/**",
-            "/dashboard/pt/statistics/**", "/dashboard/pt/*/validation/**", "/dashboard/pt/*/harvesting/**" })
+            "/dashboard/pt/statistics/**", "/dashboard/pt/*/statistics", "/dashboard/pt/*/validation/**", "/dashboard/pt/*/harvesting/**" })
     public String dashboardPortuguese() {
         return "forward:/dashboard/pt/index.html";
     }

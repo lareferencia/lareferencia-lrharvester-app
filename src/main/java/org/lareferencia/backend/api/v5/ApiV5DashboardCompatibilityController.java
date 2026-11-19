@@ -18,6 +18,7 @@ import org.lareferencia.core.service.validation.OccurrenceCount;
 import org.lareferencia.core.service.validation.ValidationStatObservation;
 import org.lareferencia.core.service.validation.ValidationStatsObservationsResult;
 import org.lareferencia.core.service.validation.ValidationStatsResult;
+import org.lareferencia.core.service.validation.ValidationStatisticsException;
 import org.lareferencia.core.util.date.DateHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.BindParam;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,14 +48,17 @@ public class ApiV5DashboardCompatibilityController {
     private final IValidationStatisticsService statistics;
     private final LocalAuthorizationService authorization;
     private final DateHelper dates;
+    private final ApiV5DiagnosticsService diagnostics;
 
     public ApiV5DashboardCompatibilityController(NetworkRepository networks, NetworkSnapshotRepository snapshots,
-            IValidationStatisticsService statistics, LocalAuthorizationService authorization, DateHelper dates) {
+            IValidationStatisticsService statistics, LocalAuthorizationService authorization, DateHelper dates,
+            ApiV5DiagnosticsService diagnostics) {
         this.networks = networks;
         this.snapshots = snapshots;
         this.statistics = statistics;
         this.authorization = authorization;
         this.dates = dates;
+        this.diagnostics = diagnostics;
     }
 
     @GetMapping("/harvesting/source/list")
@@ -98,10 +105,10 @@ public class ApiV5DashboardCompatibilityController {
 
     @GetMapping("/validation/source/{acronym}/{snapshotId}")
     public ValidationStatsResult summary(@PathVariable String acronym, @PathVariable Long snapshotId,
-            Authentication authentication) {
+            @ModelAttribute RecordFilters selection, Authentication authentication) {
         NetworkSnapshot snapshot = snapshot(acronym, snapshotId, authentication);
         try {
-            return statistics.queryValidatorRulesStatsBySnapshot(snapshot, List.of());
+            return statistics.queryValidatorRulesStatsBySnapshot(snapshot, selection.filters());
         } catch (Exception exception) {
             throw diagnosticFailure(exception);
         }
@@ -123,24 +130,14 @@ public class ApiV5DashboardCompatibilityController {
 
     @GetMapping("/validation/source/{acronym}/{snapshotId}/records")
     public Page<Record> records(@PathVariable String acronym, @PathVariable Long snapshotId,
-            @RequestParam(name = "is_valid", required = false) Boolean valid,
-            @RequestParam(name = "is_transformed", required = false) Boolean transformed,
-            @RequestParam(name = "valid_rules", required = false) List<String> validRules,
-            @RequestParam(name = "invalid_rules", required = false) List<String> invalidRules,
-            @RequestParam(name = "oai_identifier", required = false) String identifier,
+            @ModelAttribute RecordFilters selection,
             @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "20") int pageSize,
             Authentication authentication) {
         snapshot(acronym, snapshotId, authentication);
         Pageable pageable = page(pageNumber, pageSize);
-        List<String> filters = new ArrayList<>();
-        if (identifier != null) filters.add("identifier@@" + identifier);
-        if (valid != null) filters.add("is_valid@@" + valid);
-        if (transformed != null) filters.add("is_transformed@@" + transformed);
-        if (validRules != null) validRules.forEach(id -> filters.add("valid_rules@@" + id));
-        if (invalidRules != null) invalidRules.forEach(id -> filters.add("invalid_rules@@" + id));
         try {
             ValidationStatsObservationsResult result = statistics.queryValidationStatsObservationsBySnapshotID(
-                    snapshotId, filters, pageable);
+                    snapshotId, selection.filters(), pageable);
             return new PageImpl<>(result.getContent().stream().map(Record::new).toList(), pageable,
                     result.getTotalElements());
         } catch (Exception exception) {
@@ -150,25 +147,62 @@ public class ApiV5DashboardCompatibilityController {
 
     @GetMapping("/validation/source/{acronym}/{snapshotId}/valid_occrs/{ruleId}")
     public List<ValueCount> validOccurrences(@PathVariable String acronym, @PathVariable Long snapshotId,
-            @PathVariable Long ruleId, Authentication authentication) {
-        return occurrences(acronym, snapshotId, ruleId, authentication, true);
+            @PathVariable Long ruleId, @ModelAttribute RecordFilters selection, Authentication authentication) {
+        return occurrences(acronym, snapshotId, ruleId, selection, authentication, true);
     }
 
     @GetMapping("/validation/source/{acronym}/{snapshotId}/invalid_occrs/{ruleId}")
     public List<ValueCount> invalidOccurrences(@PathVariable String acronym, @PathVariable Long snapshotId,
-            @PathVariable Long ruleId, Authentication authentication) {
-        return occurrences(acronym, snapshotId, ruleId, authentication, false);
+            @PathVariable Long ruleId, @ModelAttribute RecordFilters selection, Authentication authentication) {
+        return occurrences(acronym, snapshotId, ruleId, selection, authentication, false);
     }
 
-    private List<ValueCount> occurrences(String acronym, Long snapshotId, Long ruleId,
+    private List<ValueCount> occurrences(String acronym, Long snapshotId, Long ruleId, RecordFilters selection,
             Authentication authentication, boolean valid) {
         snapshot(acronym, snapshotId, authentication);
         try {
-            var result = statistics.queryValidRuleOccurrencesCountBySnapshotID(snapshotId, ruleId, List.of());
+            var result = statistics.queryValidRuleOccurrencesCountBySnapshotID(snapshotId, ruleId, selection.filters());
             List<OccurrenceCount> items = valid ? result.getValidRuleOccrs() : result.getInvalidRuleOccrs();
             return items == null ? List.of() : items.stream().map(item -> new ValueCount(item.getValue(), item.getCount())).toList();
         } catch (Exception exception) {
             throw diagnosticFailure(exception);
+        }
+    }
+
+    @GetMapping(value = "/validation/source/{acronym}/{snapshotId}/metadata", produces = MediaType.APPLICATION_JSON_VALUE)
+    public HistoricalXml metadata(@PathVariable String acronym, @PathVariable Long snapshotId,
+            @RequestParam(required = false) String identifier, Authentication authentication) {
+        NetworkSnapshot snapshot = snapshot(acronym, snapshotId, authentication);
+        if (Boolean.TRUE.equals(snapshot.isDeleted()))
+            throw new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_NOT_FOUND", "Snapshot was deleted");
+        if (identifier == null || identifier.isBlank())
+            throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
+        // Restrict direct XML links to active records visible in this historical report.
+        try {
+            var match = statistics.queryValidationStatsObservationsBySnapshotID(snapshotId,
+                    List.of("identifier_eq@@\"" + identifier + "\""), PageRequest.of(0, 1));
+            if (match.getContent().isEmpty())
+                throw new ApiV5Exception(HttpStatus.NOT_FOUND, "RECORD_NOT_FOUND", "Record was not found in diagnostics");
+        } catch (ValidationStatisticsException exception) {
+            throw diagnosticFailure(exception);
+        }
+        return new HistoricalXml(diagnostics.historicalXml(snapshotId, identifier));
+    }
+
+    public record HistoricalXml(String xml) {}
+
+    /** The same selection drives records, rule totals and occurrence counts. */
+    public record RecordFilters(@BindParam("is_valid") Boolean valid, @BindParam("is_transformed") Boolean transformed,
+            @BindParam("valid_rules") List<String> validRules, @BindParam("invalid_rules") List<String> invalidRules,
+            @BindParam("oai_identifier") String identifier) {
+        List<String> filters() {
+            List<String> filters = new ArrayList<>();
+            if (identifier != null) filters.add("identifier@@" + identifier);
+            if (valid != null) filters.add("is_valid@@" + valid);
+            if (transformed != null) filters.add("is_transformed@@" + transformed);
+            if (validRules != null) validRules.forEach(id -> filters.add("valid_rules@@" + id));
+            if (invalidRules != null) invalidRules.forEach(id -> filters.add("invalid_rules@@" + id));
+            return filters;
         }
     }
 

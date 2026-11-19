@@ -31,7 +31,7 @@ class ApiV5DashboardCompatibilityControllerTest {
     private final LocalAuthorizationService authorization = mock(LocalAuthorizationService.class);
     private final Authentication authentication = mock(Authentication.class);
     private final ApiV5DashboardCompatibilityController controller =
-            new ApiV5DashboardCompatibilityController(networks, snapshots, statistics, authorization, new DateHelper());
+            new ApiV5DashboardCompatibilityController(networks, snapshots, statistics, authorization, new DateHelper(), null);
 
     @Test
     void listFiltersBeforePaging() {
@@ -68,7 +68,7 @@ class ApiV5DashboardCompatibilityControllerTest {
                 .when(authorization).requireSnapshotRead(authentication, 9L);
 
         assertEquals(HttpStatus.FORBIDDEN,
-                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, authentication)).getStatus());
+                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, null, authentication)).getStatus());
         verify(snapshots, never()).findById(9L);
     }
 
@@ -81,7 +81,7 @@ class ApiV5DashboardCompatibilityControllerTest {
         when(snapshots.findById(9L)).thenReturn(Optional.of(snapshot));
 
         assertEquals(HttpStatus.NOT_FOUND,
-                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, authentication)).getStatus());
+                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, null, authentication)).getStatus());
         verify(statistics, never()).queryValidatorRulesStatsBySnapshot(snapshot, List.of());
     }
 

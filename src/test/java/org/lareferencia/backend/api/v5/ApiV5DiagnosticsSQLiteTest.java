@@ -16,6 +16,7 @@ import org.lareferencia.backend.security.LocalAuthorizationService;
 import org.lareferencia.core.domain.Network;
 import org.lareferencia.core.domain.NetworkSnapshot;
 import org.lareferencia.core.metadata.ISnapshotStore;
+import org.lareferencia.core.metadata.IMetadataStore;
 import org.lareferencia.core.metadata.SnapshotMetadata;
 import org.lareferencia.core.repository.jpa.NetworkSnapshotRepository;
 import org.lareferencia.core.repository.validation.RecordValidationRepository;
@@ -59,6 +60,7 @@ class ApiV5DiagnosticsSQLiteTest {
             sql.executeUpdate("INSERT INTO rule_occurrences (identifier_hash,rule_id,is_valid,occurrence_value) VALUES ('a',7,1,'es'),('a',7,1,'es'),('a',7,0,'mixed'),('b',7,0,'?')");
             sql.executeUpdate("INSERT INTO record_validation (identifier_hash,identifier,is_valid,is_transformed,rule_7,deleted) VALUES ('d','oai:deleted',1,0,1,1)");
             sql.executeUpdate("INSERT INTO rule_occurrences (identifier_hash,rule_id,is_valid,occurrence_value) VALUES ('d',7,1,'removed')");
+            sql.executeUpdate("UPDATE record_validation SET published_metadata_hash='xml-a' WHERE identifier_hash IN ('a','d')");
         }
         var records = new RecordValidationRepository();
         var occurrences = new RuleOccurrenceRepository();
@@ -76,9 +78,12 @@ class ApiV5DiagnosticsSQLiteTest {
         var snapshots = mock(NetworkSnapshotRepository.class);
         when(snapshots.findById(ID)).thenReturn(java.util.Optional.of(snapshot));
         var auth = mock(LocalAuthorizationService.class);
-        var compat = new ApiV5DashboardCompatibilityController(null, snapshots, stats, auth, null);
-        var diagnostics = new ApiV5DiagnosticsController(new ApiV5DiagnosticsService(snapshots, null, stats, null, store, auth));
-        mvc = MockMvcBuilders.standaloneSetup(compat, diagnostics).build();
+        var xmlStore = mock(IMetadataStore.class);
+        when(xmlStore.getMetadata(metadata, "xml-a")).thenReturn("<historical/>");
+        var service = new ApiV5DiagnosticsService(snapshots, null, stats, xmlStore, store, auth);
+        var compat = new ApiV5DashboardCompatibilityController(null, snapshots, stats, auth, null, service);
+        mvc = MockMvcBuilders.standaloneSetup(compat, new ApiV5DiagnosticsController(service))
+                .setControllerAdvice(new ApiV5ExceptionHandler()).build();
     }
 
     @AfterEach
@@ -106,6 +111,29 @@ class ApiV5DiagnosticsSQLiteTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(0))
                 .andExpect(jsonPath("$.content.length()").value(0));
+    }
+
+    @Test
+    void dashboardXmlRequiresAnExactActiveRecordAndHistoricalMetadata() throws Exception {
+        String xml = "/api/v5/dashboard/validation/source/FIX/4145/metadata";
+        mvc.perform(get(xml).param("identifier", "oai:1"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.xml").value("<historical/>"));
+        for (String identifier : List.of("oai:", "OAI:1", "oai:deleted", "oai:10")) {
+            mvc.perform(get(xml).param("identifier", identifier)).andExpect(status().isNotFound());
+        }
+        mvc.perform(get(xml)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void dashboardSummaryAndFrequenciesUseTheRecordSelection() throws Exception {
+        String report = "/api/v5/dashboard/validation/source/FIX/4145";
+        mvc.perform(get(report).accept(MediaType.APPLICATION_JSON).param("valid_rules", "7").param("is_transformed", "false"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.size").value(2));
+        mvc.perform(get(report + "/invalid_occrs/7").accept(MediaType.APPLICATION_JSON).param("valid_rules", "7"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].value").value("mixed"));
+        mvc.perform(get(report + "/valid_occrs/7").accept(MediaType.APPLICATION_JSON).param("valid_rules", "7").param("invalid_rules", "7"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test

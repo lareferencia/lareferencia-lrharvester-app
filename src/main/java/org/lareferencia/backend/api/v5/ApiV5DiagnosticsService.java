@@ -102,14 +102,20 @@ public class ApiV5DiagnosticsService {
     }
 
     public String metadata(Long snapshotId, String identifier, Authentication authentication) {
-        if (identifier == null || identifier.isBlank()) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
         requireSnapshot(snapshotId, authentication);
+        return historicalXml(snapshotId, identifier);
+    }
+
+    // Both controllers authorize the snapshot before resolving the stored publication hash.
+    String historicalXml(Long snapshotId, String identifier) {
+        if (identifier == null || identifier.isBlank()) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
         try {
             RecordValidation validation = statistics.getRecordValidationListBySnapshotAndIdentifier(snapshotId, identifier);
             if (validation == null) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "RECORD_NOT_FOUND", "Record was not found in diagnostics");
+            if (validation.getPublishedMetadataHash() == null) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", "Historical metadata is unavailable");
             return metadataStore.getMetadata(snapshotStore.getSnapshotMetadata(snapshotId), validation.getPublishedMetadataHash());
         } catch (ApiV5Exception exception) { throw exception;
-        } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", exception.getMessage()); }
+        } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", "Historical metadata is unavailable"); }
     }
 
     private NetworkSnapshot requireSnapshot(Long id, Authentication authentication) {
