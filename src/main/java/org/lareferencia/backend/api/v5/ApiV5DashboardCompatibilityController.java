@@ -134,10 +134,10 @@ public class ApiV5DashboardCompatibilityController {
         Pageable pageable = page(pageNumber, pageSize);
         List<String> filters = new ArrayList<>();
         if (identifier != null) filters.add("identifier@@" + identifier);
-        if (valid != null) filters.add("isValid@@" + valid);
-        if (transformed != null) filters.add("isTransformed@@" + transformed);
-        if (validRules != null) validRules.forEach(id -> filters.add("validRulesID@@" + id));
-        if (invalidRules != null) invalidRules.forEach(id -> filters.add("invalidRulesID@@" + id));
+        if (valid != null) filters.add("is_valid@@" + valid);
+        if (transformed != null) filters.add("is_transformed@@" + transformed);
+        if (validRules != null) validRules.forEach(id -> filters.add("valid_rules@@" + id));
+        if (invalidRules != null) invalidRules.forEach(id -> filters.add("invalid_rules@@" + id));
         try {
             ValidationStatsObservationsResult result = statistics.queryValidationStatsObservationsBySnapshotID(
                     snapshotId, filters, pageable);

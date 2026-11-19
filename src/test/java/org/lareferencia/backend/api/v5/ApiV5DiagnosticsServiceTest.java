@@ -19,7 +19,7 @@ class ApiV5DiagnosticsServiceTest {
                 new DiagnosticFilter(DiagnosticFilterField.VALID, DiagnosticFilterOperator.EQ, true),
                 new DiagnosticFilter(DiagnosticFilterField.RULE_INVALID, DiagnosticFilterOperator.EQ, 42)));
 
-        assertEquals(List.of("identifier@@\"oai:test\"", "is_valid@@\"true\"", "invalid_rules@@\"42\""),
+        assertEquals(List.of("identifier_contains@@\"oai:test\"", "is_valid@@\"true\"", "invalid_rules@@\"42\""),
                 translated);
     }
 

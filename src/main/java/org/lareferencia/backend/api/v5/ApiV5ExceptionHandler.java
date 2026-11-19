@@ -3,6 +3,7 @@ package org.lareferencia.backend.api.v5;
 import java.net.URI;
 import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,12 @@ public class ApiV5ExceptionHandler {
     ResponseEntity<ProblemDetail> invalidState(IllegalStateException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
                 .body(problem(HttpStatus.CONFLICT, "STATE_CONFLICT", exception.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<ProblemDetail> forbidden(AccessDeniedException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON)
+                .body(problem(HttpStatus.FORBIDDEN, "FORBIDDEN", "Access denied"));
     }
 
     @ExceptionHandler(Exception.class)

@@ -52,8 +52,19 @@ class ApiV5ManagementControllerTest {
                 .andExpect(jsonPath("$.items[0].runtime.runningCount").value(1));
     }
 
+    @Test
+    void mapsSpringMethodAccessDenialToForbidden() throws Exception {
+        mvc.perform(get("/api/v5/capabilities"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+    }
+
     private static final class StubManagementService extends ApiV5ManagementService {
         StubManagementService() { super(null, null, null, null, null, null, null, null, null, null, new ObjectMapper(), null, null); }
+        @Override
+        public CapabilityResponse capabilities() {
+            throw new org.springframework.security.authorization.AuthorizationDeniedException("Access denied");
+        }
         @Override
         public PageResponse<NetworkResponse> listNetworks(int page, int size) {
             return new PageResponse<>(List.of(), page, size, 0, 0);

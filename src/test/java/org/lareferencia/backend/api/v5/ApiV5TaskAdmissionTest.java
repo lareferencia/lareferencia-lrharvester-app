@@ -17,11 +17,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class ApiV5TaskAdmissionTest {
+    private NetworkRepository networks;
     private NetworkActionkManager actions;
     private MockMvc mvc;
 
     @BeforeEach void setUp() {
-        NetworkRepository networks = mock(NetworkRepository.class);
+        networks = mock(NetworkRepository.class);
         actions = mock(NetworkActionkManager.class);
         Network network = new Network(); org.springframework.test.util.ReflectionTestUtils.setField(network, "id", 1L); network.setAcronym("TEST");
         when(networks.findById(1L)).thenReturn(Optional.of(network));
@@ -48,6 +49,28 @@ class ApiV5TaskAdmissionTest {
                 .content("{\"type\":\"RUN_ACTION\",\"actionName\":\"EXAMPLE\",\"incremental\":false}"))
                 .andExpect(status().isAccepted()).andExpect(jsonPath("$.result").value("ACCEPTED"))
                 .andExpect(jsonPath("$.requestId").value("admitted-plan"));
+    }
+
+    @Test void batchContinuesAfterNetworkActionPolicyRejection() throws Exception {
+        Network other = new Network();
+        org.springframework.test.util.ReflectionTestUtils.setField(other, "id", 2L);
+        when(networks.findById(2L)).thenReturn(Optional.of(other));
+        when(actions.submitAction(eq("EXAMPLE"), eq(false), any()))
+                .thenThrow(new ApplicationActionPolicyException("ACTION_DISABLED", "Action is disabled for this network"))
+                .thenReturn(new TaskSubmission("accepted-group", true, List.of("worker-2"),
+                        List.of(TaskManager.WorkerLaunchResult.RUNNING), null));
+        mvc.perform(post("/api/v5/network-command-batches").contentType("application/json")
+                .content("""
+                        {"networkIds":[1,2],"command":{"type":"RUN_ACTION","actionName":"EXAMPLE"}}
+                        """))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.children.length()").value(2))
+                .andExpect(jsonPath("$.children[0].networkId").value(1))
+                .andExpect(jsonPath("$.children[0].result").value("REJECTED"))
+                .andExpect(jsonPath("$.children[0].message").value("Action is disabled for this network"))
+                .andExpect(jsonPath("$.children[1].networkId").value(2))
+                .andExpect(jsonPath("$.children[1].result").value("ACCEPTED"))
+                .andExpect(jsonPath("$.children[1].requestId").value("accepted-group"));
     }
 
     @Test void batchReportsQueueRejectionPerNetwork() throws Exception {

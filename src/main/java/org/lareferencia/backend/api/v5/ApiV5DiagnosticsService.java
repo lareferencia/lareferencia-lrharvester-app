@@ -59,7 +59,7 @@ public class ApiV5DiagnosticsService {
             List<DiagnosticRuleResponse> rules = result.getRulesByID().values().stream()
                     .map(rule -> new DiagnosticRuleResponse(rule.getRuleID(), rule.getName(), rule.getDescription(),
                             rule.getQuantifier() == null ? null : rule.getQuantifier().name(), rule.getMandatory(),
-                            rule.getValidCount(), rule.getInvalidCount()))
+                            rule.getValidCount(), rule.getInvalidCount(), rule.getOccurrenceCaptureEnabled()))
                     .sorted(java.util.Comparator.comparing(DiagnosticRuleResponse::ruleId)).toList();
             List<DiagnosticFacetResponse> facets = result.getFacets().entrySet().stream()
                     .flatMap(entry -> entry.getValue().stream().map(facet -> new DiagnosticFacetResponse(entry.getKey(),
@@ -145,12 +145,13 @@ public class ApiV5DiagnosticsService {
                     "Each diagnostic filter requires field and value");
         }
         DiagnosticFilterOperator operator = filter.operator() == null ? DiagnosticFilterOperator.EQ : filter.operator();
-        String value = String.valueOf(filter.value()).replace("\"", "").trim();
+        String value = String.valueOf(filter.value()).trim();
         return switch (filter.field()) {
             case IDENTIFIER -> {
                 if (operator != DiagnosticFilterOperator.CONTAINS && operator != DiagnosticFilterOperator.EQ)
                     throw invalidOperator();
-                yield "identifier@@\"" + value + "\"";
+                String field = operator == DiagnosticFilterOperator.EQ ? "identifier_eq" : "identifier_contains";
+                yield field + "@@\"" + filter.value() + "\"";
             }
             case VALID -> booleanFilter("is_valid", value, operator);
             case TRANSFORMED -> booleanFilter("is_transformed", value, operator);

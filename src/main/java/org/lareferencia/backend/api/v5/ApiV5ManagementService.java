@@ -575,10 +575,14 @@ public class ApiV5ManagementService {
     }
 
     public BatchCommandReceipt batch(BatchCommandRequest request) {
-        String id = UUID.randomUUID().toString(); List<CommandReceipt> children = new ArrayList<>();
+        String id = UUID.randomUUID().toString();
+        List<CommandReceipt> children = new ArrayList<>();
         for (Long networkId : request.networkIds()) {
-            try { children.add(command(networkId, request.command())); }
-            catch (ApiV5Exception exception) { children.add(new CommandReceipt(UUID.randomUUID().toString(), networkId, request.command().type(), "REJECTED", OffsetDateTime.now(ZoneOffset.UTC), "/api/v5/networks/" + networkId + "/runtime", exception.getMessage())); }
+            try {
+                children.add(command(networkId, request.command()));
+            } catch (ApiV5Exception | ApplicationActionPolicyException rejection) {
+                children.add(receipt(networkId, request.command().type(), "REJECTED", rejection.getMessage()));
+            }
         }
         return new BatchCommandReceipt(id, OffsetDateTime.now(ZoneOffset.UTC), children);
     }

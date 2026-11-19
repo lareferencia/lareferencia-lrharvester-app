@@ -148,7 +148,7 @@ public final class ApiV5Dtos {
     }
 
     public record DiagnosticRuleResponse(Long ruleId, String name, String description, String quantifier,
-            Boolean mandatory, Integer validCount, Integer invalidCount) {
+            Boolean mandatory, Integer validCount, Integer invalidCount, Boolean occurrenceCaptureEnabled) {
     }
 
     public record DiagnosticFacetResponse(String field, String value, long count) {
