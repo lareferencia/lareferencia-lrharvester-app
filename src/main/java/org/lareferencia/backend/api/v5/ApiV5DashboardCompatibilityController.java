@@ -1,5 +1,6 @@
 package org.lareferencia.backend.api.v5;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import org.lareferencia.core.domain.SnapshotStatus;
 import org.lareferencia.core.repository.jpa.NetworkRepository;
 import org.lareferencia.core.repository.jpa.NetworkSnapshotRepository;
 import org.lareferencia.core.service.validation.IValidationStatisticsService;
-import org.lareferencia.core.service.validation.OccurrenceCount;
+import org.lareferencia.core.service.validation.FrequencyPage;
 import org.lareferencia.core.service.validation.ValidationStatObservation;
 import org.lareferencia.core.service.validation.ValidationStatsObservationsResult;
 import org.lareferencia.core.service.validation.ValidationStatsResult;
@@ -62,11 +63,16 @@ public class ApiV5DashboardCompatibilityController {
     }
 
     @GetMapping("/harvesting/source/list")
-    public Page<Source> sources(Pageable pageable, Authentication authentication) {
+    public Page<Source> sources(Pageable pageable, @RequestParam(defaultValue = "") String search,
+            @RequestParam(required = false) Long id, Authentication authentication) {
         authorization.requireDashboardAccess(authentication);
         List<Long> allowed = authorization.readableNetworkIds(authentication);
+        if (id != null) allowed = allowed.contains(id) ? List.of(id) : List.of();
         if (allowed.isEmpty()) return Page.empty(pageable);
-        return networks.findByIdIn(allowed, pageable).map(Source::new);
+        if (!search.isBlank()) return networks.searchReadable(allowed, search.strip(), pageable).map(Source::new);
+        Pageable order = pageable.getSort().isSorted() ? pageable
+                : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("name", "id"));
+        return networks.findByIdIn(allowed, order).map(Source::new);
     }
 
     @GetMapping("/harvesting/source/{acronym}")
@@ -75,8 +81,12 @@ public class ApiV5DashboardCompatibilityController {
     }
 
     @GetMapping("/harvesting/source/{acronym}/history")
-    public Page<Harvest> history(@PathVariable String acronym, Pageable pageable, Authentication authentication) {
-        return snapshots.findByNetworkAndStatus(network(acronym, authentication), SnapshotStatus.VALID,
+    public Page<Harvest> history(@PathVariable String acronym, Pageable pageable,
+            @RequestParam(defaultValue = "false") boolean availableOnly, Authentication authentication) {
+        Network network = network(acronym, authentication);
+        if (availableOnly) return snapshots.findByNetworkAndStatusAndDeletedFalse(network, SnapshotStatus.VALID,
+                historyPage(pageable)).map(Harvest::new);
+        return snapshots.findByNetworkAndStatus(network, SnapshotStatus.VALID,
                 historyPage(pageable)).map(Harvest::new);
     }
 
@@ -94,6 +104,18 @@ public class ApiV5DashboardCompatibilityController {
         }
         return snapshots.findByNetworkAndStatusAndEndTimeBetween(network, SnapshotStatus.VALID,
                 from, to, historyPage(pageable)).map(Harvest::new);
+    }
+
+    @GetMapping("/harvesting/source/{acronym}/harvest/{snapshotId}")
+    public Harvest harvest(@PathVariable String acronym, @PathVariable long snapshotId,
+            @RequestParam(required = false) LocalDate from, @RequestParam(required = false) LocalDate to,
+            Authentication authentication) {
+        NetworkSnapshot row = scopedSnapshot(acronym, snapshotId, authentication);
+        var day = row.getEndTime() == null ? null : row.getEndTime().toLocalDate();
+        if (row.getStatus() != SnapshotStatus.VALID || (from != null && (day == null || day.isBefore(from)))
+                || (to != null && (day == null || day.isAfter(to))))
+            throw new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_NOT_FOUND", "Harvest was not found in this interval");
+        return new Harvest(row);
     }
 
     @GetMapping("/harvesting/source/{acronym}/lkg")
@@ -159,12 +181,24 @@ public class ApiV5DashboardCompatibilityController {
 
     private List<ValueCount> occurrences(String acronym, Long snapshotId, Long ruleId, RecordFilters selection,
             Authentication authentication, boolean valid) {
+        return frequencies(acronym, snapshotId, ruleId, valid, selection, Pageable.unpaged(), authentication)
+                .content().stream().map(item -> new ValueCount(item.getValue(), item.getCount())).toList();
+    }
+
+    @GetMapping("/validation/source/{acronym}/{snapshotId}/frequencies/{ruleId}/{group:valid|invalid}")
+    public FrequencyPage frequencyPage(@PathVariable String acronym, @PathVariable long snapshotId,
+            @PathVariable long ruleId, @PathVariable String group, @ModelAttribute RecordFilters selection,
+            @RequestParam(defaultValue = "0") int pageNumber, @RequestParam(defaultValue = "10") int pageSize,
+            Authentication authentication) {
+        return frequencies(acronym, snapshotId, ruleId, group.equals("valid"), selection, page(pageNumber, pageSize), authentication);
+    }
+
+    private FrequencyPage frequencies(String acronym, long snapshotId, long ruleId, boolean valid,
+            RecordFilters selection, Pageable page, Authentication authentication) {
         snapshot(acronym, snapshotId, authentication);
         try {
-            var result = statistics.queryValidRuleOccurrencesCountBySnapshotID(snapshotId, ruleId, selection.filters());
-            List<OccurrenceCount> items = valid ? result.getValidRuleOccrs() : result.getInvalidRuleOccrs();
-            return items == null ? List.of() : items.stream().map(item -> new ValueCount(item.getValue(), item.getCount())).toList();
-        } catch (Exception exception) {
+            return statistics.frequencyPage(snapshotId, ruleId, valid, selection.filters(), page);
+        } catch (ValidationStatisticsException exception) {
             throw diagnosticFailure(exception);
         }
     }
@@ -173,8 +207,6 @@ public class ApiV5DashboardCompatibilityController {
     public HistoricalXml metadata(@PathVariable String acronym, @PathVariable Long snapshotId,
             @RequestParam(required = false) String identifier, Authentication authentication) {
         NetworkSnapshot snapshot = snapshot(acronym, snapshotId, authentication);
-        if (Boolean.TRUE.equals(snapshot.isDeleted()))
-            throw new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_NOT_FOUND", "Snapshot was deleted");
         if (identifier == null || identifier.isBlank())
             throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
         // Restrict direct XML links to active records visible in this historical report.
@@ -215,6 +247,13 @@ public class ApiV5DashboardCompatibilityController {
     }
 
     private NetworkSnapshot snapshot(String acronym, Long snapshotId, Authentication authentication) {
+        NetworkSnapshot snapshot = scopedSnapshot(acronym, snapshotId, authentication);
+        if (Boolean.TRUE.equals(snapshot.isDeleted()))
+            throw new ApiV5Exception(HttpStatus.NOT_FOUND, "SNAPSHOT_NOT_FOUND", "Snapshot was deleted");
+        return snapshot;
+    }
+
+    private NetworkSnapshot scopedSnapshot(String acronym, Long snapshotId, Authentication authentication) {
         authorization.requireDashboardAccess(authentication);
         authorization.requireSnapshotRead(authentication, snapshotId);
         NetworkSnapshot snapshot = snapshots.findById(snapshotId).orElseThrow(() ->
