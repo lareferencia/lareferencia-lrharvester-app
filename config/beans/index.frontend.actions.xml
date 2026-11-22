@@ -119,4 +119,19 @@
 	</bean>
 	
 	
+	<!-- A manual frontend action for networks with a published metadata-tools package. -->
+	<bean id="sqliteVectorIndexingAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="SQLITE_VECTOR_INDEXING_ACTION"/>
+		<property name="description" value="Index frontend with SQLite vectors"/>
+		<property name="workers"><list><value>sqliteVectorIndexerWorker</value></list></property>
+	</bean>
+
+	<bean id="sqliteVectorIndexerWorker" parent="frontendIndexerWorker" scope="prototype"
+			class="org.lareferencia.core.worker.indexing.SQLiteVectorIndexerWorker">
+		<property name="embeddingsDirectory" value="${indexing.embeddings.directory:embeddings}"/>
+		<property name="sqliteFilename" value="${indexing.embeddings.filename:}"/>
+		<property name="vectorFieldName" value="${indexing.embeddings.solr-field:semantic_vector}"/>
+		<property name="solrUrl" value="${indexing.embeddings.solr-url:${frontend.solr.url}}"/>
+	</bean>
+
 </beans>
