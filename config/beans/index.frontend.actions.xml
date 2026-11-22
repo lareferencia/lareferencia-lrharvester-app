@@ -120,9 +120,9 @@
 	
 	
 	<!-- A manual frontend action for networks with a published metadata-tools package. -->
-	<bean id="sqliteVectorIndexingAction" class="org.lareferencia.core.task.NetworkAction">
-		<property name="name" value="SQLITE_VECTOR_INDEXING_ACTION"/>
-		<property name="description" value="Index frontend with SQLite vectors"/>
+	<bean id="semanticDbIndexingAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="SEMANTIC_DB_INDEXING_ACTION"/>
+		<property name="description" value="Semantic Indexing (precomputed)"/>
 		<property name="workers"><list><value>sqliteVectorIndexerWorker</value></list></property>
 	</bean>
 
