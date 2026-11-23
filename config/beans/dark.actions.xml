@@ -38,7 +38,7 @@
 	<!-- Actions -->
 	<bean id="darkStageNetworkAction" class="org.lareferencia.core.task.NetworkAction">
 		<property name="name" value="DARK_STAGE_ACTION" />
-		<property name="description" value="dARK stage"></property>
+		<property name="description" value="Minting dARK"></property>
 		<property name="incremental" value="false" />
 		<property name="runOnSchedule" value="true" />
 		<property name="allwaysRunOnSchedule" value="true" />
