@@ -114,6 +114,13 @@
                     <constructor-arg type="String"
                         value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind4.xsl"/>
                 </bean>
+                <!-- OpenAIRE uses a different XOAI structure. Keep its dedicated field mapping for VuFind 5. -->
+                <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
+                    <constructor-arg type="String" value="xoai_openaire"/>
+                    <constructor-arg type="String" value="vufind5"/>
+                    <constructor-arg type="String"
+                        value="${config.dir.path}/mdfcrosswalks/xoai_openaire2vufind4.xsl"/>
+                </bean>
                 <bean class="org.lareferencia.core.metadata.XsltMDFormatTransformer">
                     <constructor-arg type="String" value="oai_dc"/>
                     <constructor-arg type="String" value="xoai"/>
