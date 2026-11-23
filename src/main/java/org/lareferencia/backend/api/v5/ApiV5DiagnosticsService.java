@@ -59,7 +59,7 @@ public class ApiV5DiagnosticsService {
             List<DiagnosticRuleResponse> rules = result.getRulesByID().values().stream()
                     .map(rule -> new DiagnosticRuleResponse(rule.getRuleID(), rule.getName(), rule.getDescription(),
                             rule.getQuantifier() == null ? null : rule.getQuantifier().name(), rule.getMandatory(),
-                            rule.getValidCount(), rule.getInvalidCount()))
+                            rule.getValidCount(), rule.getInvalidCount(), rule.getOccurrenceCaptureEnabled()))
                     .sorted(java.util.Comparator.comparing(DiagnosticRuleResponse::ruleId)).toList();
             List<DiagnosticFacetResponse> facets = result.getFacets().entrySet().stream()
                     .flatMap(entry -> entry.getValue().stream().map(facet -> new DiagnosticFacetResponse(entry.getKey(),
@@ -102,14 +102,20 @@ public class ApiV5DiagnosticsService {
     }
 
     public String metadata(Long snapshotId, String identifier, Authentication authentication) {
-        if (identifier == null || identifier.isBlank()) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
         requireSnapshot(snapshotId, authentication);
+        return historicalXml(snapshotId, identifier);
+    }
+
+    // Both controllers authorize the snapshot before resolving the stored publication hash.
+    String historicalXml(Long snapshotId, String identifier) {
+        if (identifier == null || identifier.isBlank()) throw new ApiV5Exception(HttpStatus.BAD_REQUEST, "IDENTIFIER_REQUIRED", "identifier is required");
         try {
             RecordValidation validation = statistics.getRecordValidationListBySnapshotAndIdentifier(snapshotId, identifier);
             if (validation == null) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "RECORD_NOT_FOUND", "Record was not found in diagnostics");
+            if (validation.getPublishedMetadataHash() == null) throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", "Historical metadata is unavailable");
             return metadataStore.getMetadata(snapshotStore.getSnapshotMetadata(snapshotId), validation.getPublishedMetadataHash());
         } catch (ApiV5Exception exception) { throw exception;
-        } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", exception.getMessage()); }
+        } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.NOT_FOUND, "METADATA_NOT_FOUND", "Historical metadata is unavailable"); }
     }
 
     private NetworkSnapshot requireSnapshot(Long id, Authentication authentication) {
@@ -145,12 +151,13 @@ public class ApiV5DiagnosticsService {
                     "Each diagnostic filter requires field and value");
         }
         DiagnosticFilterOperator operator = filter.operator() == null ? DiagnosticFilterOperator.EQ : filter.operator();
-        String value = String.valueOf(filter.value()).replace("\"", "").trim();
+        String value = String.valueOf(filter.value()).trim();
         return switch (filter.field()) {
             case IDENTIFIER -> {
                 if (operator != DiagnosticFilterOperator.CONTAINS && operator != DiagnosticFilterOperator.EQ)
                     throw invalidOperator();
-                yield "identifier@@\"" + value + "\"";
+                String field = operator == DiagnosticFilterOperator.EQ ? "identifier_eq" : "identifier_contains";
+                yield field + "@@\"" + filter.value() + "\"";
             }
             case VALID -> booleanFilter("is_valid", value, operator);
             case TRANSFORMED -> booleanFilter("is_transformed", value, operator);

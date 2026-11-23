@@ -31,18 +31,18 @@ class ApiV5DashboardCompatibilityControllerTest {
     private final LocalAuthorizationService authorization = mock(LocalAuthorizationService.class);
     private final Authentication authentication = mock(Authentication.class);
     private final ApiV5DashboardCompatibilityController controller =
-            new ApiV5DashboardCompatibilityController(networks, snapshots, statistics, authorization, new DateHelper());
+            new ApiV5DashboardCompatibilityController(networks, snapshots, statistics, authorization, new DateHelper(), null);
 
     @Test
     void listFiltersBeforePaging() {
         Network network = mock(Network.class);
         when(network.getId()).thenReturn(2L);
         when(network.getAcronym()).thenReturn("TWO");
-        PageRequest page = PageRequest.of(0, 1);
+        PageRequest page = PageRequest.of(0, 1, org.springframework.data.domain.Sort.by("name", "id"));
         when(authorization.readableNetworkIds(authentication)).thenReturn(List.of(2L));
         when(networks.findByIdIn(List.of(2L), page)).thenReturn(new PageImpl<>(List.of(network), page, 1));
 
-        var result = controller.sources(page, authentication);
+        var result = controller.sources(page, "", null, authentication);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("TWO", result.getContent().get(0).acronym());
@@ -68,7 +68,7 @@ class ApiV5DashboardCompatibilityControllerTest {
                 .when(authorization).requireSnapshotRead(authentication, 9L);
 
         assertEquals(HttpStatus.FORBIDDEN,
-                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, authentication)).getStatus());
+                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, null, authentication)).getStatus());
         verify(snapshots, never()).findById(9L);
     }
 
@@ -81,8 +81,28 @@ class ApiV5DashboardCompatibilityControllerTest {
         when(snapshots.findById(9L)).thenReturn(Optional.of(snapshot));
 
         assertEquals(HttpStatus.NOT_FOUND,
-                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, authentication)).getStatus());
+                assertThrows(ApiV5Exception.class, () -> controller.summary("TWO", 9L, null, authentication)).getStatus());
         verify(statistics, never()).queryValidatorRulesStatsBySnapshot(snapshot, List.of());
+    }
+
+    @Test
+    void dateRangeAndSnapshotStateApplyToPointReads() {
+        Network network = new Network();
+        network.setAcronym("PA");
+        NetworkSnapshot row = new NetworkSnapshot();
+        row.setNetwork(network);
+        row.setStatus(org.lareferencia.core.domain.SnapshotStatus.VALID);
+        var day = java.time.LocalDate.of(2026, 10, 4);
+        row.setEndTime(day.atTime(23, 59));
+        when(snapshots.findById(4L)).thenReturn(Optional.of(row));
+        assertEquals(day.atTime(23, 59), controller.harvest("PA", 4, day, day, authentication).endTime());
+        assertEquals(HttpStatus.NOT_FOUND, assertThrows(ApiV5Exception.class,
+                () -> controller.harvest("PA", 4, day.plusDays(1), null, authentication)).getStatus());
+        row.setDeleted(true);
+        assertEquals(true, controller.harvest("PA", 4, day, day, authentication).isDeleted());
+        assertEquals(HttpStatus.NOT_FOUND, assertThrows(ApiV5Exception.class,
+                () -> controller.summary("PA", 4L, null, authentication)).getStatus());
+        org.mockito.Mockito.verifyNoInteractions(statistics);
     }
 
     @Test

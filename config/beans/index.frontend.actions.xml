@@ -88,7 +88,7 @@
 		</constructor-arg>
 		
 		<property name="serialLaneId" value="1"/>
-		<property name="targetSchemaName" value="vufind4"/>
+		<property name="targetSchemaName" value="vufind5"/>
 		
 		<property name="solrNetworkIDField" value="network_acronym_str"/>
 		<property name="solrRecordIDField" value="id"/>
@@ -119,4 +119,30 @@
 	</bean>
 	
 	
+	<!-- A manual frontend action for networks with a published metadata-tools package. -->
+	<bean id="semanticDbIndexingAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="SEMANTIC_DB_INDEXING_ACTION"/>
+		<property name="description" value="Semantic Indexing (precomputed)"/>
+		<property name="workers"><list><value>semanticDbIndexerWorker</value></list></property>
+	</bean>
+
+	<bean id="semanticDbIndexerWorker" parent="frontendIndexerWorker" scope="prototype"
+			class="org.lareferencia.core.worker.indexing.SemanticDbIndexerWorker">
+		<property name="embeddingsDirectory" value="${indexing.embeddings.directory:embeddings}"/>
+		<property name="sqliteFilename" value="${indexing.embeddings.filename:}"/>
+		<property name="vectorFieldName" value="${indexing.embeddings.solr-field:semantic_vector}"/>
+		<property name="solrUrl" value="${indexing.embeddings.solr-url:${frontend.solr.url}}"/>
+	</bean>
+
+	<!-- The delete action uses the same destination and network filter as precomputed indexing. -->
+	<bean id="semanticDbDeleteAction" class="org.lareferencia.core.task.NetworkAction">
+		<property name="name" value="SEMANTIC_DB_DELETE_ACTION"/>
+		<property name="description" value="Remove Semantic Index (precomputed)"/>
+		<property name="workers"><list><value>semanticDbDeleteWorker</value></list></property>
+	</bean>
+
+	<bean id="semanticDbDeleteWorker" parent="frontendDeleteWorker" scope="prototype">
+		<property name="solrUrl" value="${indexing.embeddings.solr-url:${frontend.solr.url}}"/>
+	</bean>
+
 </beans>

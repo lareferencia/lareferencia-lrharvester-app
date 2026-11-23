@@ -81,7 +81,7 @@
 		</constructor-arg>
 		
 		<property name="serialLaneId" value="3"/>
-		<property name="targetSchemaName" value="vufind4"/>
+		<property name="targetSchemaName" value="vufind5"/>
 		
 		<property name="solrNetworkIDField" value="network_acronym_str"/>
 		<property name="solrRecordIDField" value="id"/>

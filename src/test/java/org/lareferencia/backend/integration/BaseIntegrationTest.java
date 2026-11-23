@@ -32,6 +32,9 @@ public abstract class BaseIntegrationTest {
 
     @Container
     protected static SolrContainer solr = new SolrContainer(DockerImageName.parse("solr:9.5.0"))
+            // Match Docker/solr/entrypoint.sh. The JVM security manager can block Jetty's
+            // accept thread on reverse DNS for the Docker gateway before it serves HTTP.
+            .withEnv("SOLR_SECURITY_MANAGER_ENABLED", "false")
             .withCollection("biblio")
             .withStartupTimeout(Duration.ofSeconds(120))
             .withLogConsumer(new Slf4jLogConsumer(logger));

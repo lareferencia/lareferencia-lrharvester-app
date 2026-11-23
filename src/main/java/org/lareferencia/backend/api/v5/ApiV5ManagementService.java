@@ -42,6 +42,7 @@ import org.lareferencia.core.worker.validation.ITransformerRule;
 import org.lareferencia.core.worker.validation.IValidatorRule;
 import org.lareferencia.core.worker.validation.RuleSchemaDefinition;
 import org.lareferencia.core.worker.validation.RuleSerializer;
+import org.lareferencia.core.worker.validation.RuleTypeAliases;
 import org.lareferencia.core.worker.validation.ValidatorRuleSchemaService;
 import org.lareferencia.core.worker.validation.QuantifierValues;
 import org.lareferencia.core.metadata.MDFormatTransformerService;
@@ -246,7 +247,7 @@ public class ApiV5ManagementService {
         var rules = result.putArray("rules");
         legacy.path("rules").forEach(item -> {
             try {
-                JsonNode serialized = objectMapper.readTree(item.path("jsonserialization").asText());
+                JsonNode serialized = objectMapper.readTree(RuleTypeAliases.resolve(item.path("jsonserialization").asText()));
                 ObjectNode rule = objectMapper.createObjectNode();
                 rule.put("className", serialized.path("@class").asText());
                 rule.put("name", item.path("name").asText()); rule.put("description", item.path("description").asText());
@@ -575,10 +576,14 @@ public class ApiV5ManagementService {
     }
 
     public BatchCommandReceipt batch(BatchCommandRequest request) {
-        String id = UUID.randomUUID().toString(); List<CommandReceipt> children = new ArrayList<>();
+        String id = UUID.randomUUID().toString();
+        List<CommandReceipt> children = new ArrayList<>();
         for (Long networkId : request.networkIds()) {
-            try { children.add(command(networkId, request.command())); }
-            catch (ApiV5Exception exception) { children.add(new CommandReceipt(UUID.randomUUID().toString(), networkId, request.command().type(), "REJECTED", OffsetDateTime.now(ZoneOffset.UTC), "/api/v5/networks/" + networkId + "/runtime", exception.getMessage())); }
+            try {
+                children.add(command(networkId, request.command()));
+            } catch (ApiV5Exception | ApplicationActionPolicyException rejection) {
+                children.add(receipt(networkId, request.command().type(), "REJECTED", rejection.getMessage()));
+            }
         }
         return new BatchCommandReceipt(id, OffsetDateTime.now(ZoneOffset.UTC), children);
     }
@@ -717,7 +722,14 @@ public class ApiV5ManagementService {
 
     private String serialize(String kind, String className, JsonNode configuration) {
         if (configuration == null || !configuration.isObject()) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_CONFIGURATION_INVALID", "configuration must be an object");
-        ObjectNode node = ((ObjectNode) configuration).deepCopy(); node.put("@class", className);
+        ObjectNode node = ((ObjectNode) configuration).deepCopy();
+        node.put("@class", className);
+        // Omit the new default so an edited legacy profile still opens in the previous engine.
+        if (node.path("processAllOccurrences").isBoolean() && !node.get("processAllOccurrences").booleanValue()
+                && (org.lareferencia.core.worker.validation.transformer.FieldNameTranslateRule.class.getName().equals(className)
+                || org.lareferencia.core.worker.validation.transformer.FieldNameConditionalTranslateRule.class.getName().equals(className))) {
+            node.remove("processAllOccurrences");
+        }
         try {
             String json = objectMapper.writeValueAsString(node);
             Object rule = "validator".equals(kind) ? ruleSerializer.deserializeValidatorFromJsonString(json) : ruleSerializer.deserializeTransformerFromJsonString(json);
@@ -729,10 +741,11 @@ public class ApiV5ManagementService {
     private String resolveClassName(String kind, RuleRequest request) {
         String fromType = request.typeId() == null ? null : ruleTypes(kind, schemas(kind)).stream().filter(t -> request.typeId().equals(t.typeId())).map(RuleTypeResponse::className).findFirst().orElse(null);
         if (request.typeId() != null && fromType == null) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_TYPE_UNKNOWN", "Unknown typeId");
-        if (request.className() != null && ruleTypes(kind, schemas(kind)).stream().noneMatch(t -> request.className().equals(t.className()))) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_CLASS_UNKNOWN", "Unknown className");
-        if (fromType != null && request.className() != null && !fromType.equals(request.className())) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_TYPE_MISMATCH", "typeId and className do not match");
+        String className = RuleTypeAliases.canonicalName(request.className());
+        if (className != null && ruleTypes(kind, schemas(kind)).stream().noneMatch(t -> className.equals(t.className()))) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_CLASS_UNKNOWN", "Unknown className");
+        if (fromType != null && className != null && !fromType.equals(className)) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_TYPE_MISMATCH", "typeId and className do not match");
         if (fromType == null && request.className() == null) throw new ApiV5Exception(HttpStatus.UNPROCESSABLE_ENTITY, "RULE_TYPE_REQUIRED", "typeId or className is required");
-        return fromType == null ? request.className() : fromType;
+        return fromType == null ? className : fromType;
     }
 
     private List<RuleSchemaDefinition> schemas(String kind) { return "validator".equals(kind) ? ruleSchemas.getAllValidatorSchemas(Locale.ROOT) : ruleSchemas.getAllTransformerSchemas(Locale.ROOT); }
@@ -792,7 +805,7 @@ public class ApiV5ManagementService {
     private TransformerResponse transformerResponse(Transformer t) { return new TransformerResponse(t.getId(), t.getName(), t.getDescription(), t.getRules().stream().sorted(Comparator.comparing(TransformerRule::getRunorder)).map(this::transformerRuleResponse).toList()); }
     private RuleResponse validatorRuleResponse(ValidatorRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), r.getMandatory(), r.getQuantifier() == null ? null : r.getQuantifier().name(), null, r.getJsonserialization(), "validator"); }
     private RuleResponse transformerRuleResponse(TransformerRule r) { return ruleResponse(r.getId(), r.getName(), r.getDescription(), null, null, r.getRunorder(), r.getJsonserialization(), "transformer"); }
-    private RuleResponse ruleResponse(Long id, String name, String description, Boolean mandatory, String quantifier, Integer order, String json, String kind) { try { ObjectNode node = (ObjectNode) objectMapper.readTree(json); String className = node.remove("@class").asText(); return new RuleResponse(id, typeId(kind, className), className, name, description, mandatory, quantifier, order, node); } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.INTERNAL_SERVER_ERROR, "RULE_SERIALIZATION_INVALID", "Stored rule cannot be represented"); } }
+    private RuleResponse ruleResponse(Long id, String name, String description, Boolean mandatory, String quantifier, Integer order, String json, String kind) { try { ObjectNode node = (ObjectNode) objectMapper.readTree(RuleTypeAliases.resolve(json)); String className = node.remove("@class").asText(); return new RuleResponse(id, typeId(kind, className), className, name, description, mandatory, quantifier, order, node); } catch (Exception exception) { throw new ApiV5Exception(HttpStatus.INTERNAL_SERVER_ERROR, "RULE_SERIALIZATION_INVALID", "Stored rule cannot be represented"); } }
     private SnapshotResponse snapshotResponse(NetworkSnapshot s) { return new SnapshotResponse(s.getId(), s.getNetwork() == null ? null : s.getNetwork().getId(), s.getPreviousSnapshotId(), s.getStatus().name(), s.getIndexStatus().name(), ApiV5NetworkSummaryService.utc(s.getStartTime()), ApiV5NetworkSummaryService.utc(s.getLastIncrementalTime()), ApiV5NetworkSummaryService.utc(s.getEndTime()), s.getSize(), s.getValidSize(), s.getTransformedSize(), s.isDeleted(), s.getIndexingResults().results()); }
     public List<TaskManager.ExecutionSnapshot> executions() {
         return actions.getExecutor() instanceof LegacyNetworkActionExecutor legacy
